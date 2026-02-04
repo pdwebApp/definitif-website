@@ -4,26 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Basic Website</title>
-  <style>
-    body { margin: 0; font-family: Arial, sans-serif; }
-    header { display: flex; justify-content: space-between; padding: 15px; background: #333; color: white; }
-    header a { color: white; text-decoration: none; margin: 0 10px; }
-    .banner { background: url('banner.jpg') no-repeat center center/cover; color: white; text-align: center; padding: 100px 20px; }
-    .banner h1 { font-size: 2.5em; }
-    section { padding: 50px 20px; text-align: center; }
-    footer { background: #222; color: white; padding: 20px; text-align: center; }
-    footer div { margin: 10px 0; }
-  </style>
+  <!-- Link to external CSS -->
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
   <!-- Header -->
   <header>
-    <div>
+    <div class="left">
+      <img src="https://picsum.photos/100/40" alt="Logo Placeholder" class="logo">
       <a href="#about">About Us</a>
       <a href="#insights">Insights</a>
     </div>
-    <div>
+    <div class="right">
       <a href="https://example-login.com" target="_blank">Login</a>
     </div>
   </header>
@@ -37,25 +30,33 @@
   <section id="insights">
     <h2>Insights</h2>
     <p>Share your latest updates or articles here.</p>
+    <img src="https://picsum.photos/300/200?random=1" alt="Random placeholder image">
   </section>
 
   <!-- Section 3 -->
   <section id="about">
     <h2>About Us</h2>
     <p>Brief description about your company or project.</p>
+    <img src="https://picsum.photos/300/200?random=2" alt="Random placeholder image">
   </section>
 
   <!-- Section 4 -->
   <section>
     <h2>Additional Info</h2>
     <p>Use this space for services, news, or highlights.</p>
+    <img src="https://picsum.photos/300/200?random=3" alt="Random placeholder image">
   </section>
 
   <!-- Footer -->
   <footer>
-    <div>📧 Communication with us: contact@example.com</div>
-    <div>⚖️ Disclaimer: This is a demo site.</div>
-    <div>📜 License Details: MIT License</div>
+    <div class="left">
+      <div>📧 Communication with us: contact@example.com</div>
+      <div>⚖️ Disclaimer: This is a demo site.</div>
+      <div>📜 License Details: MIT License</div>
+    </div>
+    <div class="right">
+      Text Logo
+    </div>
   </footer>
 
 </body>
