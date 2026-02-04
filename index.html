@@ -10,20 +10,22 @@
 
   <!-- Header -->
   <header>
-    <div class="left">
-      <img src="https://picsum.photos/100/40" alt="Logo Placeholder" class="logo">
-      <nav class="nav-links">
-        <a href="#about">About Us</a>
-        <a href="#insights">Insights</a>
-        <a href="https://example-login.com" target="_blank">Login</a>
-      </nav>
-    </div>
-    <div class="right">
-      <!-- Hamburger menu button -->
-      <div class="menu-toggle">
-        <span></span>
-        <span></span>
-        <span></span>
+    <div class="container header-container">
+      <div class="left">
+        <img src="https://github.com/pdwebApp/definitif-website/blob/main/definitif_logo_bb_v2_red.png" alt="Site Logo" class="logo">
+        <nav class="nav-links">
+          <a href="#about">About Us</a>
+          <a href="#insights">Insights</a>
+          <a href="https://example-login.com" target="_blank">Login</a>
+        </nav>
+      </div>
+      <div class="right">
+        <!-- Hamburger menu button -->
+        <div class="menu-toggle">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
       </div>
     </div>
   </header>
@@ -37,21 +39,21 @@
   </div>
 
   <!-- Section 2 -->
-  <section id="insights">
+  <section id="insights" class="container">
     <h2>Insights</h2>
     <p>Share your latest updates or articles here.</p>
     <img src="https://picsum.photos/300/200?random=1" alt="Random placeholder image">
   </section>
 
   <!-- Section 3 -->
-  <section id="about">
+  <section id="about" class="container">
     <h2>About Us</h2>
     <p>Brief description about your company or project.</p>
     <img src="https://picsum.photos/300/200?random=2" alt="Random placeholder image">
   </section>
 
   <!-- Section 4 -->
-  <section>
+  <section class="container">
     <h2>Additional Info</h2>
     <p>Use this space for services, news, or highlights.</p>
     <img src="https://picsum.photos/300/200?random=3" alt="Random placeholder image">
@@ -59,18 +61,34 @@
 
   <!-- Footer -->
   <footer>
-    <div class="footer-left">
-      <form action="https://formspree.io/f/mkozdklz" method="POST">
-        <label for="email">📧 Communicate with us:</label><br>
-        <input type="email" name="email" id="email" placeholder="Your email" required><br>
-        <textarea name="message" placeholder="Your message" required></textarea><br>
-        <button type="submit">Send</button>
-      </form>
-      <div>⚖️ Disclaimer: This is a demo site.</div>
-      <div>📜 License Details: MIT License</div>
-    </div>
-    <div class="footer-right">
-      Text Logo
+    <div class="container">
+      <div class="footer-top">
+        <!-- Left 40% -->
+        <div class="footer-left">
+          <form action="https://formspree.io/f/mkozdklz" method="POST">
+            <label for="email">📧 Communicate with us:</label><br>
+            <input type="email" name="email" id="email" placeholder="Your email" required><br>
+            <textarea name="message" placeholder="Your message" required></textarea><br>
+            <button type="submit">Send</button>
+          </form>
+        </div>
+
+        <!-- Right 60% -->
+        <div class="footer-right">
+          <div class="license">📜 License Details: MIT License</div>
+          <div class="disclaimer">⚖️ Disclaimer: This is a demo site.</div>
+        </div>
+      </div>
+
+      <!-- Bottom Center Section -->
+      <div class="footer-bottom">
+        <img src=https://github.com/pdwebApp/definitif-website/blob/main/definitif_investments_text_logo_bb_with_red_hl.png alt="Footer Logo" class="footer-logo">
+        <div class="contact-info">
+          <span>📧 email@example.com</span>
+          <span class="separator"></span>
+          <span>📱 +91-9876543210</span>
+        </div>
+      </div>
     </div>
   </footer>
 
