@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Basic Website</title>
-  <!-- Link to external CSS -->
+  <title>Improved Website</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,13 +12,24 @@
   <header>
     <div class="left">
       <img src="https://picsum.photos/100/40" alt="Logo Placeholder" class="logo">
-      <a href="#about">About Us</a>
-      <a href="#insights">Insights</a>
+      <nav class="nav-links">
+        <a href="#about">About Us</a>
+        <a href="#insights">Insights</a>
+        <a href="https://example-login.com" target="_blank">Login</a>
+      </nav>
     </div>
     <div class="right">
-      <a href="https://example-login.com" target="_blank">Login</a>
+      <!-- Hamburger menu button -->
+      <div class="menu-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
     </div>
   </header>
+
+  <!-- Overlay for dim background -->
+  <div class="overlay"></div>
 
   <!-- Banner Section -->
   <div class="banner">
@@ -49,15 +59,39 @@
 
   <!-- Footer -->
   <footer>
-    <div class="left">
-      <div>📧 Communication with us: contact@example.com</div>
+    <div class="footer-left">
+      <form action="https://formspree.io/f/yourFormID" method="POST">
+        <label for="email">📧 Communication with us:</label><br>
+        <input type="email" name="email" id="email" placeholder="Your email" required><br>
+        <textarea name="message" placeholder="Your message" required></textarea><br>
+        <button type="submit">Send</button>
+      </form>
       <div>⚖️ Disclaimer: This is a demo site.</div>
       <div>📜 License Details: MIT License</div>
     </div>
-    <div class="right">
+    <div class="footer-right">
       Text Logo
     </div>
   </footer>
+
+  <!-- JavaScript -->
+  <script>
+    const menuToggle = document.querySelector('.menu-toggle');
+    const navLinks = document.querySelector('.nav-links');
+    const overlay = document.querySelector('.overlay');
+
+    menuToggle.addEventListener('click', () => {
+      menuToggle.classList.toggle('active');
+      navLinks.classList.toggle('active');
+      overlay.classList.toggle('active');
+    });
+
+    overlay.addEventListener('click', () => {
+      menuToggle.classList.remove('active');
+      navLinks.classList.remove('active');
+      overlay.classList.remove('active');
+    });
+  </script>
 
 </body>
 </html>
