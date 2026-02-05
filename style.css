@@ -51,32 +51,46 @@ header img.logo {
   border-bottom: 2px solid #2FC1A4;
 }
 
-/* Banner */
+/* Banner with <img> */
 .banner {
-  background: url("main_banner.png") no-repeat center center;
-  background-size: cover;
+  position: relative;
   width: 100%;
-  height: calc(100vh - 80px); /* full viewport minus header */
+  min-height: calc(100vh - 80px);
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
-  text-align: center;
-  padding-bottom: 20px;
+  overflow: hidden;
+}
+
+.banner-img {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
 .banner h1 {
-  font-size: 2.5em;
-  background: rgba(0,0,0,0.02);
-  padding: 20px;
-  border-radius: 5px;
+  position: absolute;
   color: black;
+  background: rgba(255,255,255,0.6);
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 2.5em;
+  text-align: center;
 }
 
-/* Horizontal Sections */
+/* Horizontal Sections with buttons */
+.horizontal-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
 .horizontal-sections {
   display: flex;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  width: 100%;
 }
 
 .horizontal-sections section {
@@ -94,18 +108,44 @@ section img {
   margin-top: 20px;
 }
 
+.scroll-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.4);
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  z-index: 1100;
+  font-size: 24px;
+  border-radius: 50%;
+}
+
+.scroll-btn.left {
+  left: 10px;
+}
+
+.scroll-btn.right {
+  right: 10px;
+}
+
+.scroll-btn:hover {
+  background: rgba(0,0,0,0.7);
+}
+
 /* Footer */
 footer {
   background: #B6B6B6;
   color: black;
-  padding: 30px 0;
+  padding: 20px 0;
 }
 
 .footer-top {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 .footer-left {
@@ -129,94 +169,20 @@ footer {
 
 .footer-bottom {
   text-align: center;
-  margin-top: 20px;
+  margin-top: 10px;
 }
 
 .footer-stack {
-  display: inline-flex;       /* keeps logo + text grouped */
-  flex-direction: column;     /* forces two lines */
-  align-items: center;        /* centers both lines */
-  gap: 4px;                   /* very small gap between logo and text */
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 
 .footer-logo {
-  height: 40px;
+  height: 36px;
 }
 
 .contact-info {
-  display: inline-flex;       /* keeps email • phone inline */
-  gap: 6px;
-  font-size: 0.95em;
-  align-items: center;
-}
-
-/* Form */
-form {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin-bottom: 15px;
-}
-
-form input, form textarea {
-  margin: 5px 0;
-  padding: 8px;
-  width: 100%;
-  max-width: 300px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-form button {
-  background: #E1DFDF;
-  color: black;
-  border: none;
-  padding: 8px 15px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-form button:hover {
-  background: #2FC1A4;
-}
-
-/* Overlay */
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.5);
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease;
-  z-index: 900;
-}
-
-.overlay.active {
-  opacity: 1;
-  visibility: visible;
-}
-
-/* Hamburger */
-.menu-toggle {
-  display: none;
-  flex-direction: column;
-  justify-content: space-between;
-  width: 25px;
-  height: 20px;
-  cursor: pointer;
-  z-index: 1100;
-}
-
-.menu-toggle span {
-  display: block;
-  height: 3px;
-  background: black;
-  border-radius: 2px;
-  transition: all 0.3s ease;
-}
-
-/*
-
+  display: inline-flex;
+  gap:
