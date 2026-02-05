@@ -49,8 +49,8 @@ header img.logo {
 }
 
 .nav-links a:hover {
-  color: #EDA813;
-  border-bottom: 2px solid #EDA813;
+  color: #2FC1A4;
+  border-bottom: 2px solid #2FC1A4;
 }
 
 /* Banner using contain (no cropping) */
@@ -72,6 +72,7 @@ header img.logo {
   padding: 20px 20px;
   border-radius: 5px;
   color: black;
+  text-color: black;
 }
 
 /* Sections */
@@ -91,6 +92,7 @@ section img {
 footer {
   background: #F8F8F3;
   color: black;
+  text-color: black;
   padding: 30px 0;
 }
 
@@ -127,6 +129,7 @@ footer {
 
 .footer-logo {
   text-align: center;
+  justify-content: center;
   height: 40px;
   margin-bottom: 10px;
 }
@@ -163,8 +166,9 @@ form input, form textarea {
 }
 
 form button {
-  background: #444;
+  background: #2FC1A4;
   color: black;
+  text-color: black;
   border: none;
   padding: 8px 15px;
   cursor: pointer;
@@ -231,6 +235,7 @@ form button:hover {
 
   .nav-links a {
     margin: 15px 0;
+
 
 
 
