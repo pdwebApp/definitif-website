@@ -124,11 +124,11 @@ footer {
 
 .footer-bottom {
   text-align: center;
+  justify-content: center;
   margin-top: 20px;
 }
 
 .footer-logo {
-  text-align: center;
   justify-content: center;
   height: 40px;
   margin-bottom: 10px;
@@ -137,6 +137,7 @@ footer {
 .contact-info {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   font-size: 0.95em;
 }
@@ -166,7 +167,7 @@ form input, form textarea {
 }
 
 form button {
-  background: #2FC1A4;
+  background: #E1DFDF;
   color: black;
   text-color: black;
   border: none;
@@ -176,7 +177,7 @@ form button {
 }
 
 form button:hover {
-  background: #666;
+  background: #2FC1A4;
 }
 
 /* Overlay */
@@ -235,6 +236,7 @@ form button:hover {
 
   .nav-links a {
     margin: 15px 0;
+
 
 
 
