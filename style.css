@@ -51,31 +51,25 @@ header img.logo {
   border-bottom: 2px solid #2FC1A4;
 }
 
-/* Banner with <img> */
+/* Banner */
 .banner {
-  position: relative;
+  background: url("main_banner.png") no-repeat center center;
+  background-size: cover;
   width: 100%;
-  min-height: calc(100vh - 80px); /* full viewport minus header */
+  height: calc(100vh - 80px); /* full viewport minus header */
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  overflow: hidden;
-}
-
-.banner-img {
-  width: 100%;
-  height: auto;       /* keeps aspect ratio */
-  display: block;
+  text-align: center;
+  padding-bottom: 20px;
 }
 
 .banner h1 {
-  position: absolute; /* overlays text on image */
-  color: black;
-  background: rgba(255,255,255,0.6);
-  padding: 10px 20px;
-  border-radius: 5px;
   font-size: 2.5em;
-  text-align: center;
+  background: rgba(0,0,0,0.02);
+  padding: 20px;
+  border-radius: 5px;
+  color: black;
 }
 
 /* Horizontal Sections */
@@ -104,14 +98,14 @@ section img {
 footer {
   background: #B6B6B6;
   color: black;
-  padding: 20px 0;   /* reduced for compactness */
+  padding: 30px 0;
 }
 
 .footer-top {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .footer-left {
@@ -135,24 +129,24 @@ footer {
 
 .footer-bottom {
   text-align: center;
-  margin-top: 10px;
+  margin-top: 20px;
 }
 
 .footer-stack {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px; /* minimal gap between logo and text */
+  display: inline-flex;       /* keeps logo + text grouped */
+  flex-direction: column;     /* forces two lines */
+  align-items: center;        /* centers both lines */
+  gap: 4px;                   /* very small gap between logo and text */
 }
 
 .footer-logo {
-  height: 36px;
+  height: 40px;
 }
 
 .contact-info {
-  display: inline-flex;
+  display: inline-flex;       /* keeps email • phone inline */
   gap: 6px;
-  font-size: 0.9em;
+  font-size: 0.95em;
   align-items: center;
 }
 
@@ -211,3 +205,17 @@ form button:hover {
   flex-direction: column;
   justify-content: space-between;
   width: 25px;
+  height: 20px;
+  cursor: pointer;
+  z-index: 1100;
+}
+
+.menu-toggle span {
+  display: block;
+  height: 3px;
+  background: black;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+/*
