@@ -129,7 +129,6 @@ footer {
 }
 
 .footer-logo {
-  justify-content: center;
   height: 40px;
   margin-bottom: 10px;
 }
@@ -137,7 +136,6 @@ footer {
 .contact-info {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: 10px;
   font-size: 0.95em;
 }
@@ -236,6 +234,7 @@ form button:hover {
 
   .nav-links a {
     margin: 15px 0;
+
 
 
 
