@@ -51,7 +51,7 @@ header img.logo {
 
 /* Banner using contain (no cropping) */
 .banner {
-  background: url("mani_banner.png") no-repeat center center;
+  background: url("main_banner.png") no-repeat center center;
   background-size: contain;   /* show full image */
   background-color: #000;     /* fill empty space */
   width: 100%;
@@ -227,4 +227,5 @@ form button:hover {
 
   .nav-links a {
     margin: 15px 0;
+
 
