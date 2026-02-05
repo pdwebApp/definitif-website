@@ -49,16 +49,24 @@ header img.logo {
   border-bottom: 2px solid #ff4d4d;
 }
 
-/* Banner */
+/* Banner with aspect ratio preserved */
 .banner {
-  background: url("main_banner.png") no-repeat center center/cover;
+  background: url("main_banner.png") no-repeat center center;
+  background-size: cover;
+  width: 100%;
+  height: calc(100vw * (1024 / 1536)); /* maintain 1536:1024 ratio */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: white;
   text-align: center;
-  padding: 100px 20px;
 }
 
 .banner h1 {
   font-size: 2.5em;
+  background: rgba(0,0,0,0.5); /* optional overlay for readability */
+  padding: 10px 20px;
+  border-radius: 5px;
 }
 
 /* Sections */
@@ -68,8 +76,8 @@ section {
 }
 
 section img {
-  width: 1536px;
-  height: 1024px;
+  width: 300px;
+  height: 200px;
   object-fit: cover;
   margin-top: 20px;
 }
@@ -219,15 +227,4 @@ form button:hover {
     margin: 15px 0;
   }
 
-  .nav-links.active {
-    right: 0;
-  }
-
-  .menu-toggle {
-    display: flex;
-  }
-
-  .menu-toggle.active span:nth-child(1) {
-   
-
-
+  .nav-links.active
