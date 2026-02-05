@@ -54,7 +54,7 @@ header img.logo {
   background: url("main_banner.png") no-repeat center center;
   background-size: contain;   /* show full image */
   background-color: #000;     /* fill empty space */
-
+  width: 90%;
   min-height: 400px;          /* ensure visible height */
   display: flex;
   align-items: center;
@@ -226,6 +226,7 @@ form button:hover {
 
   .nav-links a {
     margin: 15px 0;
+
 
 
 
