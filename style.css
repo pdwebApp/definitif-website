@@ -131,21 +131,19 @@ footer {
 .footer-logo {
   display: block;     /* forces logo on its own line */
   height: 40px;
-  margin-bottom: 10px;
+  margin: 0 auto;     /* centers logo if needed */
 }
 
 .contact-info {
   display: block;     /* forces logo on its own line */
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
+  margin-top: 10px;   /* spacing between logo and contact info */
   font-size: 0.95em;
 }
 
 .contact-info .separator {
-  width: 1px;
+  width: 2px;
   height: 20px;
-  background: white;
+  background: black;
   display: inline-block;
 }
 
@@ -236,6 +234,7 @@ form button:hover {
 
   .nav-links a {
     margin: 15px 0;
+
 
 
 
