@@ -15,7 +15,7 @@ body {
 /* Header */
 header {
   background: #F8F8F3;
-  color: white;
+  color: black;
   position: fixed;   /* Keeps it fixed in place */
   top: 0;            /* Anchors it to the top of the page */
   left: 0;           /* Aligns it to the left edge */
@@ -41,7 +41,7 @@ header img.logo {
 }
 
 .nav-links a {
-  color: white;
+  color: black;
   text-decoration: none;
   font-weight: 500;
   transition: color 0.3s ease, border-bottom 0.3s ease;
@@ -56,7 +56,7 @@ header img.logo {
 .banner {
   background: url("main_banner.png") no-repeat center center;
   background-size: contain;   /* show full image */
-  background-color: #F8F8F3;     /* fill empty space */
+  background-color: #00000000;     /* fill empty space */
   width: 90%;
   min-height: 400px;          /* ensure visible height */
   display: flex;
@@ -70,7 +70,7 @@ header img.logo {
   background: rgba(0,0,0,0.02); /* optional overlay for readability */
   padding: 20px 20px;
   border-radius: 5px;
-  color: white;
+  color: black;
 }
 
 /* Sections */
@@ -89,7 +89,7 @@ section img {
 /* Footer */
 footer {
   background: #F8F8F3;
-  color: white;
+  color: black;
   padding: 30px 0;
 }
 
@@ -163,7 +163,7 @@ form input, form textarea {
 
 form button {
   background: #444;
-  color: white;
+  color: black;
   border: none;
   padding: 8px 15px;
   cursor: pointer;
@@ -230,6 +230,7 @@ form button:hover {
 
   .nav-links a {
     margin: 15px 0;
+
 
 
 
