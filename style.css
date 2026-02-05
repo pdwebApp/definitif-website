@@ -131,7 +131,6 @@ footer {
 .footer-logo {
   display: block;     /* forces logo on its own line */
   height: 40px;
-  justify-content: center;
   margin-bottom: 10px;
 }
 
@@ -237,6 +236,7 @@ form button:hover {
 
   .nav-links a {
     margin: 15px 0;
+
 
 
 
