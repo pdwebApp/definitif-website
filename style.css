@@ -132,14 +132,19 @@ footer {
   margin-top: 20px;
 }
 
+.footer-stack {
+  display: inline-flex;       /* keeps logo + text grouped */
+  flex-direction: column;     /* forces two lines */
+  align-items: center;        /* centers both lines */
+  gap: 4px;                   /* very small gap between logo and text */
+}
+
 .footer-logo {
-  display: block;
   height: 40px;
-  margin: 0 auto 6px auto;
 }
 
 .contact-info {
-  display: inline-flex;
+  display: inline-flex;       /* keeps email • phone inline */
   gap: 6px;
   font-size: 0.95em;
   align-items: center;
@@ -214,3 +219,4 @@ form button:hover {
 }
 
 /*
+
