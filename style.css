@@ -51,7 +51,7 @@ header img.logo {
 
 /* Banner */
 .banner {
-  background: url("mani_banner.png") no-repeat center center/cover;
+  background: url("main_banner.png") no-repeat center center/cover;
   color: white;
   text-align: center;
   padding: 100px 20px;
@@ -229,3 +229,4 @@ form button:hover {
 
   .menu-toggle.active span:nth-child(1) {
    
+
