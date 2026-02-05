@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>définitif</title>
+  <link rel="icon" type="image/png" href="definitif_logo.png">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -35,28 +36,33 @@
 
   <!-- Banner Section -->
   <div class="banner">
-    <h1>"Clarity. Security. Growth"</h1>
+    <img src="main_banner.png" alt="Main Banner" class="banner-img">
+    <h1>"Your inspiring quote goes here"</h1>
   </div>
 
-  <!-- Horizontal Sections -->
-  <div class="horizontal-sections">
-    <section id="insights" class="container">
-      <h2>Insights</h2>
-      <p>Share your latest updates or articles here.</p>
-      <img src="https://picsum.photos/300/200?random=1" alt="Random placeholder image">
-    </section>
+  <!-- Horizontal Sections with buttons -->
+  <div class="horizontal-wrapper">
+    <button class="scroll-btn left">&#10094;</button>
+    <div class="horizontal-sections">
+      <section id="insights" class="container">
+        <h2>Insights</h2>
+        <p>Share your latest updates or articles here.</p>
+        <img src="https://picsum.photos/300/200?random=1" alt="Random placeholder image">
+      </section>
 
-    <section id="about" class="container">
-      <h2>About Us</h2>
-      <p>Brief description about your company or project.</p>
-      <img src="https://picsum.photos/300/200?random=2" alt="Random placeholder image">
-    </section>
+      <section id="about" class="container">
+        <h2>About Us</h2>
+        <p>Brief description about your company or project.</p>
+        <img src="https://picsum.photos/300/200?random=2" alt="Random placeholder image">
+      </section>
 
-    <section class="container">
-      <h2>Additional Info</h2>
-      <p>Use this space for services, news, or highlights.</p>
-      <img src="https://picsum.photos/300/200?random=3" alt="Random placeholder image">
-    </section>
+      <section class="container">
+        <h2>Additional Info</h2>
+        <p>Use this space for services, news, or highlights.</p>
+        <img src="https://picsum.photos/300/200?random=3" alt="Random placeholder image">
+      </section>
+    </div>
+    <button class="scroll-btn right">&#10095;</button>
   </div>
 
   <!-- Footer -->
@@ -78,8 +84,7 @@
       </div>
       <div class="footer-bottom">
         <div class="footer-stack">
-          <img src="definitif_investments_text_logo_bb_with_red_hl.png" 
-               alt="Footer Logo" class="footer-logo">
+          <img src="definitif_investments_text_logo_bb_with_red_hl.png" alt="Footer Logo" class="footer-logo">
           <div class="contact-info">
             <span>definitif.investments@gmail.com</span>
             <span>•</span>
@@ -107,9 +112,20 @@
       navLinks.classList.remove('active');
       overlay.classList.remove('active');
     });
+
+    // Horizontal scroll buttons
+    const scrollContainer = document.querySelector('.horizontal-sections');
+    const leftBtn = document.querySelector('.scroll-btn.left');
+    const rightBtn = document.querySelector('.scroll-btn.right');
+
+    leftBtn.addEventListener('click', () => {
+      scrollContainer.scrollBy({ left: -window.innerWidth, behavior: 'smooth' });
+    });
+
+    rightBtn.addEventListener('click', () => {
+      scrollContainer.scrollBy({ left: window.innerWidth, behavior: 'smooth' });
+    });
   </script>
 
 </body>
 </html>
-
-
