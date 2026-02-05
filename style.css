@@ -14,13 +14,13 @@ body {
 
 /* Header */
 header {
-  background: #333;
+  background: #5B6B5B;
   color: white;
   position: fixed;   /* Keeps it fixed in place */
   top: 0;            /* Anchors it to the top of the page */
   left: 0;           /* Aligns it to the left edge */
   width: 100%;       /* Ensures it spans the full width */
-  z-index: 1000;     /* Keeps it above other elements */
+  z-index: 950;     /* Keeps it above other elements */
 }
 
 .header-container {
@@ -31,7 +31,7 @@ header {
 }
 
 header img.logo {
-  height: 60px; /* bigger logo */
+  height: 65px; /* bigger logo */
 }
 
 /* Navigation */
@@ -48,8 +48,8 @@ header img.logo {
 }
 
 .nav-links a:hover {
-  color: #ff4d4d;
-  border-bottom: 2px solid #ff4d4d;
+  color: #EDA813;
+  border-bottom: 2px solid #EDA813;
 }
 
 /* Banner using contain (no cropping) */
@@ -67,8 +67,8 @@ header img.logo {
 
 .banner h1 {
   font-size: 2.5em;
-  background: rgba(0,0,0,0.5); /* optional overlay for readability */
-  padding: 10px 20px;
+  background: rgba(0,0,0,0.02); /* optional overlay for readability */
+  padding: 20px 20px;
   border-radius: 5px;
   color: white;
 }
@@ -229,6 +229,7 @@ form button:hover {
 
   .nav-links a {
     margin: 15px 0;
+
 
 
 
