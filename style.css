@@ -123,21 +123,21 @@ footer {
 }
 
 .footer-bottom {
-  text-align: center;
-  justify-content: center;
+  text-align: center;       /* center everything */
   margin-top: 20px;
 }
 
 .footer-logo {
-  display: block;     /* forces logo on its own line */
+  display: inline-block;    /* keeps logo inline but centered */
   height: 40px;
-  margin: 0 auto;     /* centers logo if needed */
+  margin-bottom: 5px;       /* very small gap before contact info */
 }
 
 .contact-info {
-  display: block;     /* forces logo on its own line */
-  margin-top: 10px;   /* spacing between logo and contact info */
+  display: inline-flex;     /* keeps email + separator + phone in one line */
+  gap: 10px;                /* spacing between items */
   font-size: 0.95em;
+  align-items: center;      /* vertical alignment */
 }
 
 .contact-info .separator {
@@ -234,6 +234,7 @@ form button:hover {
 
   .nav-links a {
     margin: 15px 0;
+
 
 
 
