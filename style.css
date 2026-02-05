@@ -49,24 +49,23 @@ header img.logo {
   border-bottom: 2px solid #ff4d4d;
 }
 
-/* Banner using contain (no cropping, reduced height) */
+/* Banner using contain (no cropping) */
 .banner {
-  background: url("main_banner.png") no-repeat center center;
+  background: url("mani_banner.png") no-repeat center center;
   background-size: contain;   /* show full image */
   background-color: #000;     /* fill empty space */
   width: 100%;
-  min-height: 180px;          /* reduced height */
+  min-height: 400px;          /* ensure visible height */
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 20px;              /* less vertical padding */
 }
 
 .banner h1 {
-  font-size: 1.8em;           /* slightly smaller text */
-  background: rgba(0,0,0,0.5);
-  padding: 6px 12px;
+  font-size: 2.5em;
+  background: rgba(0,0,0,0.5); /* optional overlay for readability */
+  padding: 10px 20px;
   border-radius: 5px;
   color: white;
 }
@@ -227,6 +226,3 @@ form button:hover {
 
   .nav-links a {
     margin: 15px 0;
-
-
-
