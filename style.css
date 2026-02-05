@@ -68,8 +68,8 @@ section {
 }
 
 section img {
-  width: 300px;
-  height: 200px;
+  width: 1536px;
+  height: 1024px;
   object-fit: cover;
   margin-top: 20px;
 }
@@ -229,4 +229,5 @@ form button:hover {
 
   .menu-toggle.active span:nth-child(1) {
    
+
 
