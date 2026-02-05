@@ -56,14 +56,14 @@ header img.logo {
 /* Banner using contain (no cropping) */
 .banner {
   background: url("main_banner.png") no-repeat center center;
-  background-size: contain;   /* show full image */
-  background-color: #00000000;     /* fill empty space */
-  width: 90%;
-  min-height: 400px;          /* ensure visible height */
+  background-size: cover;       /* fills entire area */
+  width: 100%;
+  height: calc(100vh - 80px);   /* full viewport minus header height */
   display: flex;
-  align-items: center;
+  align-items: flex-end;        /* pushes text towards bottom */
   justify-content: center;
   text-align: center;
+  padding-bottom: 20px;         /* spacing before next section */
 }
 
 .banner h1 {
@@ -234,6 +234,7 @@ form button:hover {
 
   .nav-links a {
     margin: 15px 0;
+
 
 
 
