@@ -90,7 +90,7 @@ section img {
 
 /* Footer */
 footer {
-  background: #F8F8F3;
+  background: #B6B6B6;
   color: black;
   text-color: black;
   padding: 30px 0;
@@ -236,6 +236,7 @@ form button:hover {
 
   .nav-links a {
     margin: 15px 0;
+
 
 
 
