@@ -1,7 +1,7 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: #111;
+  background: #F8F8F3;
   color: #eee;
 }
 
@@ -14,8 +14,8 @@ body {
 
 /* Header */
 header {
-  background: #F8F8F3;
-  color: black;
+  background: #E1DFDF;
+  text-color: black;
   position: fixed;   /* Keeps it fixed in place */
   top: 0;            /* Anchors it to the top of the page */
   left: 0;           /* Aligns it to the left edge */
@@ -42,6 +42,7 @@ header img.logo {
 
 .nav-links a {
   color: black;
+  text-color: black;
   text-decoration: none;
   font-weight: 500;
   transition: color 0.3s ease, border-bottom 0.3s ease;
@@ -230,6 +231,7 @@ form button:hover {
 
   .nav-links a {
     margin: 15px 0;
+
 
 
 
