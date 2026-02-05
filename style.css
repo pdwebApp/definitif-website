@@ -5,11 +5,11 @@ body {
   color: #eee;
 }
 
-/* Container for spacing */
+/* Container */
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px; /* left/right spacing */
+  padding: 0 20px;
 }
 
 /* Header */
@@ -22,17 +22,16 @@ header {
 
 .header-container {
   display: flex;
-  justify-content: space-between; /* logo left, nav right */
+  justify-content: space-between;
   align-items: center;
   padding: 15px 0;
 }
 
-/* Logo size increased */
 header img.logo {
-  height: 60px;   /* previously 40px */
+  height: 60px; /* bigger logo */
 }
 
-/* Navigation links on right */
+/* Navigation */
 .nav-links {
   display: flex;
   gap: 20px;
@@ -46,7 +45,7 @@ header img.logo {
 }
 
 .nav-links a:hover {
-  color: #ff4d4d; /* highlight color */
+  color: #ff4d4d;
   border-bottom: 2px solid #ff4d4d;
 }
 
@@ -69,8 +68,8 @@ section {
 }
 
 section img {
-  width: 600px;
-  height: 400px;
+  width: 300px;
+  height: 200px;
   object-fit: cover;
   margin-top: 20px;
 }
@@ -97,7 +96,6 @@ footer {
   flex: 0 0 60%;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
 }
 
 .footer-right .license {
@@ -109,7 +107,6 @@ footer {
   font-style: italic;
 }
 
-/* Bottom center section */
 .footer-bottom {
   text-align: center;
   margin-top: 20px;
@@ -134,7 +131,7 @@ footer {
   display: inline-block;
 }
 
-/* Form styling */
+/* Form */
 form {
   display: flex;
   flex-direction: column;
@@ -183,7 +180,7 @@ form button:hover {
   visibility: visible;
 }
 
-/* Hamburger menu */
+/* Hamburger */
 .menu-toggle {
   display: none;
   flex-direction: column;
@@ -202,7 +199,7 @@ form button:hover {
   transition: all 0.3s ease;
 }
 
-/* Mobile navigation */
+/* Mobile */
 @media (max-width: 600px) {
   .nav-links {
     display: flex;
@@ -220,8 +217,6 @@ form button:hover {
 
   .nav-links a {
     margin: 15px 0;
-    color: white;
-    text-decoration: none;
   }
 
   .nav-links.active {
@@ -232,39 +227,5 @@ form button:hover {
     display: flex;
   }
 
-  /* Animate hamburger into X */
   .menu-toggle.active span:nth-child(1) {
-    transform: rotate(45deg) translate(5px, 5px);
-  }
-
-  .menu-toggle.active span:nth-child(2) {
-    opacity: 0;
-  }
-
-  .menu-toggle.active span:nth-child(3) {
-    transform: rotate(-45deg) translate(5px, -5px);
-  }
-
-  /* Responsive footer */
-  .footer-top {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .footer-left, .footer-right {
-    flex: 1;
-    width: 100%;
-    text-align: left;
-    margin-bottom: 20px;
-  }
-
-  .footer-right {
-    justify-content: flex-start;
-    font-size: 1.3em;
-  }
-
-  form input, form textarea {
-    width: 100%;
-  }
-
-}
+   
