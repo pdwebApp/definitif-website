@@ -55,7 +55,7 @@ header img.logo {
   background-size: contain;   /* show full image */
   background-color: #000;     /* fill empty space */
   width: 100%;
-  min-height: 250px;          /* ensure visible height */
+  min-height: 400px;          /* ensure visible height */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -226,4 +226,5 @@ form button:hover {
 
   .nav-links a {
     margin: 15px 0;
+
 
