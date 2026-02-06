@@ -146,7 +146,7 @@ footer {
 .contact-info {
   display: inline-flex;       /* keeps email • phone inline */
   gap: 6px;
-  font-size: 0.95em;
+  font-size: 0.75em;
   align-items: center;
 }
 
@@ -285,4 +285,5 @@ form button:hover {
 
 
 /*
+
 
