@@ -140,6 +140,13 @@ header .container {
   padding-bottom: 20px;
 }
 
+.banner {
+  background: linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
+              url("main_banner.png") no-repeat center center;
+  background-size: cover;
+}
+
+
 .banner h1 {
   font-size: 2em;
   background: rgba(0,0,0,0.02);
@@ -323,4 +330,5 @@ form button:hover {
     flex-direction: column;
   }
 }
+
 
