@@ -218,4 +218,71 @@ form button:hover {
   transition: all 0.3s ease;
 }
 
+/* Mobile-first adjustments */
+@media (max-width: 768px) {
+  .nav-links {
+    position: fixed;
+    top: 80px; /* below header */
+    right: -100%;
+    flex-direction: column;
+    background: #E1DFDF;
+    width: 70%;
+    height: 100%;
+    padding: 20px;
+    transition: right 0.3s ease;
+  }
+
+  .nav-links.active {
+    right: 0;
+  }
+
+  .menu-toggle {
+    display: flex; /* show hamburger */
+  }
+}
+
+@media (max-width: 768px) {
+  .banner h1 {
+    font-size: 1.5em;
+    padding: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .horizontal-sections {
+    flex-direction: column;
+    overflow-x: unset;
+  }
+
+  .horizontal-sections section {
+    flex: 1 1 auto;
+    padding: 30px 10px;
+  }
+
+  section img {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer-top {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .footer-left, .footer-right {
+    flex: 1 1 100%;
+    margin-bottom: 20px;
+  }
+
+  form input, form textarea {
+    max-width: 100%;
+  }
+}
+
+
 /*
+
