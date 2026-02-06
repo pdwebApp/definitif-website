@@ -1,144 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>définitif</title>
   <link rel="icon" type="image/png" href="definitif_Logo_wb_with_red_hl_square.png">
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<!-- HEADER -->
-<header>
-  <div class="container header-container">
-    <img src="definitif_logo_wb_v2_red.png" class="logo" alt="Logo">
-
-    <nav class="nav-links">
-      <a href="#about">About Us</a>
-      <a href="#products">Products</a>
-      <a href="#insights">Insights</a>
-      <a href="#">Login</a>
-    </nav>
-
-    <div class="menu-toggle" aria-label="Menu">
-      <span></span>
-      <span></span>
-      <span></span>
-    </div>
-  </div>
-</header>
-
-<div class="overlay"></div>
-
-<!-- BANNER -->
-<section class="banner">
-  <h1>"Your inspiring quote goes here"</h1>
-</section>
-
-<!-- HORIZONTAL SECTIONS -->
-<div class="horizontal-sections">
-  <section id="insights">
-    <h2>Insights</h2>
-    <p>Share your latest updates or articles here.</p>
-    <img src="https://picsum.photos/800/500?random=1" alt="">
-  </section>
-
-  <section id="about">
-    <h2>About Us</h2>
-    <p>Brief description about your company.</p>
-    <img src="https://picsum.photos/800/500?random=2" alt="">
-  </section>
-
-  <section>
-    <h2>Additional Info</h2>
-    <p>Services, news, or highlights.</p>
-    <img src="https://picsum.photos/800/500?random=3" alt="">
-  </section>
-</div>
-
-<!-- SECTION DOTS -->
-<div class="section-dots">
-  <span class="dot active"></span>
-  <span class="dot"></span>
-  <span class="dot"></span>
-</div>
-
-<!-- FOOTER -->
-<footer>
-  <div class="container footer-container">
-
-    <div class="footer-top">
-      <!-- LEFT -->
-      <div class="footer-left">
-        <form>
-          <label>Communicate with us:</label>
-          <input type="email" placeholder="Your email" required>
-          <textarea placeholder="Your message" required></textarea>
-          <button type="submit">Send</button>
-        </form>
+  <!-- Header -->
+  <header>
+    <div class="container header-container">
+      <div class="left">
+        <img src="definitif_logo_wb_v2_red.png" alt="Site Logo" class="logo">
       </div>
-
-      <!-- RIGHT -->
-      <div class="footer-right">
-        <div class="license">ARN: XXXXXX</div>
-        <div class="disclaimer">
-          Disclaimer: Mutual Fund Investments are subject to market risks.
-          Please read all scheme related documents carefully before investing.
+      <div class="right">
+        <nav class="nav-links">
+          <a href="#about">About Us</a>
+          <a href="#about">Products</a>
+          <a href="#insights">Insights</a>
+          <a href="https://example-login.com" target="_blank">Login</a>
+        </nav>
+        <div class="menu-toggle">
+          <span></span>
+          <span></span>
+          <span></span>
         </div>
       </div>
     </div>
+  </header>
 
-    <div class="footer-bottom">
-      <img src="definitif_investments_text_logo_bb_with_red_hl.png"
-           class="footer-logo" alt="Footer Logo">
+  <!-- Overlay -->
+  <div class="overlay"></div>
 
-      <div class="contact-info">
-        <span>definitif.investments@gmail.com</span>
-        <span>•</span>
-        <span>+91-9000000000</span>
+  <!-- Banner Section -->
+  <div class="banner">
+    <h1>"Your inspiring quote goes here"</h1>
+  </div>
+
+  <!-- Horizontal Sections -->
+  <div class="horizontal-sections">
+    <section id="insights" class="container">
+      <h2>Insights</h2>
+      <p>Share your latest updates or articles here.</p>
+      <img src="https://picsum.photos/300/200?random=1" alt="Random placeholder image">
+    </section>
+
+    <section id="about" class="container">
+      <h2>About Us</h2>
+      <p>Brief description about your company or project.</p>
+      <img src="https://picsum.photos/300/200?random=2" alt="Random placeholder image">
+    </section>
+
+    <section class="container">
+      <h2>Additional Info</h2>
+      <p>Use this space for services, news, or highlights.</p>
+      <img src="https://picsum.photos/300/200?random=3" alt="Random placeholder image">
+    </section>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-left">
+          <form action="https://formspree.io/f/mkozdklz" method="POST">
+            <label for="email">Communicate with us:</label><br>
+            <input type="email" name="email" id="email" placeholder="Your email" required><br>
+            <textarea name="message" placeholder="Your message" required></textarea><br>
+            <button type="submit">Send</button>
+          </form>
+        </div>
+        <div class="footer-right">
+          <div class="license">ARN: XXXXXX</div>
+          <div class="disclaimer">Disclaimer: Mutual Fund Investments are subject to market Risks. Please read the offer document carefully before investing.</div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <img src="definitif_investments_text_logo_bb_with_red_hl.png" alt="Footer Logo" class="footer-logo">
+        <div class="contact-info">
+          <span>definitif.investments@gmail.com</span>
+          <span>•</span>
+          <span>+91-9000000000</span>
+        </div>
       </div>
     </div>
+  </footer>
 
-  </div>
-</footer>
+  <!-- JavaScript -->
+  <script>
+    const menuToggle = document.querySelector('.menu-toggle');
+    const navLinks = document.querySelector('.nav-links');
+    const overlay = document.querySelector('.overlay');
 
-<!-- JS -->
-<script>
-  const toggle = document.querySelector('.menu-toggle');
-  const nav = document.querySelector('.nav-links');
-  const overlay = document.querySelector('.overlay');
-  const header = document.querySelector('header');
-  const sections = document.querySelector('.horizontal-sections');
-  const dots = document.querySelectorAll('.dot');
+    menuToggle.addEventListener('click', () => {
+      menuToggle.classList.toggle('active');
+      navLinks.classList.toggle('active');
+      overlay.classList.toggle('active');
+    });
 
-  toggle.addEventListener('click', () => {
-    nav.classList.toggle('active');
-    overlay.classList.toggle('active');
-  });
-
-  overlay.addEventListener('click', () => {
-    nav.classList.remove('active');
-    overlay.classList.remove('active');
-  });
-
-  let lastScroll = window.scrollY;
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > lastScroll && window.scrollY > 100) {
-      header.classList.add('hide');
-    } else {
-      header.classList.remove('hide');
-    }
-    lastScroll = window.scrollY;
-  });
-
-  sections.addEventListener('scroll', () => {
-    const index = Math.round(sections.scrollLeft / sections.offsetWidth);
-    dots.forEach(d => d.classList.remove('active'));
-    dots[index]?.classList.add('active');
-  });
-</script>
+    overlay.addEventListener('click', () => {
+      menuToggle.classList.remove('active');
+      navLinks.classList.remove('active');
+      overlay.classList.remove('active');
+    });
+  </script>
 
 </body>
 </html>
-
