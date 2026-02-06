@@ -1,4 +1,4 @@
-/* Base */
+it/* Base */
 body {
   margin: 0;
   font-family: Verdana, sans-serif;
@@ -129,7 +129,7 @@ header .container {
 
 /* Banner */
 .banner {
-  background: url("main_banner.png") no-repeat center center;
+  background: url("main_banner_edit.png") no-repeat center center;
   background-size: cover;
   width: 100%;
   height: calc(100vh - 70px);
@@ -335,6 +335,7 @@ form button:hover {
     flex-direction: column;
   }
 }
+
 
 
 
