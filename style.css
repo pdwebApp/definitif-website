@@ -220,6 +220,13 @@ form button:hover {
 
 /* Mobile-first adjustments */
 @media (max-width: 768px) {
+  .container {
+    max-width: 95%;   /* keeps content narrower */
+    padding: 0 16px;  /* balanced side margins */
+  }
+}
+
+@media (max-width: 768px) {
   .nav-links {
     position: fixed;
     top: 80px; /* below header */
@@ -245,6 +252,8 @@ form button:hover {
   .banner h1 {
     font-size: 1.5em;
     padding: 10px;
+    margin: 0 12px;   /* ensures text doesn’t touch edges */
+    font-size: 1.4em;
   }
 }
 
@@ -255,8 +264,7 @@ form button:hover {
   }
 
   .horizontal-sections section {
-    flex: 1 1 auto;
-    padding: 30px 10px;
+    padding: 30px 16px;  /* consistent side spacing */
   }
 
   section img {
@@ -276,6 +284,7 @@ form button:hover {
   .footer-left, .footer-right {
     flex: 1 1 100%;
     margin-bottom: 20px;
+    padding: 0 16px;   /* side margins */
   }
 
   form input, form textarea {
@@ -284,7 +293,9 @@ form button:hover {
 }
 
 
+
 /*
+
 
 
 
