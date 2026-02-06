@@ -20,13 +20,17 @@ header {
   left: 0;
   width: 100%;
   z-index: 1000;
+  height: 80px;          /* ensure enough vertical space */
+  display: flex;
+  align-items: center;   /* vertically center contents */
 }
+
 
 .header-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
+  padding: 0 16px;   /* balanced side margins */
 }
 
 header img.logo {
@@ -204,18 +208,16 @@ form button:hover {
   display: none;
   flex-direction: column;
   justify-content: space-between;
-  width: 25px;
-  height: 20px;
+  width: 32px;   /* bigger tap target */
+  height: 24px;
   cursor: pointer;
   z-index: 1100;
 }
 
 .menu-toggle span {
-  display: block;
   height: 3px;
   background: black;
   border-radius: 2px;
-  transition: all 0.3s ease;
 }
 
 /* Mobile-first adjustments */
@@ -247,6 +249,23 @@ form button:hover {
     display: flex; /* show hamburger */
   }
 }
+
+@media (max-width: 768px) {
+  .menu-toggle {
+    display: flex;   /* visible on mobile */
+  }
+
+  .nav-links {
+    display: none;   /* hide desktop nav */
+  }
+
+  .nav-links.active {
+    display: flex;   /* show when toggled */
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
 
 @media (max-width: 768px) {
   .banner h1 {
@@ -295,6 +314,7 @@ form button:hover {
 
 
 /*
+
 
 
 
