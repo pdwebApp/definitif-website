@@ -26,19 +26,36 @@ header {
 
 .header-container {
   display: flex;
-  justify-content: space-between; /* logo left, nav/toggle right */
+  justify-content: space-between; /* pushes .left to far left, .right to far right */
   align-items: center;
   height: 70px;
   padding: 0 16px;
+  width: 100%;                    /* ensure full width */
+  box-sizing: border-box;
+}
+/* Logo stays left */
+.left {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
 }
 
 .logo {
   height: 50px;
 }
 
+/* Nav + toggle stay right */
+.right {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;       /* lock to right edge */
+  gap: 20px;
+}
+
 /* Hamburger toggle */
 .menu-toggle {
-  display: flex; /* visible by default on mobile */
+  display: flex;                   /* visible on mobile */
   flex-direction: column;
   justify-content: space-between;
   width: 32px;
@@ -53,7 +70,7 @@ header {
   border-radius: 2px;
 }
 
-/* Nav links (mobile hidden) */
+/* Nav links hidden on mobile */
 .nav-links {
   display: none;
   flex-direction: column;
@@ -170,11 +187,15 @@ footer {
 
 .footer-right .license {
   margin-bottom: 10px;
+  margin-left: 4px;
+  margin-right: 4px;
   font-weight: bold;
 }
 
 .footer-right .disclaimer {
   font-style: italic;
+  margin-left: 4px;
+  margin-right: 4px;
 }
 
 .footer-bottom {
@@ -196,7 +217,7 @@ footer {
 
 .contact-info {
   display: inline-flex;
-  gap: 6px;
+  gap: 4px;
   font-size: 0.95em;
   align-items: center;
 }
@@ -246,7 +267,7 @@ form button:hover {
     height: auto;
     background: none;
     padding: 0;
-    transition: none;
+    transition: none;*/
   }
 
   .overlay {
@@ -287,3 +308,4 @@ form button:hover {
     flex-direction: column;
   }
 }
+
