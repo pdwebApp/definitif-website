@@ -34,7 +34,7 @@ header {
 }
 
 header img.logo {
-  height: 70px;
+  height: 50px;
 }
 
 /* Navigation */
@@ -144,7 +144,7 @@ footer {
 }
 
 .footer-logo {
-  height: 40px;
+  height: 25px;
 }
 
 .contact-info {
@@ -229,28 +229,6 @@ form button:hover {
 }
 
 @media (max-width: 768px) {
-  .nav-links {
-    position: fixed;
-    top: 80px; /* below header */
-    right: -100%;
-    flex-direction: column;
-    background: #E1DFDF;
-    width: 70%;
-    height: 100%;
-    padding: 20px;
-    transition: right 0.3s ease;
-  }
-
-  .nav-links.active {
-    right: 0;
-  }
-
-  .menu-toggle {
-    display: flex; /* show hamburger */
-  }
-}
-
-@media (max-width: 768px) {
   .menu-toggle {
     display: flex;   /* visible on mobile */
   }
@@ -314,6 +292,7 @@ form button:hover {
 
 
 /*
+
 
 
 
