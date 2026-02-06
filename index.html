@@ -9,9 +9,10 @@
 </head>
 <body>
 
+<!-- HEADER -->
 <header>
   <div class="container header-container">
-    <img src="definitif_logo_wb_v2_red.png" class="logo" alt="Logo" />
+    <img src="definitif_logo_wb_v2_red.png" class="logo" alt="Logo">
 
     <nav class="nav-links">
       <a href="#about">About Us</a>
@@ -20,7 +21,7 @@
       <a href="#">Login</a>
     </nav>
 
-    <div class="menu-toggle">
+    <div class="menu-toggle" aria-label="Menu">
       <span></span>
       <span></span>
       <span></span>
@@ -30,71 +31,111 @@
 
 <div class="overlay"></div>
 
+<!-- BANNER -->
 <section class="banner">
   <h1>"Your inspiring quote goes here"</h1>
 </section>
 
+<!-- HORIZONTAL SECTIONS -->
 <div class="horizontal-sections">
   <section id="insights">
     <h2>Insights</h2>
     <p>Share your latest updates or articles here.</p>
+    <img src="https://picsum.photos/800/500?random=1" alt="">
   </section>
 
   <section id="about">
     <h2>About Us</h2>
     <p>Brief description about your company.</p>
+    <img src="https://picsum.photos/800/500?random=2" alt="">
   </section>
 
   <section>
     <h2>Additional Info</h2>
     <p>Services, news, or highlights.</p>
+    <img src="https://picsum.photos/800/500?random=3" alt="">
   </section>
 </div>
 
+<!-- SECTION DOTS -->
 <div class="section-dots">
   <span class="dot active"></span>
   <span class="dot"></span>
   <span class="dot"></span>
 </div>
 
+<!-- FOOTER -->
 <footer>
-  <p>© définitif</p>
+  <div class="container footer-container">
+
+    <div class="footer-top">
+      <!-- LEFT -->
+      <div class="footer-left">
+        <form>
+          <label>Communicate with us:</label>
+          <input type="email" placeholder="Your email" required>
+          <textarea placeholder="Your message" required></textarea>
+          <button type="submit">Send</button>
+        </form>
+      </div>
+
+      <!-- RIGHT -->
+      <div class="footer-right">
+        <div class="license">ARN: XXXXXX</div>
+        <div class="disclaimer">
+          Disclaimer: Mutual Fund Investments are subject to market risks.
+          Please read all scheme related documents carefully before investing.
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <img src="definitif_investments_text_logo_bb_with_red_hl.png"
+           class="footer-logo" alt="Footer Logo">
+
+      <div class="contact-info">
+        <span>definitif.investments@gmail.com</span>
+        <span>•</span>
+        <span>+91-9000000000</span>
+      </div>
+    </div>
+
+  </div>
 </footer>
 
+<!-- JS -->
 <script>
-  const toggle = document.querySelector(".menu-toggle");
-  const nav = document.querySelector(".nav-links");
-  const overlay = document.querySelector(".overlay");
-  const header = document.querySelector("header");
-  const sections = document.querySelector(".horizontal-sections");
-  const dots = document.querySelectorAll(".dot");
+  const toggle = document.querySelector('.menu-toggle');
+  const nav = document.querySelector('.nav-links');
+  const overlay = document.querySelector('.overlay');
+  const header = document.querySelector('header');
+  const sections = document.querySelector('.horizontal-sections');
+  const dots = document.querySelectorAll('.dot');
 
-  toggle.onclick = () => {
-    nav.classList.toggle("active");
-    overlay.classList.toggle("active");
-  };
-
-  overlay.onclick = () => {
-    nav.classList.remove("active");
-    overlay.classList.remove("active");
-  };
-
-  let lastY = window.scrollY;
-  window.addEventListener("scroll", () => {
-    if (window.scrollY > lastY && window.scrollY > 100) {
-      header.classList.add("hide");
-    } else {
-      header.classList.remove("hide");
-    }
-    lastY = window.scrollY;
+  toggle.addEventListener('click', () => {
+    nav.classList.toggle('active');
+    overlay.classList.toggle('active');
   });
 
-  sections.addEventListener("scroll", () => {
-    const index = Math.round(
-      sections.scrollLeft / sections.offsetWidth
-    );
-    dots.forEach(d => d.classList.remove("active"));
-    dots[index]?.classList.add("active");
+  overlay.addEventListener('click', () => {
+    nav.classList.remove('active');
+    overlay.classList.remove('active');
+  });
+
+  let lastScroll = window.scrollY;
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > lastScroll && window.scrollY > 100) {
+      header.classList.add('hide');
+    } else {
+      header.classList.remove('hide');
+    }
+    lastScroll = window.scrollY;
+  });
+
+  sections.addEventListener('scroll', () => {
+    const index = Math.round(sections.scrollLeft / sections.offsetWidth);
+    dots.forEach(d => d.classList.remove('active'));
+    dots[index]?.classList.add('active');
   });
 </script>
 
