@@ -27,12 +27,12 @@ header {
 header .container {
   margin: 0;
   max-width: 100%;
-  padding: 0 16px;
+  padding: 0;
 }
 
 .header-container {
   display: flex;
-  justify-content: space-between; /* logo left, nav/toggle right */
+  justify-content: space-between;
   align-items: center;
   height: 70px;
   width: 100%;
@@ -61,7 +61,7 @@ header .container {
 
 /* Hamburger toggle */
 .menu-toggle {
-  display: flex; /* visible on mobile */
+  display: flex;
   flex-direction: column;
   justify-content: space-between;
   width: 32px;
@@ -176,7 +176,7 @@ footer {
 
 .footer-top {
   display: flex;
-  flex-direction: column; /* stack on mobile */
+  flex-direction: column;
   align-items: center;
   text-align: center;
   margin-bottom: 20px;
@@ -274,17 +274,28 @@ form button:hover {
     display: none;
   }
 
-  /* Sections */
+  /* Horizontal sections fix */
   .horizontal-sections {
+    display: flex;
     flex-direction: row;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
+    gap: 20px;
+    padding: 20px;
   }
 
   .horizontal-sections section {
-    flex: 0 0 100%;
+    flex: 0 0 300px;   /* fixed width per section */
+    max-width: 300px;
     scroll-snap-align: start;
-    padding: 50px 20px;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+
+  section img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
   }
 
   .banner h1 {
