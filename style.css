@@ -32,7 +32,7 @@ header .container {
 
 .header-container {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* logo left, nav/toggle right */
   align-items: center;
   height: 70px;
   width: 100%;
@@ -61,7 +61,7 @@ header .container {
 
 /* Hamburger toggle */
 .menu-toggle {
-  display: flex;
+  display: flex; /* visible on mobile */
   flex-direction: column;
   justify-content: space-between;
   width: 32px;
@@ -176,7 +176,7 @@ footer {
 
 .footer-top {
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* stack on mobile */
   align-items: center;
   text-align: center;
   margin-bottom: 20px;
@@ -203,4 +203,110 @@ footer {
   padding: 0 16px;
 }
 
-.footer
+.footer-stack {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.footer-logo {
+  height: 40px;
+}
+
+.contact-info {
+  display: inline-flex;
+  gap: 6px;
+  font-size: 0.95em;
+  align-items: center;
+}
+
+/* Form */
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+form input, form textarea {
+  margin: 5px 0;
+  padding: 8px;
+  width: 100%;
+  max-width: 300px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+form button {
+  background: #E1DFDF;
+  color: black;
+  border: none;
+  padding: 8px 15px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+form button:hover {
+  background: #2FC1A4;
+}
+
+/* Desktop overrides */
+@media (min-width: 769px) {
+  /* Header */
+  .menu-toggle {
+    display: none; /* hide hamburger */
+  }
+
+  .nav-links {
+    display: flex; /* show nav inline */
+    position: static;
+    flex-direction: row;
+    gap: 20px;
+    width: auto;
+    height: auto;
+    background: none;
+    padding: 0;
+    transition: none;
+  }
+
+  .overlay {
+    display: none;
+  }
+
+  /* Sections */
+  .horizontal-sections {
+    flex-direction: row;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+  }
+
+  .horizontal-sections section {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+    padding: 50px 20px;
+  }
+
+  .banner h1 {
+    font-size: 2.5em;
+    padding: 20px;
+  }
+
+  /* Footer */
+  .footer-top {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .footer-left {
+    flex: 0 0 40%;
+  }
+
+  .footer-right {
+    flex: 0 0 60%;
+    display: flex;
+    flex-direction: column;
+  }
+}
