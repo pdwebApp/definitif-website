@@ -68,8 +68,7 @@
           <form action="https://formspree.io/f/mkozdklz" method="POST">
             <label for="email">Communicate with us:</label><br>
             <input type="email" name="email" id="email" placeholder="Your email" required><br>
-            <label for="message">Message:</label><br>
-            <textarea name="message" id="message" placeholder="Your message" required></textarea><br>
+            <textarea name="message" placeholder="Your message" required></textarea><br>
             <button type="submit">Send</button>
           </form>
         </div>
@@ -79,13 +78,11 @@
         </div>
       </div>
       <div class="footer-bottom">
-        <div class="footer-stack">
-          <img src="definitif_investments_text_logo_bb_with_red_hl.png" alt="Footer Logo" class="footer-logo">
-          <div class="contact-info">
-            <span>+91-9000090000</span>
-            <span>•</span>
-            <span>definitif.investments@gmail.com</span>
-          </div>
+        <img src="definitif_investments_text_logo_bb_with_red_hl.png" alt="Footer Logo" class="footer-logo">
+        <div class="contact-info">
+          <span>definitif.investments@gmail.com</span>
+          <span>•</span>
+          <span>+91-9000000000</span>
         </div>
       </div>
     </div>
@@ -96,13 +93,15 @@
     const menuToggle = document.querySelector('.menu-toggle');
     const navLinks = document.querySelector('.nav-links');
     const overlay = document.querySelector('.overlay');
-  
+
     menuToggle.addEventListener('click', () => {
-      navLinks.classList.toggle('active');   // slide menu
-      overlay.classList.toggle('active');    // show overlay
+      menuToggle.classList.toggle('active');
+      navLinks.classList.toggle('active');
+      overlay.classList.toggle('active');
     });
-  
+
     overlay.addEventListener('click', () => {
+      menuToggle.classList.remove('active');
       navLinks.classList.remove('active');
       overlay.classList.remove('active');
     });
@@ -110,10 +109,3 @@
 
 </body>
 </html>
-
-
-
-
-
-
-
