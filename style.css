@@ -124,6 +124,7 @@ header .container {
 
 .overlay.active {
   opacity: 1;
+  bottom: 15px;
   visibility: visible;
 }
 
@@ -335,6 +336,7 @@ form button:hover {
     flex-direction: column;
   }
 }
+
 
 
 
