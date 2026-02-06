@@ -5,9 +5,16 @@
 }
 
 html, body {
-  overflow-x: hidden;
   font-family: Verdana, sans-serif;
   background: #F8F8F3;
+  overflow-x: hidden;
+}
+
+/* CONTAINER */
+.container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 0 16px;
 }
 
 /* HEADER */
@@ -26,10 +33,7 @@ header.hide {
 }
 
 .header-container {
-  max-width: 1200px;
-  margin: auto;
   height: 100%;
-  padding: 0 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -72,7 +76,7 @@ header.hide {
   font-weight: 500;
 }
 
-/* HAMBURGER */
+/* TOGGLE */
 .menu-toggle {
   width: 32px;
   height: 24px;
@@ -108,9 +112,9 @@ header.hide {
   height: 100vh;
   padding-top: 70px;
   display: flex;
-  align-items: flex-end;
   justify-content: center;
-  padding-bottom: 20px;
+  align-items: flex-end;
+  padding-bottom: 24px;
 }
 
 /* HORIZONTAL SECTIONS */
@@ -119,11 +123,16 @@ header.hide {
   flex-direction: column;
 }
 
-/* SECTIONS */
 .horizontal-sections section {
   min-height: 100vh;
   padding: 40px 20px;
   text-align: center;
+}
+
+.horizontal-sections img {
+  width: 100%;
+  max-width: 800px;
+  margin-top: 20px;
 }
 
 /* DOTS */
@@ -139,7 +148,6 @@ header.hide {
   height: 8px;
   background: #bbb;
   border-radius: 50%;
-  transition: transform 0.3s ease, background 0.3s ease;
 }
 
 .dot.active {
@@ -149,9 +157,51 @@ header.hide {
 
 /* FOOTER */
 footer {
-  padding: 30px;
-  text-align: center;
   background: #B6B6B6;
+  padding: 40px 0;
+}
+
+.footer-top {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.footer-left form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.footer-left input,
+.footer-left textarea {
+  padding: 8px;
+  max-width: 300px;
+}
+
+.footer-left button {
+  width: fit-content;
+  padding: 8px 16px;
+}
+
+.footer-right .license {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.footer-bottom {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.footer-logo {
+  height: 40px;
+  margin-bottom: 8px;
+}
+
+.contact-info {
+  display: inline-flex;
+  gap: 6px;
 }
 
 /* DESKTOP */
@@ -163,37 +213,8 @@ footer {
 
   .nav-links {
     position: static;
-    flex-direction: row;
-    height: auto;
-    width: auto;
     transform: none;
     opacity: 1;
     pointer-events: auto;
-    background: none;
-    padding: 0;
-  }
-
-  .overlay {
-    display: none;
-  }
-
-  .horizontal-sections {
     flex-direction: row;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
-
-    scrollbar-width: none;
-  }
-
-  .horizontal-sections::-webkit-scrollbar {
-    display: none;
-  }
-
-  .horizontal-sections section {
-    flex: 0 0 100%;
-    scroll-snap-align: start;
-    pointer-events: none;
-  }
-}
+    background: non
