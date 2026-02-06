@@ -91,21 +91,18 @@
     </div>
   </footer>
 
-
   <!-- JavaScript -->
   <script>
     const menuToggle = document.querySelector('.menu-toggle');
     const navLinks = document.querySelector('.nav-links');
     const overlay = document.querySelector('.overlay');
-
+  
     menuToggle.addEventListener('click', () => {
-      menuToggle.classList.toggle('active');
-      navLinks.classList.toggle('active');
-      overlay.classList.toggle('active');
+      navLinks.classList.toggle('active');   // slide menu
+      overlay.classList.toggle('active');    // show overlay
     });
-
+  
     overlay.addEventListener('click', () => {
-      menuToggle.classList.remove('active');
       navLinks.classList.remove('active');
       overlay.classList.remove('active');
     });
@@ -113,6 +110,7 @@
 
 </body>
 </html>
+
 
 
 
