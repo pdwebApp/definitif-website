@@ -10,7 +10,7 @@ body {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 16px; /* balanced side margins */
+  padding: 0 16px;
   box-sizing: border-box;
 }
 
@@ -24,16 +24,22 @@ header {
   z-index: 1000;
 }
 
+header .container {
+  margin: 0;          /* prevent auto-centering gap */
+  max-width: 100%;    /* stretch full width */
+  padding: 0 16px;
+}
+
 .header-container {
   display: flex;
-  justify-content: space-between; /* pushes .left to far left, .right to far right */
+  justify-content: space-between; /* logo left, nav/toggle right */
   align-items: center;
   height: 70px;
-  padding: 0 16px;
-  width: 100%;                    /* ensure full width */
+  width: 100%;
   box-sizing: border-box;
 }
-/* Logo stays left */
+
+/* Logo */
 .left {
   flex: 0 0 auto;
   display: flex;
@@ -44,18 +50,18 @@ header {
   height: 50px;
 }
 
-/* Nav + toggle stay right */
+/* Right side (nav + toggle) */
 .right {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
-  justify-content: flex-end;       /* lock to right edge */
+  justify-content: flex-end;
   gap: 20px;
 }
 
 /* Hamburger toggle */
 .menu-toggle {
-  display: flex;                   /* visible on mobile */
+  display: flex; /* visible on mobile */
   flex-direction: column;
   justify-content: space-between;
   width: 32px;
@@ -70,22 +76,21 @@ header {
   border-radius: 2px;
 }
 
-/* Nav links hidden on mobile */
+/* Nav links (mobile hidden, slide-in) */
 .nav-links {
-  display: none;
-  flex-direction: column;
   position: fixed;
   top: 70px; /* below header */
-  right: -100%;
+  right: -100%; /* hidden off-screen */
   width: 70%;
   height: 100%;
   background: #E1DFDF;
   padding: 20px;
+  flex-direction: column;
   transition: right 0.3s ease;
 }
 
 .nav-links.active {
-  right: 0;
+  right: 0; /* slide in */
 }
 
 .nav-links a {
@@ -101,7 +106,7 @@ header {
   border-bottom: 2px solid #2FC1A4;
 }
 
-/* Overlay for mobile menu */
+/* Overlay */
 .overlay {
   position: fixed;
   top: 0;
@@ -125,7 +130,7 @@ header {
   background: url("main_banner.png") no-repeat center center;
   background-size: cover;
   width: 100%;
-  height: calc(100vh - 70px); /* full viewport minus header */
+  height: calc(100vh - 70px);
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -139,20 +144,18 @@ header {
   padding: 12px;
   border-radius: 5px;
   color: black;
-  margin: 0 12px; /* breathing room */
+  margin: 0 12px;
 }
 
-/* Horizontal Sections */
+/* Sections */
 .horizontal-sections {
   display: flex;
-  flex-direction: column; /* stack on mobile */
-  overflow-x: unset;
+  flex-direction: column;
 }
 
 .horizontal-sections section {
   flex: 1 1 auto;
   padding: 30px 16px;
-  box-sizing: border-box;
   text-align: center;
 }
 
@@ -173,7 +176,7 @@ footer {
 
 .footer-top {
   display: flex;
-  flex-direction: column; /* stack on mobile */
+  flex-direction: column;
   align-items: center;
   text-align: center;
   margin-bottom: 20px;
@@ -187,15 +190,11 @@ footer {
 
 .footer-right .license {
   margin-bottom: 10px;
-  margin-left: 4px;
-  margin-right: 4px;
   font-weight: bold;
 }
 
 .footer-right .disclaimer {
   font-style: italic;
-  margin-left: 4px;
-  margin-right: 4px;
 }
 
 .footer-bottom {
@@ -217,7 +216,7 @@ footer {
 
 .contact-info {
   display: inline-flex;
-  gap: 4px;
+  gap: 6px;
   font-size: 0.95em;
   align-items: center;
 }
@@ -267,7 +266,7 @@ form button:hover {
     height: auto;
     background: none;
     padding: 0;
-    transition: none;*/
+    transition: none;
   }
 
   .overlay {
@@ -275,7 +274,7 @@ form button:hover {
   }
 
   .horizontal-sections {
-    flex-direction: row; /* horizontal scroll on desktop */
+    flex-direction: row;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
   }
@@ -308,4 +307,3 @@ form button:hover {
     flex-direction: column;
   }
 }
-
