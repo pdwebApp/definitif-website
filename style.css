@@ -283,6 +283,11 @@ form button:hover {
     display: none;
   }
 
+  .banner h1 {
+    font-size: 2.5em;
+    padding: 20px;
+  }
+  
   /* Horizontal sections fix */
   .horizontal-sections {
     display: flex;
@@ -330,5 +335,6 @@ form button:hover {
     flex-direction: column;
   }
 }
+
 
 
