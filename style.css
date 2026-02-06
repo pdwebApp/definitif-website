@@ -13,6 +13,19 @@ body {
 }
 
 /* Header */
+.left {
+  flex: 0 0 auto;   /* logo stays fixed on left */
+  display: flex;
+  align-items: center;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;  /* pushes toggle to far right */
+  gap: 20px;                  /* spacing between nav and toggle */
+}
+
 header {
   background: #E1DFDF;
   position: fixed;
@@ -24,7 +37,6 @@ header {
   display: flex;
   align-items: center;   /* vertically center contents */
 }
-
 
 .header-container {
   display: flex;
@@ -292,6 +304,7 @@ form button:hover {
 
 
 /*
+
 
 
 
