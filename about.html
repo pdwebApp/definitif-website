@@ -9,7 +9,21 @@
 <body>
 
   <!-- Header (same as home) -->
-  <header> ...same header code... </header>
+  <header>
+    <div class="container header-container">
+      <div class="left">
+        <img src="definitif_logo_wb_v2_red.png" alt="Site Logo" class="logo">
+      </div>
+      <div class="right">
+        <nav class="nav-links">
+          <a href="products.html">Products</a>
+          <a href="insights.html">Insights</a>
+          <a href="about.html">About Us</a>
+          <a href="https://example-login.com" target="_blank">Login</a>
+        </nav>
+      </div>
+    </div>
+  </header>
 
   <!-- Banner -->
   <div class="banner">
@@ -30,7 +44,35 @@
   </div>
 
   <!-- Footer (same as home) -->
-  <footer> ...same footer code... </footer>
+  <footer>
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-left">
+          <form action="https://formspree.io/f/mkozdklz" method="POST">
+            <label for="email">Communicate with us:</label><br>
+            <input type="email" name="email" id="email" placeholder="Your email" required><br>
+            <label for="message">Message:</label><br>
+            <textarea name="message" id="message" placeholder="Your message" required></textarea><br>
+            <button type="submit">Send</button>
+          </form>
+        </div>
+        <div class="footer-right">
+          <div class="license">ARN: XXXXXX</div>
+          <div class="disclaimer">Disclaimer: Mutual Fund Investments are subject to market Risks. Please read the offer document carefully before investing.</div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div class="footer-stack">
+          <img src="definitif_investments_text_logo_bb_with_red_hl.png" alt="Footer Logo" class="footer-logo">
+          <div class="contact-info">
+            <span>test.investments@gmail.com</span>
+            <span>•</span>
+            <span>+91-9000000000</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
 
 </body>
 </html>
