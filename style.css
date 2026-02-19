@@ -271,6 +271,10 @@ footer {
   align-items: center;
 }
 
+.red-dots {
+  color: red;
+}
+
 /* Form */
 form {
   display: flex;
