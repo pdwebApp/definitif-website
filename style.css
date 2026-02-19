@@ -123,7 +123,7 @@ header .container {
 }
 
 .overlay.active {
-  opacity: 0;
+  opacity: 1;
   visibility: visible;
 }
 
@@ -139,13 +139,6 @@ header .container {
   text-align: center;
   padding-bottom: 20px;
 }
-
-.banner {
-  background: linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
-              url("main_banner.png") no-repeat center center;
-  background-size: cover;
-}
-
 
 .banner h1 {
   font-size: 2em;
@@ -283,11 +276,6 @@ form button:hover {
     display: none;
   }
 
-  .banner h1 {
-    font-size: 2.5em;
-    padding: 20px;
-  }
-  
   /* Horizontal sections fix */
   .horizontal-sections {
     display: flex;
@@ -335,12 +323,3 @@ form button:hover {
     flex-direction: column;
   }
 }
-
-
-
-
-
-
-
-
-
