@@ -201,6 +201,7 @@ footer {
 .footer-right .disclaimer {
   font-style: italic;
   font-size: 0.7em;
+  text-align: justified;
 }
 
 .footer-bottom {
@@ -329,5 +330,6 @@ form button:hover {
   }
 
 }
+
 
 
