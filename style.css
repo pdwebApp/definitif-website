@@ -137,10 +137,10 @@ header .container {
   width: 100%;
   height: calc(100vh - 70px);
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
   text-align: center;
-  padding-top: 60px;
+  padding-top: 0px;
 }
 
 .banner h1 {
