@@ -200,6 +200,7 @@ footer {
 
 .footer-right .disclaimer {
   font-style: italic;
+  font-size: 0.7em;
 }
 
 .footer-bottom {
@@ -223,7 +224,7 @@ footer {
 .contact-info {
   display: inline-flex;
   gap: 4px;
-  font-size: 0.7em;
+  font-size: 0.9em;
   align-items: center;
 }
 
@@ -328,4 +329,5 @@ form button:hover {
   }
 
 }
+
 
