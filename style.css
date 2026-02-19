@@ -131,7 +131,7 @@ header .container {
 /* Banner */
 .banner {
   background: linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
-              url("main_banner.png") no-repeat center center;
+              url("main_banner_edit.png") no-repeat center center;
   background-size: cover;
   width: 100%;
   height: calc(100vh - 70px);
