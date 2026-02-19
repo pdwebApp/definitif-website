@@ -128,13 +128,11 @@ header .container {
   visibility: visible;
 }
 
-/* Banner */
-.banner {
+/* Home Banner */
+.banner-home {
   background: linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
               url("main_banner.png") no-repeat center center;
-              
   background-size: cover;
-  width: 100%;
   height: calc(100vh - 70px);
   display: flex;
   align-items: flex-end;
@@ -143,7 +141,50 @@ header .container {
   padding-bottom: 80px;
 }
 
-.banner h1 {
+/* Products Banner */
+.banner-products {
+  background: linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
+              url("main_banner_edit.png") no-repeat center center;
+  background-size: cover;
+  height: calc(100vh - 70px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  text-align: center;
+  padding-bottom: 80px;
+}
+
+/* Insights Banner */
+.banner-insights {
+  background: linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
+              url("main_banner_edit.png") no-repeat center center;
+  background-size: cover;
+  height: calc(100vh - 70px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  text-align: center;
+  padding-bottom: 80px;
+}
+
+/* About Banner */
+.banner-about {
+  background: linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
+              url("main_banner_edit.png") no-repeat center center;
+  background-size: cover;
+  height: calc(100vh - 70px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  text-align: center;
+  padding-bottom: 80px;
+}
+
+/* Shared Banner Text */
+.banner-home h1,
+.banner-products h1,
+.banner-insights h1,
+.banner-about h1 {
   font-size: 2em;
   background: rgba(0,0,0,0.02);
   padding: 12px;
@@ -151,6 +192,7 @@ header .container {
   color: black;
   margin: 0 12px;
 }
+
 
 /* Sections */
 .horizontal-sections {
