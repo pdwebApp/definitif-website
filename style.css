@@ -244,7 +244,7 @@ form input, form textarea {
 }
 
 form button {
-  background: #E1DFDF;
+  background: #8f8c8c;
   color: black;
   border: none;
   padding: 8px 15px;
@@ -327,3 +327,4 @@ form button:hover {
   }
 
 }
+
