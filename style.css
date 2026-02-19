@@ -89,6 +89,7 @@ header .container {
   display: flex;
   flex-direction: column; /* vertical items */
   transition: right 0.3s ease;
+  z-index: 1050;
 }
 
 .nav-links.active {
@@ -123,13 +124,14 @@ header .container {
 }
 
 .overlay.active {
-  opacity: 1;
+  opacity: 1;   /* FIXED: overlay now shows */
   visibility: visible;
 }
 
 /* Banner */
 .banner {
-  background: url("main_banner.png") no-repeat center center;
+  background: linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
+              url("main_banner.png") no-repeat center center;
   background-size: cover;
   width: 100%;
   height: calc(100vh - 70px);
@@ -276,6 +278,11 @@ form button:hover {
     display: none;
   }
 
+  .banner h1 {
+    font-size: 2.5em;
+    padding: 20px;
+  }
+  
   /* Horizontal sections fix */
   .horizontal-sections {
     display: flex;
@@ -298,11 +305,6 @@ form button:hover {
     width: 100%;
     height: auto;
     object-fit: cover;
-  }
-
-  .banner h1 {
-    font-size: 2.5em;
-    padding: 20px;
   }
 
   /* Footer */
