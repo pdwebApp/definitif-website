@@ -140,7 +140,7 @@ header .container {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding-bottom: 0px;
+  padding-bottom: px;
 }
 
 .banner h1 {
@@ -325,10 +325,4 @@ form button:hover {
     display: flex;
     flex-direction: column;
   }
-
 }
-
-
-
-
-
