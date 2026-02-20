@@ -3,9 +3,12 @@ import pandas as pd, plotly, json
 from io import BytesIO
 from reportlab.platypus import SimpleDocTemplate, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
-from investment_logic import investmentGrowth_calci
+import investment_logic   # import the whole file
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='.', static_folder='.')  
+# template_folder='.' → look for HTML in current folder
+# static_folder='.' → look for CSS/images in current folder
+
 last_table = None
 
 @app.route("/")
@@ -30,10 +33,13 @@ def investment():
         annual_SIP_increment_in = request.form["annual_SIP_increment_in"]
         sip_increment = int(request.form.get("sip_increment", 0))
 
-        table, fig = investmentGrowth_calci(equity_return, debt_return,
-                                            equity_allocation, onetime_amount,
-                                            sip_amount, tenure_months,
-                                            annual_SIP_increment_in, sip_increment)
+        # call the function from investment_logic.py
+        table, fig = investment_logic.investmentGrowth_calci(
+            equity_return, debt_return,
+            equity_allocation, onetime_amount,
+            sip_amount, tenure_months,
+            annual_SIP_increment_in, sip_increment
+        )
 
         last_table = table
         table_html = table.to_html(classes="table table-striped", index=False)
@@ -58,4 +64,3 @@ def download_pdf():
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")
-
