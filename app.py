@@ -39,7 +39,7 @@ def investment():
         table_html = table.to_html(classes="table table-striped", index=False)
         graph_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
-    return render_template("investmentgrowth.html",
+    return render_template("investment.html",
                            table_html=table_html,
                            graph_json=graph_json)
 
