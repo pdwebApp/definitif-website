@@ -1,17 +1,68 @@
-<section class="container">
-  <h2>Choose a Calculator</h2>
-  <div class="calc-grid">
-    <div class="calc-card">
-      <img src="https://picsum.photos/300/200?random=10" alt="Investment Growth">
-      <h3>Investment Growth</h3>
-      <p>Estimate how your investments grow over time with SIPs and lumpsum.</p>
-      <a href="/investment" class="btn">Open Calculator</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculators - définitif</title>
+  <link rel="icon" type="image/png" href="definitif_Logo_wb_with_red_hl_square.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<script>
+  async function loadComponent(id, file) {
+    const response = await fetch(file);
+    const html = await response.text();
+    document.getElementById(id).innerHTML = html;
+
+    // Attach toggle logic AFTER header loads
+    if (id === "header") {
+      const menuToggle = document.querySelector('.menu-toggle');
+      const navLinks = document.querySelector('.nav-links');
+      const overlay = document.querySelector('.overlay');
+
+      if (menuToggle && navLinks && overlay) {
+        menuToggle.addEventListener('click', () => {
+          navLinks.classList.toggle('active');
+          overlay.classList.toggle('active');
+        });
+
+        overlay.addEventListener('click', () => {
+          navLinks.classList.remove('active');
+          overlay.classList.remove('active');
+        });
+      }
+    }
+  }
+loadComponent("header", "header.html");
+loadComponent("footer", "footer.html");
+</script>
+
+<body>
+  <!-- Common header injected -->
+  <header id="header"></header>
+
+  <main class="container">
+    <h2>Choose a Calculator</h2>
+    <div class="calc-grid">
+      <!-- Investment Growth Card -->
+      <div class="calc-card">
+        <img src="https://picsum.photos/300/200?random=10" alt="Investment Growth">
+        <h3>Investment Growth</h3>
+        <p>Estimate how your investments grow over time with SIPs and lumpsum contributions.</p>
+        <a href="/investment" class="btn">Open Calculator</a>
+      </div>
+
+      <!-- Retirement Calculator Card -->
+      <div class="calc-card">
+        <img src="https://picsum.photos/300/200?random=11" alt="Retirement">
+        <h3>Retirement</h3>
+        <p>Plan your retirement corpus based on expenses, inflation, and expected returns.</p>
+        <a href="/retirement" class="btn">Open Calculator</a>
+      </div>
     </div>
-    <div class="calc-card">
-      <img src="https://picsum.photos/300/200?random=11" alt="Retirement">
-      <h3>Retirement</h3>
-      <p>Plan your retirement corpus based on expenses and inflation.</p>
-      <a href="/retirement" class="btn">Open Calculator</a>
-    </div>
-  </div>
-</section>
+  </main>
+
+  <!-- Common footer injected -->
+  <footer id="footer"></footer>
+</body>
+</html>
