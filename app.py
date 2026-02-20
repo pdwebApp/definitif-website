@@ -5,7 +5,8 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
 import investment_logic   # import the file directly
 
-app = Flask(__name__, template_folder='.', static_folder='.')
+app = Flask(__name__, template_folder='templates', static_folder='static')
+
 # template_folder='.' → look for HTML in current folder
 # static_folder='.' → look for CSS/images in current folder
 
