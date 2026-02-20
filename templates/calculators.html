@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Calculators - Definitif Investments</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="{{ url_for('static', filename='loadHeaderFooter.js') }}"></script>
+</head>
+<body>
+  <!-- Common header injected -->
+  <header id="header"></header>
+
+  <main class="container">
+    <h2>Choose a Calculator</h2>
+    <div class="calc-grid">
+      <!-- Investment Growth Card -->
+      <div class="calc-card">
+        <img src="https://picsum.photos/300/200?random=10" alt="Investment Growth">
+        <h3>Investment Growth</h3>
+        <p>Estimate how your investments grow over time with SIPs and lumpsum contributions.</p>
+        <a href="/investment" class="btn">Open Calculator</a>
+      </div>
+
+      <!-- Retirement Calculator Card -->
+      <div class="calc-card">
+        <img src="https://picsum.photos/300/200?random=11" alt="Retirement">
+        <h3>Retirement</h3>
+        <p>Plan your retirement corpus based on expenses, inflation, and expected returns.</p>
+        <a href="/retirement" class="btn">Open Calculator</a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Common footer injected -->
+  <footer id="footer"></footer>
+</body>
+</html>

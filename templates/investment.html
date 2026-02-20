@@ -1,0 +1,39 @@
+<section class="container">
+  <h2>Investment Growth Calculator</h2>
+  <form method="POST" action="/investment">
+    <label>Equity Return (%)</label>
+    <input type="number" name="equity_return" required>
+    <label>Debt Return (%)</label>
+    <input type="number" name="debt_return" required>
+    <label>Equity Allocation (%)</label>
+    <input type="number" name="equity_allocation" required>
+    <label>Lumpsum Amount</label>
+    <input type="number" name="onetime_amount" required>
+    <label>Monthly SIP Amount</label>
+    <input type="number" name="sip_amount" required>
+    <label>Tenure (months)</label>
+    <input type="number" name="tenure_months" required>
+    <label>SIP Increment Type</label>
+    <select name="annual_SIP_increment_in">
+      <option value="Nil">Nil</option>
+      <option value="Amount">Amount</option>
+      <option value="Percentage">Percentage</option>
+    </select>
+    <label>SIP Increment Value</label>
+    <input type="number" name="sip_increment">
+    <button type="submit">Run Calculator</button>
+  </form>
+
+  {% if table_html %}
+    <h3>Results</h3>
+    <div id="chart"></div>
+    <script>
+      var graph = {{ graph_json | safe }};
+      Plotly.newPlot('chart', graph.data, graph.layout);
+    </script>
+    <div class="mt-3">
+      {{ table_html | safe }}
+    </div>
+    <a href="/download_pdf" class="btn">Download PDF</a>
+  {% endif %}
+</section>
