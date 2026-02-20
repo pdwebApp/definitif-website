@@ -377,39 +377,47 @@ form button:hover {
 
 }
 
+/* Calculator Grid */
 .calc-grid {
   display: flex;
   justify-content: center;
-  gap: 30px;          /* spacing between cards */
+  gap: 40px;          /* wider gap between cards */
   flex-wrap: wrap;    /* allows stacking on smaller screens */
-  margin-top: 30px;
+  margin: 40px 0;     /* vertical spacing from header/footer */
+  padding: 0 20px;    /* horizontal breathing room */
 }
 
+/* Individual Card */
 .calc-card {
   flex: 1 1 45%;      /* two cards side by side */
   max-width: 600px;
   position: relative;
 }
 
+/* Image with overlay */
 .card-image {
   width: 100%;
   height: 350px;
   background-size: cover;
   background-position: center;
-  border-radius: 10px;
+  border-radius: 12px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+  padding: 10px;      /* inner padding around image */
 }
 
+/* Overlay text */
 .card-overlay {
   position: absolute;
   bottom: 0;
-  width: 100%;
+  width: calc(100% - 20px); /* account for padding */
+  margin: 0 10px 10px;      /* spacing inside image */
   padding: 20px;
-  background: rgba(0,0,0,0.55); /* semi-transparent overlay */
+  background: rgba(0,0,0,0.55);
   color: #fff;
   text-align: center;
+  border-radius: 8px;
 }
 
 .card-overlay h3 {
@@ -422,6 +430,7 @@ form button:hover {
   margin: 10px 0 15px;
 }
 
+/* Button */
 .btn {
   display: inline-block;
   padding: 10px 18px;
