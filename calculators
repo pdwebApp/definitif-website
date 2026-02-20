@@ -1,0 +1,17 @@
+<section class="container">
+  <h2>Choose a Calculator</h2>
+  <div class="calc-grid">
+    <div class="calc-card">
+      <img src="https://picsum.photos/300/200?random=10" alt="Investment Growth">
+      <h3>Investment Growth</h3>
+      <p>Estimate how your investments grow over time with SIPs and lumpsum.</p>
+      <a href="/investment" class="btn">Open Calculator</a>
+    </div>
+    <div class="calc-card">
+      <img src="https://picsum.photos/300/200?random=11" alt="Retirement">
+      <h3>Retirement</h3>
+      <p>Plan your retirement corpus based on expenses and inflation.</p>
+      <a href="/retirement" class="btn">Open Calculator</a>
+    </div>
+  </div>
+</section>
