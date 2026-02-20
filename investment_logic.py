@@ -11,6 +11,7 @@ def investmentGrowth_calci(equity_return, debt_return, equity_allocation,
     if annual_SIP_increment_in != 'Nil':
         no_inc = tenure_months // 12 + (1 if tenure_months % 12 > 0 else 0)
 
+                            
     # SIP Cashflow
     if annual_SIP_increment_in == 'Nil':
         sip_amt = [sip_amount for _ in range(tenure_months)]
