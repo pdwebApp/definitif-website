@@ -433,7 +433,7 @@ form button:hover {
 /* Button */
 .btn {
   display: inline-block;
-  padding: 10px 18px;
+  padding: 30px 30px;
   background: #2FC1A4;
   color: white;
   text-decoration: none;
@@ -453,4 +453,5 @@ form button:hover {
   .card-image {
     height: 250px;      /* slightly shorter for mobile */
   }
+
 }
