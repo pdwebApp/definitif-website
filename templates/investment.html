@@ -1,39 +1,211 @@
-<section class="container">
-  <h2>Investment Growth Calculator</h2>
-  <form method="POST" action="/investment">
-    <label>Equity Return (%)</label>
-    <input type="number" name="equity_return" required>
-    <label>Debt Return (%)</label>
-    <input type="number" name="debt_return" required>
-    <label>Equity Allocation (%)</label>
-    <input type="number" name="equity_allocation" required>
-    <label>Lumpsum Amount</label>
-    <input type="number" name="onetime_amount" required>
-    <label>Monthly SIP Amount</label>
-    <input type="number" name="sip_amount" required>
-    <label>Tenure (months)</label>
-    <input type="number" name="tenure_months" required>
-    <label>SIP Increment Type</label>
-    <select name="annual_SIP_increment_in">
-      <option value="Nil">Nil</option>
-      <option value="Amount">Amount</option>
-      <option value="Percentage">Percentage</option>
-    </select>
-    <label>SIP Increment Value</label>
-    <input type="number" name="sip_increment">
-    <button type="submit">Run Calculator</button>
-  </form>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Investment - Definitif</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="icon" href="{{ url_for('static', filename='definitif_Logo_wb_with_red_hl_square.png') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
 
-  {% if table_html %}
-    <h3>Results</h3>
-    <div id="chart"></div>
-    <script>
-      var graph = {{ graph_json | safe }};
-      Plotly.newPlot('chart', graph.data, graph.layout);
-    </script>
-    <div class="mt-3">
-      {{ table_html | safe }}
-    </div>
-    <a href="/download_pdf" class="btn">Download PDF</a>
-  {% endif %}
-</section>
+<body>
+
+  <!-- Header -->
+  <header id="header"></header>
+
+  <main class="container">
+    <h2>Investment Growth Calculator</h2>
+    <p class="subheading">Requirements</p>
+
+    <form method="POST" action="/investment" class="calc-form" id="investmentForm">
+
+      <div class="form-grid">
+
+      <!-- Returns -->
+      <div class="form-group">
+        <label for="equity_return">Equity Return (%)</label>
+        <input type="number" id="equity_return" name="equity_return" value="{{ form_data.get('equity_return', 12) }}" required>
+      </div>
+
+      <div class="form-group">
+        <label for="debt_return">Debt Return (%)</label>
+        <input type="number" id="debt_return" name="debt_return" value="{{ form_data.get('debt_return', 6) }}" required>
+      </div>
+
+      <div class="form-group">
+        <label for="other_return">Other Return (%)</label>
+        <input type="number" id="other_return" name="other_return" value="{{ form_data.get('other_return', 8) }}" required>
+      </div>
+
+      <!-- Allocation -->
+      <div class="form-group">
+        <label for="equity_allocation">Equity Allocation (%)</label>
+        <input type="number" id="equity_allocation" name="equity_allocation" value="{{ form_data.get('equity_allocation', 60) }}" required>
+      </div>
+
+      <div class="form-group">
+        <label for="debt_allocation">Debt Allocation (%)</label>
+        <input type="number" id="debt_allocation" name="debt_allocation" value="{{ form_data.get('debt_allocation', 30) }}" required>
+      </div>
+
+      <div class="form-group">
+        <label for="other_allocation">Other Allocation (%)</label>
+        <input type="number" id="other_allocation" name="other_allocation" value="{{ form_data.get('other_allocation', 10) }}" required>
+      </div>
+
+      <!-- Investment -->
+      <div class="form-group">
+        <label for="onetime_amount">Lumpsum Amount</label>
+        <input type="number" id="onetime_amount" name="onetime_amount" value="{{ form_data.get('onetime_amount', 100000) }}" required>
+      </div>
+
+      <div class="form-group">
+        <label for="sip_amount">Monthly SIP Amount</label>
+        <input type="number" id="sip_amount" name="sip_amount" value="{{ form_data.get('sip_amount', 5000) }}" required>
+      </div>
+
+      <div class="form-group">
+        <label for="tenure_months">Tenure (months)</label>
+        <input type="number" id="tenure_months" name="tenure_months" value="{{ form_data.get('tenure_months', 120) }}" required>
+      </div>
+
+      <!-- SIP Increment -->
+      <div class="form-group sip-group">
+        <label>SIP Increment Type</label>
+        <div class="input-with-value">
+          <select name="sipIncrementType" id="sipIncrementType" class="approach-input">
+            <option value="Nil" {% if form_data.sipIncrementType == "Nil" %}selected{% endif %}>Nil</option>
+            <option value="Percentage" {% if form_data.sipIncrementType == "Percentage" %}selected{% endif %}>Percentage</option>
+            <option value="Fixed" {% if form_data.sipIncrementType == "Fixed" %}selected{% endif %}>Fixed</option>
+          </select>
+          <input type="number" id="sipIncrementValue" name="sipIncrementValue" class="approach-input"
+                value="{{ form_data.sipIncrementValue or '' }}" placeholder="Enter value" style="display:none;">
+        </div>
+       </div>
+      </div>
+      <button type="submit" class="btn">Run Calculator</button>
+
+    </form>
+
+    {% if graph_json %} 
+      <h3>Expected Growth of Investments</h3>
+        <div class="message-container">
+          <label for="summary_message" class="summary-title">Summary</label>
+          <div class="summary-text">
+            {{ investmentgrowth_message | safe }}
+          </div>
+        </div>
+        <div class="chart-wrapper">
+          <div class="download-container">
+              <a href="{{ investmentgrowth_excel_file }}" download class="download-icon" title="Download Excel">
+                  <i class="fas fa-file-excel"></i>
+              </a>
+          </div>
+          <div id="chart"></div>
+        </div>
+        
+        <div class="chart-container" id="chart">
+          <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+          <script>
+            function renderMainChart() {
+
+              var isMobile = window.innerWidth <= 768;
+              var chartHeight = isMobile ? 260 : 420;
+
+              var graph = {{ graph_json | safe }};
+
+              graph.layout.height = chartHeight;
+              graph.layout.autosize = true;
+
+              if (isMobile) {
+
+                // 🔥 Smaller legend
+                graph.layout.legend = {
+                  orientation: "h",
+                  x: 0,
+                  y: -0.30,
+                  font: { size: 6 },
+                  bgcolor: "rgba(0,0,0,0)"
+                };
+
+                // 🔥 Smaller X-axis
+                graph.layout.xaxis = {
+                  ...graph.layout.xaxis,
+                  title: { text: "" },
+                  tickfont: { size: 7 }
+                };
+
+                // 🔥 Smaller Y-axis
+                graph.layout.yaxis = {
+                  ...graph.layout.yaxis,
+                  title: { text: "" },
+                  tickfont: { size: 7 }
+                };
+
+                // 🔥 Smaller hover font
+                graph.layout.hoverlabel = {
+                  font: { size: 8 }
+                };
+
+                // 🔥 Tight margins for mobile
+                graph.layout.margin = { l: 5, r: 5, t: 10, b: 10 };
+              }
+
+              Plotly.newPlot(
+                'chart',
+                graph.data,
+                graph.layout,
+                { responsive: true, displaylogo: false }
+              );
+            }
+
+            renderMainChart();
+            window.addEventListener("resize", renderMainChart);
+            </script>
+        </div>
+    {% endif %}
+  </main>
+
+  <!-- Footer -->
+  <footer id="footer"></footer>
+
+  <!-- JavaScript injection -->
+  <script src="{{ url_for('static', filename='loadHeaderFooter.js') }}"></script>
+  <!-- Allocation Validation -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      
+      const form = document.getElementById("investmentForm");
+
+      form.addEventListener("submit", function(e) {
+        const eq = parseFloat(document.getElementById('equity_allocation').value) || 0;
+        const debt = parseFloat(document.getElementById('debt_allocation').value) || 0;
+        const other = parseFloat(document.getElementById('other_allocation').value) || 0;
+
+        if (eq + debt + other !== 100) {
+          alert("Total allocation must equal 100%");
+          e.preventDefault();
+        }
+      });
+      /* -------------------------
+         SIP Increment Toggle
+      ------------------------- */
+      const sipType = document.getElementById("sipIncrementType");
+      const sipValue = document.getElementById("sipIncrementValue");
+
+      function updateSipField() {
+        if (sipType.value === "Nil") {
+          sipValue.style.display = "none";
+        } else {
+          sipValue.style.display = "inline-block";
+        }
+      }
+
+      sipType.addEventListener("change", updateSipField);
+      updateSipField(); // run once on page load
+
+    });
+  </script>
+
+</body>
+</html>

@@ -1,64 +1,99 @@
-/* Base */
-body {
-  margin: 0;
-  font-family: Verdana, sans-serif;
-  background: #F8F8F3;
-  color: #000;
+/* ===================================================== */
+/* ROOT VARIABLES */
+/* ===================================================== */
+
+:root {
+  --primary-color: #2FC1A4;
+  --accent-color: #c40000;
+  --dark-color: #000;
+  --light-bg: #F8F8F3;
+  --header-bg: #E1DFDF;
+  --header-height: 70px;
 }
 
-.container {
-  width: 100%;
+/* ============================= */
+/* GLOBAL RESET */
+/* ============================= */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0px;
+  font-family: Verdana, sans-serif;
+  background: var(--light-bg);
+  color: var(--dark-color);
+  overflow-x: hidden;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* ============================= */
+/* CONTAINER */
+/* ============================= */
+
+.container, 
+.products-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 16px;
-  box-sizing: border-box;
+  padding: 2rem;
 }
 
-/* Header */
+main.container {
+  padding-top: var(--header-height);
+  margin-top: 20px;
+  text-align: center;
+}
+
+/* ===================================================== */
+/* HEADER */
+/* ===================================================== */
+
 header {
   width: 100%;
-  background: #E1DFDF;
+  height: var(--header-height);
+  background: var(--header-bg);
   position: fixed;
   top: 0;
-  left: 0;
-  right: 0;   /* lock to right edge */
   z-index: 1000;
-}
-
-header .container {
-  margin: 0;
-  max-width: 100%;
-  padding: 0 16px;
 }
 
 .header-container {
   display: flex;
   justify-content: space-between; /* logo left, nav/toggle right */
   align-items: center;
-  height: 70px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-/* Logo */
-.left {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
+  height: 100%;
+  padding: 0 16px;
 }
 
 .logo {
   height: 50px;
+  width:auto;
 }
 
-/* Right side */
 .right {
-  flex: 0 0 auto;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
   gap: 20px;
 }
+
+.header-container img {
+  height: 50px;        /* fits nicely in 70px header */
+  width: auto;         /* maintain aspect ratio */
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* ===================================================== */
+/* NAVIGATION */
+/* ===================================================== */
 
 /* Hamburger toggle */
 .menu-toggle {
@@ -68,34 +103,34 @@ header .container {
   width: 32px;
   height: 24px;
   cursor: pointer;
-  z-index: 1100;
 }
-
 .menu-toggle span {
   height: 3px;
   background: black;
   border-radius: 2px;
 }
 
-/* Nav links (mobile hidden, slide-in vertical) */
+/* Nav links (hidden by default on mobile) */
 .nav-links {
   position: fixed;
-  top: 70px;
-  right: -100%;
+  top: var(--header-height);
+  right: -100%;   /* start off-screen */
   width: 70%;
   height: 100%;
-  background: #E1DFDF;
+  background: var(--header-bg);
   padding: 20px;
   display: flex;
-  flex-direction: column; /* vertical items */
+  flex-direction: column;
   transition: right 0.3s ease;
-  z-index: 1050;
+  z-index: 1000; /* ensure above content */
 }
 
+/* Active state: slide in */
 .nav-links.active {
   right: 0;
 }
 
+/* Links styling */
 .nav-links a {
   color: black;
   text-decoration: none;
@@ -103,153 +138,693 @@ header .container {
   padding: 10px 0;
   transition: color 0.3s ease, border-bottom 0.3s ease;
 }
-
 .nav-links a:hover {
-  color: #2FC1A4;
-  border-bottom: 2px solid #2FC1A4;
+  color: var(--primary-color);
+  border-bottom: 2px solid var(--primary-color);
 }
 
 /* Overlay */
 .overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background: rgba(0,0,0,0.5);
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s ease;
-  z-index: 900;
+  z-index: 900; /* sits below nav-links */
 }
-
 .overlay.active {
-  opacity: 1;   /* FIXED: overlay now shows */
+  opacity: 1;
   visibility: visible;
 }
 
-/* Home Banner */
+/* ===================================================== */
+/* BANNERS */
+/* ===================================================== */
+
+.banner-home,
+.banner-products,
+.banner-insights,
+.banner-about,
+.banner-calculators {
+  background-size: cover;
+  background-position: center;
+  height: calc(100vh - var(--header-height));
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  text-align: center;
+  padding-bottom: 80px;
+}
+
 .banner-home {
-  background: linear-gradient(rgba(255, 255, 255, 0.582), rgba(255,255,255,0.582)),
-              url("main_banner.png") no-repeat center center;
-  background-size: cover;
-  height: calc(100vh - 70px);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  text-align: center;
-  padding-bottom: 80px;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)),
+                    url("paper_boats.jpg");
 }
-
-/* Products Banner */
 .banner-products {
-  background: linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
-              url("main_banner_edit.png") no-repeat center center;
-  background-size: cover;
-  height: calc(100vh - 70px);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  text-align: center;
-  padding-bottom: 80px;
+  background-image: linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.4)),
+                    url("product_basket.jpg");
 }
-
-/* Insights Banner */
 .banner-insights {
-  background: linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
-              url("main_banner_edit.png") no-repeat center center;
-  background-size: cover;
-  height: calc(100vh - 70px);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  text-align: center;
-  padding-bottom: 80px;
+  background-image: linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
+                    url("outlook_bee.jpg");
 }
-
-/* About Banner */
 .banner-about {
-  background: linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
-              url("main_banner_edit.png") no-repeat center center;
-  background-size: cover;
-  height: calc(100vh - 70px);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  text-align: center;
-  padding-bottom: 80px;
+  background-image: linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.4)),
+                    url("about_client_specific.jpg");
 }
+.banner-calculators {
+  background-image: linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.4)),
+                    url("calculators_page.jpg");
+                  }
 
-/* Shared Banner Text */
 .banner-home h1,
 .banner-products h1,
 .banner-insights h1,
-.banner-about h1 {
+.banner-about h1,
+.banner-calculators h1 {
   font-size: 2em;
-  background: rgba(0,0,0,0.02);
   padding: 12px;
   border-radius: 5px;
-  color: black;
-  margin: 0 12px;
 }
 
+/* ===================================================== */
+/* LANDING PAGE CARDS */
+/* ===================================================== */
 
-/* Sections */
-.horizontal-sections {
+.landing-grid {
+  margin-top: 60px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 50px;              /* was 30px → increase */
+  padding: 80px 60px;     /* more breathing room */
+  max-width: 1400px;      /* slightly wider layout */
+  margin: 0 auto;
+}
+
+.landing-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;   /* smoother */
+  text-decoration: none;
+  color: white;
+  display: block;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.08);  /* subtle lift */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.landing-card img {
+  width: 100%;
+  height: 420px;   /* was 350px */
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+/* Overlay */
+.card-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 30px;   /* was 20px */
+  transition: background 0.4s ease;
+}
+
+/* Heading always visible */
+.card-overlay h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* Description hidden initially */
+.card-overlay p {
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+/* Hover Effects */
+.landing-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 45px rgba(0,0,0,0.12);
+}
+
+.landing-card:hover .card-overlay {
+  background: rgba(0, 0, 0, 0.75); /* darker inverted shade */
+}
+
+.landing-card:hover .card-overlay p {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===================================================== */
+/* BUTTON SYSTEM */
+/* ===================================================== */
+
+.btn {
+  display: inline-block;
+  padding: 12px 28px;
+  background: var(--dark-color);
+  color: white;
+  border-radius: 30px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.btn:hover {
+  background: var(--accent-color);
+}
+
+/* ===================================================== */
+/* PRODUCT CARDS */
+/* ===================================================== */
+
+.product-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fafafa;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+  background-color: #fdfdfd; /* subtle change */
+}
+
+.product-icon {
+  flex: 0 0 20%;
+  text-align: center;
+  font-size: 48px;
+  color: #c40000;
+}
+
+.product-details {
+  flex: 0 0 75%;
+}
+
+.product-details h2 {
+  font-size: 22px;
+  margin-bottom: 0.5rem;
+}
+
+.product-details p,
+.product-details ul {
+  font-size: 15px;
+  color: #555;
+  line-height: 1.6;
+}
+
+/* ============================= */
+/* Services Solutions Products */
+/* ============================= */
+
+.ssp-section {
+  padding: 90px 20px;
+  background: linear-gradient(180deg, #f6f8fc, #eef2f8);
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.section-header h2 {
+  font-size: 36px;
+  margin-bottom: 10px;
+  color: #1a2b49;
+}
+
+.section-header p {
+  color: #666;
+  max-width: 700px;
+  margin: auto;
+}
+
+.ssp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+}
+
+.ssp-card {
+  background: rgba(255, 255, 255, 0.893);
+  padding: 40px;
+  border-radius: 14px;
+  border-top: 4px solid #0eeed0;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+  transition: all 0.35s ease;
+  position: relative;
+}
+
+.ssp-card:hover {
+  transform: translateY(-6px);
+}
+
+.ssp-card h3 {
+  font-size: 24px;
+  margin-bottom: 15px;
+  color: rgb(46, 46, 46);
+}
+
+.ssp-card p {
+  font-size: 15px;
+  color: #555;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.ssp-card ul {
+  list-style: none;
+  padding: 0;
+}
+
+.ssp-card ul li {
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #333;
+  position: relative;
+  padding-left: 22px;
+}
+
+.ssp-card ul li::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background: #373737;
+  border-radius: 50%;
+  position: absolute;
+  left: 0;
+  top: 8px;
+}
+
+/* ===================================================== */
+/* CALCULATOR GRID */
+/* ===================================================== */
+
+.calc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.calc-card {
+  background: #fafafa;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  transition: 
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.calc-card img {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.calc-card h3 {
+  margin: 0.5rem 0;
+}
+
+.calc-card p {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 1rem;
+}
+
+.calc-card .btn {
+  display: inline-block;
+  background-color: #000;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 30px;
+  text-decoration: none;
+  opacity: 0.9;
+  transition: opacity 0.3s ease;
+}
+
+.calc-card:hover .btn {
+  opacity: 1;
+}
+
+.calc-card .btn:hover {
+  background-color: #c40000;
+}
+
+.calc-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.12);
+  background-color: #ffffff;
+  border-color: #c40000;
+}
+
+/* ===================================================== */
+/* FORM GRID */
+/* ===================================================== */
+
+.subheading {
+  font-size: 0.9em;
+  color: #555;
+  margin-top: 10px;
+  margin-bottom: 25px;
+}
+
+.calc-form{
+  max-width: 1100px;
+  margin: auto;
+}
+
+.form-grid{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+}
+
+/* field container */
+.form-group{
   display: flex;
   flex-direction: column;
 }
 
-.horizontal-sections section {
-  flex: 1 1 auto;
-  padding: 30px 16px;
-  text-align: center;
+/* labels */
+.form-group label{
+  font-size: 14px;
+  margin-bottom: 6px;
+  font-weight: 500;
+  text-align: left;
 }
 
-section img {
+/* inputs */
+.form-group input,
+.form-group select{
+  width: 100%;
+  height: 42px;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+/* SIP combo field */
+.input-with-value{
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 10px;
+}
+
+.input-with-value input{
+  display: none;
+}
+
+/* submit button */
+.calc-form .btn{
+  margin-top: 30px;
+}
+
+#sipTypeGroup {
+  grid-column: 1;
+}
+
+#sipValueGroup {
+  grid-column: 2;
+}
+
+#chart {
+  margin-top: 40px;
+}
+
+h3 {
+  margin-top: 50px;
+}
+
+.input-with-value {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* space between dropdown and value */
+}
+
+.input-with-value select {
+  flex: 1; /* dropdown takes available width */
+}
+
+.input-with-value span {
+  white-space: nowrap;
+  font-weight: bold;
+  color: #333;
+}
+
+.input-with-value input {
+  width: 100px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fafafa;
+  text-align: left;
+  font-weight: normal;
+}
+
+.approach-input {
+  height: 36px;           /* fixed height for all */
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fafafa;
+  font-size: 14px;
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+
+.approach-input[readonly] {
+  text-align: left;
+}
+
+/* Applicable for goal calculator as input fields are less */
+.goalcalc-form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px 30px;
+  margin: 30px auto;
+  max-width: 650px;
+  align-items: start;
+}
+
+.goalcalc-form label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.goalcalc-form button {
+  grid-column: span 2;
+  justify-self: center;
+  margin-top: 30px;
+}
+
+.goalcalc-form button {
+  grid-column: span 2;
+  justify-self: center;
+  margin-top: 20px;
+  width: 220px;
+}
+
+/* ============================= */
+/* DOWNLOAD CONTAINER */
+/* ============================= */
+
+.chart-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.chart-container {
+  width: 100%;
+  margin: 25px auto;
+}
+
+.download-container {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+}
+
+.download-icon {
+    color: #1D6F42;
+    font-size: 20px;
+    background: white;
+    padding: 6px;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.download-icon:hover {
+  color: #c40000; /* hover effect */
+}
+
+.message-container {
+  background: #f4f4f4;
+  font-family: Verdana, sans-serif;
   width: 100%;
   max-width: 100%;
-  height: auto;
-  object-fit: cover;
+  box-sizing: border-box;
   margin-top: 20px;
+  margin-bottom: 40px;
+  padding: 16px;
+  background: rgba(255,255,255,0.8);
+  border-radius: 8px;
+  text-align: left;
 }
 
-/* Footer */
+.summary-title {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.summary-text {
+  white-space: normal;
+  line-height: 1.6;
+  font-size: 15px;
+}
+.summary-text b {
+  color: #1f2c56;
+  font-weight: 600;
+}
+
+.message-container pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.download-container .js-plotly-plot {
+  width: 100% !important;
+}
+
+.download-container .plot-container {
+  width: 100%;
+}
+
+/* Desktop height */
+.chart-container .js-plotly-plot {
+  height: 450px !important;
+}
+
+/* ===================================================== */
+/* FOOTER */
+/* ===================================================== */
+
 footer {
-  background: #E1DFDF;
+  background: var(--header-bg);
   color: black;
-  padding: 20px 0;
+  padding: 0 8px;
+  position: relative;
+}
+
+/* Social container */
+.footer-social {
+  position: absolute;
+  top: -25px;         /* makes it spill out */
+  right: 40px;
+  display: flex;
+  gap: 12px;
+}
+
+/* Individual icons */
+.footer-social a {
+  width: 45px;
+  height: 45px;
+  background: #000;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  text-decoration: none;
+  transition: 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+}
+
+.footer-social a:nth-child(1):hover {
+  background: #DB4437;   /* Gmail red */
+}
+
+.footer-social a:nth-child(2):hover {
+  background: #25D366;   /* WhatsApp green */
+}
+
+.footer-social a:nth-child(3):hover {
+  background: #0077B5;   /* LinkedIn blue */
+}
+
+/* Hover effect */
+.footer-social a:hover {
+  transform: translateY(-4px);
 }
 
 .footer-top {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  margin-bottom: 10px;
-  padding: 0 16px;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  text-align: left;
+  margin-bottom: 6px;
+  padding: 0 10px;
+}
+.footer-left h4,
+.footer-right h4 {
+  margin-bottom: 12px;
 }
 
-.footer-left, .footer-right {
-  flex: 1 1 100%;
-  margin-bottom: 10px;
+.footer-left {
+  flex: 0 0 40%;
+  margin-bottom: 5px;
+  margin-right: auto;
 }
 
-.footer-right .license {
-  margin-bottom: 10px;
-  font-weight: bold;
+.footer-right {
+  flex: 0 0 60%;
+  margin-bottom: 5px;
+  margin-left: auto;
 }
 
-.footer-right .disclaimer {
-  font-style: italic;
+.footer-right .disclaimer .compliance {
   font-size: 0.7em;
+  text-align: justify;
+}
+
+.footer-right .disclaimer .disclaimer-text {
+  font-size: 0.6em;
   text-align: justify;
 }
 
 .footer-bottom {
   text-align: center;
-  margin-top: 10px;
-  padding: 0 16px;
+  margin-top: 5px;
+  padding: 0 5px;
 }
 
 .footer-stack {
@@ -264,10 +839,10 @@ footer {
   margin-bottom: 4px;
 }
 
-.contact-info {
+.copyright {
   display: inline-flex;
   gap: 4px;
-  font-size: 0.7em;
+  font-size: 0.6em;
   align-items: center;
 }
 
@@ -275,45 +850,132 @@ footer {
   color: red;
 }
 
-/* Form */
-form {
+.red-separator {
+  color: red;
+}
+
+/* Footer form layout */
+.footer-form {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  margin-bottom: 10px;
+  gap: 8px; /* controls vertical spacing */
+  max-width: 320px;
 }
 
-form input, form textarea {
-  margin: 5px 0;
-  padding: 8px;
+/* Inputs + textarea */
+.footer-form input,
+.footer-form textarea {
   width: 100%;
-  max-width: 300px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-form button {
-  background: #8f8c8c;
-  color: black;
+  padding: 6px 6px;
+  border-radius: 6px;
   border: none;
-  padding: 4px 10px;
+  font-size: 12px;
+}
+
+/* Bigger message box */
+.footer-form textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+/* Button styling */
+.footer-form button {
+  margin-top: 6px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+  background-color: #444;
+  color: white;
   cursor: pointer;
-  border-radius: 4px;
+  transition: 0.3s ease;
 }
 
-form button:hover {
-  background: #2FC1A4;
+.footer-form button:hover {
+  background-color: #c40000;
 }
 
-/* Desktop overrides */
-@media (min-width: 769px) {
-  /* Header */
-  .menu-toggle {
-    display: none; /* hide hamburger */
+/* Popup after sending email */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: 0.3s ease;
+  z-index: 9999;
+}
+
+.popup-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.popup-message {
+  background: white;
+  padding: 30px 40px;
+  border-radius: 12px;
+  font-size: 18px;
+  text-align: center;
+  animation: popIn 0.3s ease;
+}
+
+@keyframes popIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
   }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ===================================================== */
+/* ABOUT PAGE - SECTIONS */
+/* ===================================================== */
+
+.section {
+    padding: 2px 0;
+}
+
+.section h3 {
+    margin-bottom: 15px;
+    color: #0f2b46;
+}
+
+.section p {
+    margin-bottom: 20px;
+}
+
+.section ul {
+    margin-top: 10px;
+    padding-left: 20px;
+}
+
+.section ul li {
+    margin-bottom: 8px;
+}
+
+/* Alternate background */
+.alt {
+    background-color: #f5f7fa;
+}
+
+/* ===================================================== */
+/* MEDIA QUERIES - FOR RESPONSIVENESS */
+/* ===================================================== */
+
+@media (min-width: 769px) {
+
+  .menu-toggle { display: none; }
 
   .nav-links {
-    display: flex; /* show nav inline */
     position: static;
     flex-direction: row;
     gap: 20px;
@@ -321,130 +983,35 @@ form button:hover {
     height: auto;
     background: none;
     padding: 0;
-    transition: none;
   }
 
   .overlay {
     display: none;
   }
 
-  .banner h1 {
-    font-size: 2.5em;
-    padding: 20px;
-  }
-  
-  /* Horizontal sections fix */
-  .horizontal-sections {
+}
+@media (max-width: 768px) {
+
+  .landing-grid {
     display: flex;
-    flex-direction: row;
     overflow-x: auto;
-    scroll-snap-type: x mandatory;
     gap: 20px;
-    padding: 20px;
+    padding: 40px 20px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch; /* smooth iOS scroll */
   }
 
-  .horizontal-sections section {
-    flex: 0 0 300px;   /* fixed width per section */
-    max-width: 300px;
+  .landing-grid::-webkit-scrollbar {
+    display: none; /* hide scrollbar */
+  }
+
+  .landing-card {
+    flex: 0 0 85%;  /* each card takes 85% of screen */
     scroll-snap-align: start;
-    padding: 20px;
-    box-sizing: border-box;
-  }
-
-  section img {
-    width: 100%;
-    height: auto;
-    object-fit: cover;
-  }
-
-  /* Footer */
-  .footer-top {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-start;
-    text-align: left;
-  }
-
-  .footer-left {
-    flex: 0 0 40%;
-  }
-
-  .footer-right {
-    flex: 0 0 60%;
-    display: flex;
-    flex-direction: column;
   }
 
 }
 
-/* Calculator Grid */
-.calc-grid {
-  display: flex;
-  justify-content: center;
-  gap: 30px;
-  flex-wrap: wrap;
-  margin: 30px 0;
-  padding: 0 16px;   /* breathing room from screen edges */
-}
-
-/* Card */
-.calc-card {
-  flex: 1 1 45%;
-  max-width: 600px;
-  position: relative;
-}
-
-/* Image container */
-.card-image {
-  width: 100%;
-  height: 300px;
-  background-size: cover;
-  background-position: center;
-  border-radius: 12px;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 6px 14px rgba(0,0,0,0.25);
-}
-
-/* Overlay text */
-.card-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;              /* anchor to left edge */
-  right: 0;             /* anchor to right edge */
-  padding: 16px;        /* consistent padding */
-  background: rgba(0,0,0,0.55);
-  color: #fff;
-  text-align: center;
-  border-radius: 0 0 12px 12px; /* match card corners */
-  box-sizing: border-box;       /* ensures padding fits inside width */
-}
-
-.card-overlay h3 {
-  margin: 0;
-  font-size: 1.4em;
-}
-
-.card-overlay p {
-  font-size: 0.9em;
-  margin: 10px 0 15px;
-}
-
-/* Button */
-.btn {
-  display: inline-block;
-  padding: 10px 18px;
-  background: #2FC1A4;
-  color: white;
-  text-decoration: none;
-  border-radius: 5px;
-  font-weight: bold;
-}
-.btn:hover {
-  background: #1a8c73;
-}
-
-/* Mobile adjustments */
 @media (max-width: 768px) {
   .calc-card {
     flex: 1 1 100%;     /* full width on mobile */
@@ -452,5 +1019,132 @@ form button:hover {
   }
   .card-image {
     height: 250px;      /* slightly shorter for mobile */
+  }
+}
+
+@media (max-width: 992px) {
+  .calc-form,
+  .goalcalc-form {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .calc-form button,
+  .goalcalc-form button {
+    grid-column: span 2;
+  }
+
+  #sipTypeGroup {
+    grid-column: 1;
+  }
+
+  #sipValueGroup {
+    grid-column: 2;
+  }
+}
+
+@media (max-width: 600px) {
+  .calc-form,
+  .goalcalc-form {
+    grid-template-columns: 1fr;
+  }
+
+  .calc-form button,
+  .goalcalc-form button {
+    grid-column: span 1;
+  }
+
+  #sipTypeGroup,
+  #sipValueGroup {
+    grid-column: 1;
+  }
+}
+
+@media (max-width:768px){
+.form-grid{
+  grid-template-columns: 1fr;
+}
+}
+
+/* Slightly smaller on mobile */
+@media (max-width: 768px) {
+    .download-container {
+        top: 6px;
+        right: 6px;
+    }
+
+    .download-icon {
+        font-size: 12px;
+        padding: 3px;
+    }
+}
+
+@media (max-width: 768px) {
+
+  .card-overlay {
+    background: rgba(0, 0, 0, 0.6);
+  }
+
+  .card-overlay p {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+}
+
+@media (max-width: 768px) {
+
+  .footer-top {
+    flex-direction: column;     /* stack vertically */
+    align-items: flex-start;    /* align text left */
+    gap: 20px;                  /* spacing between sections */
+  }
+
+  .footer-left,
+  .footer-right {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .footer-right .disclaimer {
+    text-align: left;   /* cleaner for mobile */
+  }
+
+}
+
+@media (max-width: 768px) {
+  .footer-social {
+    right: 50%;
+    transform: translateX(50%);
+    top: -22px;   /* adjust spill slightly */
+  }
+}
+
+@media (max-width: 768px) {
+
+  .footer-social a {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+
+}
+
+@media (max-width: 768px) {
+  .download-container {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .modebar {
+    display: none !important;
+  }
+}
+
+/* Mobile height */
+@media (max-width: 768px) {
+  .chart-container .js-plotly-plot {
+    height: 320px !important;
   }
 }

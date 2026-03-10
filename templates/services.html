@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Services - définitif</title>
+  <link rel="icon" href="{{ url_for('static', filename='definitif_Logo_wb_with_red_hl_square.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body>
+  <!-- Header -->
+  <header id="header"></header>
+
+  <!-- Banner -->
+  <div class="banner-products">
+    <h2>
+      <span>Services</span>
+      <span class="red-separator">|</span>
+      <span>Solutions</span>
+      <span class="red-separator">|</span>
+      <span>Products</span>
+    </h2>
+  </div>
+
+  <!-- Products -->
+  <section class="ssp-section">
+    <div class="container">
+
+      <div class="section-header">
+        <h2>How We Help You</h2>
+        <p>Comprehensive wealth management through advisory services, goal-based solutions, and carefully selected investment products.</p>
+      </div>
+
+      <div class="ssp-grid">
+
+        <!-- Services -->
+        <div class="ssp-card">
+          <h3>Services</h3>
+          <p>
+            Our advisory services are designed to guide you through every stage of your financial journey.
+            We focus on understanding your goals, risk profile, and investment horizon to provide
+            personalized financial planning and portfolio management.
+          </p>
+
+          <ul>
+            <li>Financial Planning</li>
+            <li>Portfolio Advisory</li>
+            <li>Portfolio Review</li>
+            <li>Asset Allocation</li>
+          </ul>
+        </div>
+
+        <!-- Solutions -->
+        <div class="ssp-card">
+          <h3>Solutions</h3>
+          <p>
+            Our investment solutions are built around your life goals. Whether you want to grow wealth,
+            secure retirement, or fund your child’s education, we create structured strategies designed
+            to help you achieve them.
+          </p>
+
+          <ul>
+            <li>Wealth Creation</li>
+            <li>Retirement Planning</li>
+            <li>Child Education Planning</li>
+            <li>Tax Efficient Investing</li>
+          </ul>
+        </div>
+
+        <!-- Products -->
+        <div class="ssp-card">
+          <h3>Products</h3>
+          <p>
+            We provide access to a curated range of investment products selected for quality,
+            consistency, and suitability. These products help build diversified portfolios
+            aligned with your long-term financial goals.
+          </p>
+
+          <ul>
+            <li>Mutual Funds</li>
+            <li>Equity Funds</li>
+            <li>Debt & Hybrid Funds</li>
+            <li>Tax Saving Investments (ELSS)</li>
+          </ul>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer id="footer"></footer>
+
+  <!-- JavaScript injection -->
+  <script src="{{ url_for('static', filename='loadHeaderFooter.js') }}"></script>
+
+</body>
+</html>

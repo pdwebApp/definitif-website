@@ -1,68 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>About Us - définitif investments</title>
-  <link rel="icon" type="image/png" href="definitif_Logo_wb_with_red_hl_square.png">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About - définitif</title>
+  <link rel="icon" href="{{ url_for('static', filename='definitif_Logo_wb_with_red_hl_square.png') }}">
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
-<script>
-  async function loadComponent(id, file) {
-    const response = await fetch(file);
-    const html = await response.text();
-    document.getElementById(id).innerHTML = html;
-
-    // Attach toggle logic AFTER header loads
-    if (id === "header") {
-      const menuToggle = document.querySelector('.menu-toggle');
-      const navLinks = document.querySelector('.nav-links');
-      const overlay = document.querySelector('.overlay');
-
-      if (menuToggle && navLinks && overlay) {
-        menuToggle.addEventListener('click', () => {
-          navLinks.classList.toggle('active');
-          overlay.classList.toggle('active');
-        });
-
-        overlay.addEventListener('click', () => {
-          navLinks.classList.remove('active');
-          overlay.classList.remove('active');
-        });
-      }
-    }
-  }
-
-  loadComponent("header", "header.html");
-  loadComponent("footer", "footer.html");
-</script>
-
 <body>
-
   <!-- Header (same as home) -->
   <header id="header"></header>
 
   <!-- Banner-about -->
   <div class="banner-about">
-    <h1>About Us</h1>
+    <h2>
+      <span>Independent</span>
+      <span class="red-separator">|</span>
+      <span>Disciplined</span>
+      <span class="red-separator">|</span>
+      <span>Client-Focused</span>
+    </h2>
   </div>
 
   <!-- About Content -->
-  <div class="container">
-    <section>
-      <h2>Who We Are</h2>
-      <p>définitif investments is committed to clarity, security, and growth for our clients.</p>
-    </section>
+  <section class="ssp-section">
+    <div class="container">
 
-    <section>
-      <h2>Our Mission</h2>
-      <p>We aim to simplify investments and empower individuals with transparent solutions.</p>
-    </section>
-  </div>
+        <div class="section-header">
+        <h2>Our Approach</h2>
+        <p>
+            Our wealth management philosophy combines disciplined investment processes,
+            personalized advisory, and long-term partnership to help clients build and
+            preserve wealth with confidence.
+        </p>
+        </div>
 
+        <div class="ssp-grid">
+
+        <div class="ssp-card">
+            <h3>Client-Centric</h3>
+            <p>
+            Every portfolio begins with a clear understanding of our client’s goals,
+            risk tolerance, time horizon, and liquidity needs.
+            </p>
+            <ul>
+            <li>Strategic asset allocation</li>
+            <li>Risk management and downside protection</li>
+            <li>Diversification across asset classes</li>
+            <li>Tax-aware investment decisions</li>
+            </ul>
+        </div>
+
+        <div class="ssp-card">
+            <h3>Trust-Driven</h3>
+            <p>
+            Successful investing is built on trust and communication. We aim to
+            understand the broader financial and personal aspirations of every client.
+            </p>
+            <ul>
+            <li>Transparent communication</li>
+            <li>Proactive strategy discussions</li>
+            <li>Long-term partnership mindset</li>
+            </ul>
+        </div>
+
+        <div class="ssp-card">
+            <h3>Research-Led</h3>
+            <p>
+            Disciplined research forms the foundation of our investment process,
+            combining macroeconomic analysis and company-level evaluation.
+            </p>
+            <ul>
+            <li>Fund analysis</li>
+            <li>Market trend evaluation</li>
+            <li>Risk-adjusted return assessment</li>
+            <li>Continuous portfolio monitoring</li>
+            </ul>
+        </div>
+
+        <div class="ssp-card">
+            <h3>Strategic-Execution</h3>
+            <p>
+            Efficient execution ensures investment strategies are implemented
+            precisely while preserving value and controlling costs.
+            </p>
+            <ul>
+            <li>Strategic-rebalancing</li>
+            <li>Tactical adjustments</li>
+            <li>Cost-conscious implementation</li>
+            <li>Compliance discipline</li>
+            </ul>
+        </div>
+
+        <div class="ssp-card">
+            <h3>Portfolio-Reporting</h3>
+            <p>
+            Clear reporting provides full visibility into portfolio performance,
+            allocation, and risk exposure.
+            </p>
+            <ul>
+            <li>Periodic performance reviews</li>
+            <li>Benchmark comparisons</li>
+            <li>Risk metrics</li>
+            <li>Performance attribution analysis</li>
+            </ul>
+        </div>
+
+        </div>
+
+    </div>
+    </section>
   <!-- Footer (same as home) -->
   <footer id="footer"></footer>
 
+  <!-- JavaScript injection -->
+  <script src="{{ url_for('static', filename='loadHeaderFooter.js') }}"></script>
 </body>
 </html>

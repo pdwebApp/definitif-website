@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retirement - Definitif</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="icon" href="{{ url_for('static', filename='definitif_Logo_wb_with_red_hl_square.png') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body>
+  <!-- Header -->
+  <header id="header"></header>
+  <main class="container">
+    <h2>Retirement Calculator</h2>
+      <p class="subheading">Requirements</p>
+
+      <form method="POST" action="/retirement" class="calc-form" id="retirementForm">
+
+        <div class="form-grid">
+
+        <div class="form-group">
+          <label for="clientAge">Current Age</label>
+          <input type="number" id="clientAge" name="clientAge" value="{{ form_data.get('clientAge') }}" step="1" min="18" max="100" required>
+        </div>
+
+        <div class="form-group">
+          <label for="clientRetAge">Retirement Age</label>
+          <input type="number" id="clientRetAge" name="clientRetAge" value="{{ form_data.get('clientRetAge') }}" step="1" min="30" max="80" required>
+        </div>
+
+        <div class="form-group">
+          <label for="curMthExp">Current Monthly Expense</label>
+          <input type="number" id="curMthExp" name="curMthExp" value="{{ form_data.curMthExp }}" step="1000" min="10000" required>
+        </div>
+
+        <div class="form-group">
+          <label for="preRetireinflation">Estimated Inflation %</label>
+          <input type="number" id="preRetireinflation" name="preRetireinflation" value="{{ form_data.preRetireinflation }}" step="1" min="0" max="20" required>
+        </div>
+
+        <div class="form-group">
+          <label for="lifeExpectency">Life Expectancy</label>
+          <input type="number" id="lifeExpectency" name="lifeExpectency" value="{{ form_data.lifeExpectency }}" step="1" min="40" max="120" required>
+        </div>
+
+        <div class="form-group">
+          <label for="percentage_SIPinc">Annual SIP Increase %</label>
+          <input type="number" id="percentage_SIPinc" name="percentage_SIPinc" value="{{ form_data.percentage_SIPinc }}" step="1" min="0" max="20" required>
+        </div>
+
+        <div class="form-group">
+          <label for="currentSavings_Retire">Current Retirement Savings</label>
+          <input type="number" id="currentSavings_Retire" name="currentSavings_Retire" value="{{ form_data.currentSavings_Retire }}" step="1000" min="0" required>
+        </div>
+
+        <!-- Pre-Retirement Approach -->
+        <div class="form-group approach-group">
+          <label>Pre-Retirement Investment Approach (%)</label>
+          <div class="input-with-value">
+            <select name="preRetire_invApproach" id="preRetire_invApproach">
+              {% for option in ["Conservative","Conservatively Moderate","Moderate","Moderately Aggressive","Aggressive","Custom"] %}
+                <option {% if form_data.preRetire_invApproach == option %}selected{% endif %}>{{ option }}</option>
+              {% endfor %}
+            </select>
+            <input type="text" id="preRetireValue" class="approach-input" readonly>
+            <input type="number" id="custom_preRetire_invApproach" class="approach-input"
+                  name="custom_preRetire_invApproach"
+                  value="{{ form_data.custom_preRetire_invApproach or '' }}"
+                  placeholder="Enter custom %" style="display:none;">
+
+          </div>
+        </div>
+
+        <div class="form-group approach-group">
+          <label>Post-Retirement Investment Approach (%)</label>
+          <div class="input-with-value">
+            <select name="postRetire_invApproach" id="postRetire_invApproach">
+              {% for option in ["Conservative","Conservatively Moderate","Moderate","Moderately Aggressive","Aggressive","Custom"] %}
+                <option {% if form_data.postRetire_invApproach == option %}selected{% endif %}>{{ option }}</option>
+              {% endfor %}
+            </select>
+            <input type="text" id="postRetireValue" class="approach-input" readonly>
+            <input type="number" id="custom_postRetire_invApproach" class="approach-input"
+                  name="custom_postRetire_invApproach"
+                  value="{{ form_data.custom_postRetire_invApproach or '' }}"
+                  placeholder="Enter custom %" style="display:none;">
+          </div> 
+        </div>
+
+        <div class="form-group">
+          <label for="principalProtected">Principal Protected</label>
+            <select name="principalProtected" id="principalProtected" class="approach-input">
+              <option {% if form_data.principalProtected == "Yes" %}selected{% endif %}>Yes</option>
+              <option {% if form_data.principalProtected == "No" %}selected{% endif %}>No</option>
+            </select>
+        </div>
+        </div>
+        <button type="submit" class="btn">Run Calculator</button>
+      </form>
+
+      {% if invest_graph_json %}
+        <h3>Your Retirement Plan</h3>
+        <div class="message-container">
+          <label for="summary_message" class="summary-title">Summary</label>
+          <div class="summary-text">
+            {{ retirement_message | safe }}
+          </div>
+        </div>
+        <h4>Investment Growth (Pre-Retirement)</h4>
+        <div class="chart-wrapper">
+          <div class="download-container">
+              <a href="{{ investmentSchedule_excel_file }}" download class="download-icon" title="Download Excel">
+                  <i class="fas fa-file-excel"></i>
+              </a>
+          </div>
+          <div id="chart"></div>
+        <div class="chart-container" id="invest_chart"></div>
+
+        <h4>Payout & Remaining Corpus (Post-Retirement)</h4>
+        <div class="chart-wrapper">
+          <div class="download-container">
+            <a href="{{ annuitySchedule_excel_file }}" download class="download-icon" title="Download Excel">
+              <i class="fas fa-file-excel"></i>
+            </a>
+          </div>
+          <div class="chart-container" id="annuity_chart"></div>
+        
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        <script>
+          function renderCharts() {
+
+            var isMobile = window.innerWidth <= 768;
+            var chartHeight = isMobile ? 260 : 420;
+
+            var invest_graph = {{ invest_graph_json | safe }};
+            invest_graph.layout.height = chartHeight;
+            invest_graph.layout.autosize = true;
+
+            if (isMobile) {
+
+              // 🔥 Smaller legend
+              invest_graph.layout.legend = {
+                orientation: "h",
+                x: 0,
+                y: -0.30,
+                font: { size: 6 },
+                bgcolor: "rgba(0,0,0,0)"
+              };
+
+              // 🔥 Smaller axis fonts
+              invest_graph.layout.xaxis = {
+                ...invest_graph.layout.xaxis,
+                title: { text: ""},
+                tickfont: { size: 7 }
+              };
+
+              invest_graph.layout.yaxis = {
+                ...invest_graph.layout.yaxis,
+                title: { text: ""},
+                tickfont: { size: 7 }
+              };
+
+              // 🔥 Smaller hover font
+              invest_graph.layout.hoverlabel = {
+                font: { size: 8 }
+              };
+
+              invest_graph.layout.margin = { l: 5, r: 5, t: 10, b: 10 };
+            }
+
+            Plotly.newPlot(
+              'invest_chart',
+              invest_graph.data,
+              invest_graph.layout,
+              { responsive: true, displaylogo: false }
+            );
+
+
+            var annuity_graph = {{ annuity_graph_json | safe }};
+            annuity_graph.layout.height = chartHeight;
+            annuity_graph.layout.autosize = true;
+
+            if (isMobile) {
+
+              annuity_graph.layout.legend = {
+                orientation: "h",
+                x: 0,
+                y: -0.30,
+                font: { size: 6 },
+                bgcolor: "rgba(0,0,0,0)"
+              };
+
+              annuity_graph.layout.xaxis = {
+                ...annuity_graph.layout.xaxis,
+                title: { text: ""},
+                tickfont: { size: 7 }
+              };
+
+              annuity_graph.layout.yaxis = {
+                ...annuity_graph.layout.yaxis,
+                title: { text: ""},
+                tickfont: { size: 7 }
+              };
+
+              annuity_graph.layout.yaxis2 = {
+                ...annuity_graph.layout.yaxis2,
+                title: { text: ""},
+                tickfont: { size: 7 }
+              };
+
+              annuity_graph.layout.hoverlabel = {
+                font: { size: 8 }
+              };
+
+              annuity_graph.layout.margin = { l: 5, r: 5, t: 10, b: 10 };
+            }
+
+            Plotly.newPlot(
+              'annuity_chart',
+              annuity_graph.data,
+              annuity_graph.layout,
+              { responsive: true, displaylogo: false }
+            );
+          }
+
+          renderCharts();
+          window.addEventListener("resize", renderCharts);
+          </script>
+      {% endif %}
+  </main>
+
+  <!-- Footer -->
+  <footer id="footer"></footer>
+
+  <!-- JavaScript injection -->
+  <script src="{{ url_for('static', filename='loadHeaderFooter.js') }}"></script>
+  <!-- JS for dropdown mapping -->
+  <script>
+    const approachMap = {
+      "Conservative": 7,
+      "Conservatively Moderate": 9,
+      "Moderate": 11,
+      "Moderately Aggressive": 13,
+      "Aggressive": 15
+    };
+
+    function handleApproach(selectId, valueId, customId) {
+      const select = document.getElementById(selectId);
+      const valueSpan = document.getElementById(valueId);
+      const customInput = document.getElementById(customId);
+
+      function update() {
+        const choice = select.value;
+        if (choice === "Custom") {
+          valueSpan.style.display = "none";
+          customInput.style.display = "inline-block";
+        } else {
+          valueSpan.value = approachMap[choice];
+          valueSpan.style.display = "inline-block";
+          customInput.style.display = "none";
+        }
+      }
+      select.addEventListener("change", update);
+      update(); // run once on page load
+    }
+
+    handleApproach("preRetire_invApproach", "preRetireValue", "custom_preRetire_invApproach");
+    handleApproach("postRetire_invApproach", "postRetireValue", "custom_postRetire_invApproach");
+  </script>
+</body>
+</html>

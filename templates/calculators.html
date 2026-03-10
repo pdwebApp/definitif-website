@@ -1,37 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Calculators - Definitif Investments</title>
+  <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tools - Definitif</title>
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <script src="{{ url_for('static', filename='loadHeaderFooter.js') }}"></script>
+  <link rel="icon" href="{{ url_for('static', filename='definitif_Logo_wb_with_red_hl_square.png') }}">
 </head>
+
 <body>
   <!-- Common header injected -->
   <header id="header"></header>
 
-  <main class="container">
-    <h2>Choose a Calculator</h2>
-    <div class="calc-grid">
-      <!-- Investment Growth Card -->
-      <div class="calc-card">
-        <img src="https://picsum.photos/300/200?random=10" alt="Investment Growth">
-        <h3>Investment Growth</h3>
-        <p>Estimate how your investments grow over time with SIPs and lumpsum contributions.</p>
-        <a href="/investment" class="btn">Open Calculator</a>
+  <!-- Banner-home Section -->
+  <div class="banner-calculators">
+    <h2>
+      <span>Aspire</span>
+      <span class="red-separator">|</span>
+      <span>Plan</span>
+      <span class="red-separator">|</span>
+      <span>Prosper</span>
+    </h2>
+  </div>
+    <!-- Horizontal Sections -->
+  <div class="landing-grid">
+    <a href="{{ url_for('investment') }}" class="landing-card">
+      <img src="static/growth_hand.jpg" alt="Investment Growth">
+      <div class="card-overlay">
+        <h2>Investment Growth</h2>
+        <p>Estimate your investment growth over time.</p>
       </div>
+    </a>
+    
+    <a href="{{ url_for('goal') }}" class="landing-card">
+      <img src="static/goal_peak.jpg" alt="Goal Planner">
+      <div class="card-overlay">
+        <h2>Goal Planner</h2>
+        <p>Plan your financial goals with our intuitive goal planning tool.</p>
+      </div>
+    </a>
 
-      <!-- Retirement Calculator Card -->
-      <div class="calc-card">
-        <img src="https://picsum.photos/300/200?random=11" alt="Retirement">
-        <h3>Retirement</h3>
-        <p>Plan your retirement corpus based on expenses, inflation, and expected returns.</p>
-        <a href="/retirement" class="btn">Open Calculator</a>
+    <a href="{{ url_for('retirement') }}" class="landing-card">
+      <img src="static/retire_couple.jpg" alt="Retirement">
+      <div class="card-overlay">
+        <h2>Retirement</h2>
+        <p>Plan your retirement with our advanced retirement planning tool.</p>
       </div>
-    </div>
-  </main>
+    </a>
+  </div>
 
   <!-- Common footer injected -->
   <footer id="footer"></footer>
+
+  <!-- JavaScript injection -->
+  <script src="{{ url_for('static', filename='loadHeaderFooter.js') }}"></script>
+
 </body>
 </html>
