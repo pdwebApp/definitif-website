@@ -5,8 +5,6 @@ import numpy_financial as npf
 import plotly.express as px
 
 # Import time related 
-import time
-import calendar
 from dateutil import relativedelta
 from datetime import datetime, timedelta
 from pandas.tseries.offsets import Day, MonthEnd
