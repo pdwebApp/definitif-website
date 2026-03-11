@@ -95,6 +95,13 @@ def investmentGrowth_calci(equity_return, debt_return, other_return,
             separatethousands=True
         )
     )
+    fig.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(color="white"),
+        xaxis=dict(gridcolor="#444"),
+        yaxis=dict(gridcolor="#444")
+    )
     fig.update_xaxes(title_text = "", showline=True, showgrid=False)
     fig.update_yaxes(title_text = "", showline=True, showgrid=False)
     # Force convert numpy arrays to Python lists (prevents binary encoding)

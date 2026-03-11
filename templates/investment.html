@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Investment - Definitif</title>
+  <title>Investment - définitif</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <link rel="icon" href="{{ url_for('static', filename='definitif_Logo_wb_with_red_hl_square.png') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -71,7 +71,7 @@
 
       <!-- SIP Increment -->
       <div class="form-group sip-group">
-        <label>SIP Increment Type</label>
+        <label>Annual SIP Increment Type</label>
         <div class="input-with-value">
           <select name="sipIncrementType" id="sipIncrementType" class="approach-input">
             <option value="Nil" {% if form_data.sipIncrementType == "Nil" %}selected{% endif %}>Nil</option>
@@ -83,7 +83,7 @@
         </div>
        </div>
       </div>
-      <button type="submit" class="btn">Run Calculator</button>
+      <button type="submit" class="btn">Calculate Now</button>
 
     </form>
 
@@ -106,6 +106,44 @@
         
         <div class="chart-container" id="chart">
           <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+          <script>
+            document.addEventListener("DOMContentLoaded", function () {
+
+              const darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+              const darkLayout = {
+                  paper_bgcolor:'#121212',
+                  plot_bgcolor:'#121212',
+                  font:{color:'#e0e0e0'},
+                  hoverlabel:{
+                      bgcolor:'#ffffff',
+                      font:{color:'#000'}
+                  }
+              };
+
+              const lightLayout = {
+                  paper_bgcolor:'#ffffff',
+                  plot_bgcolor:'#ffffff',
+                  font:{color:'#000'},
+                  hoverlabel:{
+                      bgcolor:'#ffffff',
+                      font:{color:'#000'}
+                  }
+              };
+
+              const layout = darkMode ? darkLayout : lightLayout;
+
+              ['chart'].forEach(id => {
+                  Plotly.relayout(id, layout);
+              });
+
+            });
+
+            /* Detect system theme change */
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+                location.reload();
+            });
+          </script>
           <script>
             function renderMainChart() {
 

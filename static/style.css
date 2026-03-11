@@ -35,6 +35,11 @@ img {
   height: auto;
 }
 
+/* Default (Light Mode) */
+.logo-dark {
+  display: none;
+}
+
 /* ============================= */
 /* CONTAINER */
 /* ============================= */
@@ -87,7 +92,6 @@ header {
 .header-container img {
   height: 50px;        /* fits nicely in 70px header */
   width: auto;         /* maintain aspect ratio */
-  display: inline-block;
   vertical-align: middle;
 }
 
@@ -170,17 +174,19 @@ header {
   background-size: cover;
   background-position: center;
   height: calc(100vh - var(--header-height));
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
+  display: flex;              /* center text inside */
+  align-items: center;        /* center horizontally */
+  flex-direction: column; /* stack children vertically */
+  justify-content: flex-end; /* optional: center vertically if needed */
   text-align: center;
   padding-bottom: 80px;
 }
 
 .banner-home {
-  background-image: linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)),
+  background-image: linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)),
                     url("paper_boats.jpg");
 }
+
 .banner-products {
   background-image: linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.4)),
                     url("product_basket.jpg");
@@ -194,16 +200,24 @@ header {
                     url("about_client_specific.jpg");
 }
 .banner-calculators {
-  background-image: linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.4)),
+  background-image: linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.6)),
                     url("calculators_page.jpg");
                   }
 
-.banner-home h1,
-.banner-products h1,
-.banner-insights h1,
-.banner-about h1,
-.banner-calculators h1 {
-  font-size: 2em;
+.banner-subtext {
+  color: #555;
+  font-size: 1.2rem;
+  margin-bottom: 20px; /* space between subtext and span */
+  display: block;
+  max-width: 800px;
+  padding: 0 20px;      /* ensures it takes full width */
+}
+
+.banner-home h2,
+.banner-products h2,
+.banner-insights h2,
+.banner-about h2,
+.banner-calculators h2 {
   padding: 12px;
   border-radius: 5px;
 }
@@ -226,10 +240,11 @@ header {
   position: relative;
   overflow: hidden;
   border-radius: 16px;   /* smoother */
+  /*border-top: 4px solid #0eeed0;*/
   text-decoration: none;
   color: white;
   display: block;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.08);  /* subtle lift */
+  box-shadow: 0 15px 30px rgba(0,0,0,0.08);  /* subtle lift */
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -712,6 +727,17 @@ h3 {
   font-weight: 600;
 }
 
+.banner-home h1,
+.banner-products h1,
+.banner-insights h1,
+.banner-about h1,
+.banner-calculators h1 {
+  color: #141414;
+  font-size: 2em;
+  padding: 12px;
+  border-radius: 5px;
+}
+
 .message-container pre {
   white-space: pre-wrap;
   word-wrap: break-word;
@@ -729,7 +755,7 @@ h3 {
 
 /* Desktop height */
 .chart-container .js-plotly-plot {
-  height: 450px !important;
+  height: 450px;
 }
 
 /* ===================================================== */
@@ -778,6 +804,10 @@ footer {
 
 .footer-social a:nth-child(3):hover {
   background: #0077B5;   /* LinkedIn blue */
+}
+
+.footer-social a:nth-child(4):hover {
+  background: #FBBC05;   /* Googlemap yellow */
 }
 
 /* Hover effect */
@@ -834,10 +864,11 @@ footer {
   gap: 2px;
 }
 
-.footer-logo {
-  height: 25px;
-  margin-bottom: 4px;
-}
+.logo logo-light,
+  .logo logo-dark {
+    height: 20px;
+    margin-bottom: 4px;
+  }
 
 .copyright {
   display: inline-flex;
@@ -1145,6 +1176,207 @@ footer {
 /* Mobile height */
 @media (max-width: 768px) {
   .chart-container .js-plotly-plot {
-    height: 320px !important;
+    height: 320px;
   }
+}
+
+/* ===================================================== */
+/* SYSTEM DARK MODE */
+/* ===================================================== */
+
+@media (prefers-color-scheme: dark) {
+
+  :root {
+    --primary-color: #2FC1A4;
+    --accent-color: #ff4a4a;
+    --dark-color: #e8e8e8;
+    --light-bg: #121212;
+    --header-bg: #1b1b1b;
+  }
+
+  body {
+    background: var(--light-bg);
+    color: var(--dark-color);
+  }
+
+  header {
+    background: var(--header-bg);
+  }
+
+  .nav-links {
+    background: var(--header-bg);
+  }
+
+  .nav-links a {
+    color: #e8e8e8;
+  }
+
+  .product-card,
+  .calc-card,
+  .ssp-card {
+    background: #1f1f1f;
+    border-color: #333;
+  }
+
+  .product-details p,
+  .calc-card p,
+  .ssp-card p {
+    color: #bbb;
+  }
+
+  input,
+  select,
+  textarea {
+    background: #1f1f1f;
+    color: #eee;
+    border: 1px solid #444;
+  }
+
+  .message-container {
+    background: rgba(30,30,30,0.9);
+  }
+
+  header {
+    background: var(--header-bg);
+  }
+
+  .nav-links {
+    background: var(--header-bg);
+  }
+
+  .nav-links a {
+    color: #e8e8e8;
+  }
+
+  footer {
+    background: var(--header-bg);
+    color: #ddd;
+  }
+
+  .ssp-section {
+  padding: 90px 20px;
+  background: linear-gradient(180deg, #1f1f1f, #252627);
+ }
+
+.section-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.section-header h2 {
+  font-size: 36px;
+  margin-bottom: 10px;
+  color: #ddd;
+}
+
+.section-header p {
+  color: #ffffff;
+  max-width: 700px;
+  margin: auto;
+}
+
+.ssp-card {
+  background: rgba(57, 57, 57, 0.502);
+  padding: 40px;
+  border-radius: 14px;
+  border-top: 4px solid #0eeed0;
+  box-shadow: 0 12px 30px rgba(59, 59, 59, 0.427);
+  transition: all 0.35s ease;
+  position: relative;
+}
+
+.ssp-card h3 {
+  color: rgb(192, 189, 189);
+}
+
+.ssp-card p {
+  color: #ddd;
+}
+
+.ssp-card ul li {
+  color: #ffffff;
+}
+
+.ssp-card ul li::before {
+  background: #ffffff;
+}
+
+.btn {
+  display: inline-block;
+  padding: 12px 28px;
+  background: var(--dark-color);
+  color: #555;
+  border-radius: 30px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.btn:hover {
+  background: var(--accent-color);
+}
+
+.input-with-value input {
+  width: 100px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: rgb(31, 31, 31);
+  text-align: left;
+  font-weight: normal;
+}
+
+.approach-input {
+  height: 36px;           /* fixed height for all */
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: rgb(31, 31, 31);
+  font-size: 14px;
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+
+.summary-text b {
+  color: #ddd;
+  font-weight: 600;
+}
+
+}
+
+@media (prefers-color-scheme: dark) {
+
+  :root {
+    --dark-color: #e8e8e8;
+    --light-bg: #121212;
+    --header-bg: #1b1b1b;
+  }
+
+  body {
+    background: var(--light-bg);
+    color: var(--dark-color);
+  }
+
+  .banner-subtext {
+    color: #555;
+  }
+
+  .banner-home h2,
+  .banner-products h2,
+  .banner-insights h2,
+  .banner-about h2,
+  .banner-calculators h2 {
+    color: #000;
+    padding: 12px;
+    border-radius: 5px;
+  }
+
+  .logo-light {
+    display: none;
+  }
+
+  .logo-dark {
+    display: block;
+  }
+
 }

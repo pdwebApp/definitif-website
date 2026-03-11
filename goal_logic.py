@@ -191,6 +191,13 @@ def goalCalci(curCost_goal,investTenure,currentSavings_goal,expInflation,invAppr
             separatethousands=True
         )
     )
+    fig1.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(color="white"),
+        xaxis=dict(gridcolor="#444"),
+        yaxis=dict(gridcolor="#444")
+    )
     
     fig1.update_xaxes(showline=True, showgrid=False)
     fig1.update_yaxes(showline=True, showgrid=False)
@@ -212,7 +219,7 @@ def goalCalci(curCost_goal,investTenure,currentSavings_goal,expInflation,invAppr
         f"Currently you have earmarked Rs. {int(currentSavings_goal)} for the goal."
     )
     
-    if quantumSIPinc == 0:
+    if (quantumSIPinc == 0) or (investTenure <=1):
         goal_message = (
             f"There are <b>two</b> ways to achieve your perfect retirement.<br><br>"
             f"1. Invest <b>Rs. {investToday}</b> today for the next <b>{investTenure}</b> years.<br>"

@@ -170,6 +170,13 @@ def retirementCalci(clientAge, clientRetAge, curMthExp, invApproach, principalPr
         hovermode="x unified",
         yaxis=dict(separatethousands=True)
     )
+    fig2.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(color="white"),
+        xaxis=dict(gridcolor="#444"),
+        yaxis=dict(gridcolor="#444")
+    )
     fig2.update_yaxes(secondary_y=False, showline=True,showgrid=False)
     fig2.update_yaxes(secondary_y=True, showline=True,showgrid=False)
 
@@ -319,6 +326,13 @@ def retirementCalci(clientAge, clientRetAge, curMthExp, invApproach, principalPr
             separatethousands=True
         )
     )
+    fig1.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(color="white"),
+        xaxis=dict(gridcolor="#444"),
+        yaxis=dict(gridcolor="#444")
+    )
     
     fig1.update_xaxes(showline=True, showgrid=False)
     fig1.update_yaxes(showline=True, showgrid=False)
@@ -343,7 +357,7 @@ def retirementCalci(clientAge, clientRetAge, curMthExp, invApproach, principalPr
         requirement_message = (
             f"At the Retirement Age, you need Rs. {amtRequired_retire} to achieve your retirement goal."
         )
-    if quantumSIPinc == 0:
+    if (quantumSIPinc == 0) or (invTenure <= 1):
         retirement_message = (
             f"There are <b>two</b> ways to achieve your perfect retirement.<br><br>"
             f"1. Invest <b>Rs. {investToday}</b> today for the next <b>{invTenure}</b> years.<br>"
