@@ -11,9 +11,27 @@
 <body>
   <!-- Header -->
   <header id="header"></header>
+
+  <!-- Banner-home Section -->
+  <section class="banner-retire">
+    <div class="banner-retirecalc">
+      <p class="banner-subtext">
+      You can now plan your Retirement more precisely by our exclusive 
+      planner. We don't just provide you with the goal, but also 
+      show you multiple paths to reach there. 
+      </p>
+    
+      <h2>
+        <span>Plannér</span>
+        <span class="red-separator">|</span>
+        <span>Retirement</span>
+      </h2>
+    </div>
+  </section>
+
   <main class="container">
-    <h2>Retirement Calculator</h2>
-      <p class="subheading">Requirements</p>
+    <h2>Requirements</h2>
+      <p class="subheading"></p>
 
       <form method="POST" action="/retirement" class="calc-form" id="retirementForm">
 
@@ -99,6 +117,22 @@
         <button type="submit" class="btn">Calculate Now</button>
       </form>
 
+      <div class="calculator-navigation">
+
+        <p class="calc-nav-title">Explore Other Planning Tools</p>
+        <div class="calculator-actions">
+          <a href="/goal" class="calculator-card">
+          <i class="fas fa-coins"></i>
+          <span>Achieve a Goal</span>
+          </a>
+
+          <a href="/investment" class="calculator-card">
+          <i class="fas fa-chart-line"></i>
+          <span>Create a Portfolio</span>
+          </a>
+        </div>
+      </div>
+
       {% if invest_graph_json %}
         <h3>Your Retirement Plan</h3>
         <div class="message-container">
@@ -125,8 +159,7 @@
             </a>
           </div>
           <div class="chart-container" id="annuity_chart"></div>
-        
-        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
         <script>
           document.addEventListener("DOMContentLoaded", function () {
 
@@ -265,11 +298,19 @@
           renderCharts();
           window.addEventListener("resize", renderCharts);
           </script>
+        </div>
       {% endif %}
   </main>
 
   <!-- Footer -->
   <footer id="footer"></footer>
+
+  <div id="loading-overlay">
+    <div class="loading-box">
+      <div class="spinner"></div>
+      <p>Preparing your personalized plan…</p>
+    </div>
+  </div>
 
   <!-- JavaScript injection -->
   <script src="{{ url_for('static', filename='loadHeaderFooter.js') }}"></script>
@@ -305,6 +346,14 @@
 
     handleApproach("preRetire_invApproach", "preRetireValue", "custom_preRetire_invApproach");
     handleApproach("postRetire_invApproach", "postRetireValue", "custom_postRetire_invApproach");
+  </script>
+  
+  <script>
+    document.querySelectorAll("form").forEach(form => {
+      form.addEventListener("submit", function() {
+          document.getElementById("loading-overlay").style.display = "flex";
+      });
+    });
   </script>
 </body>
 </html>

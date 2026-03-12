@@ -13,9 +13,27 @@
   <!-- Header -->
   <header id="header"></header>
 
+  <!-- Banner-home Section -->
+  <section class="banner-invest">
+    <div class="banner-investcalc">
+      <p class="banner-subtext">
+      You can create a Portfolio of your choice by selecting 
+      the required Asset Allocation, expected Returns and the mode of 
+      investment. We show you the expected value at the end of tenure. 
+      </p>
+    
+      <h2>
+        <span>Plannér</span>
+        <span class="red-separator">|</span>
+        <span>Portfolio</span>
+      </h2>
+    </div>
+  </section>
+
+
   <main class="container">
-    <h2>Investment Growth Calculator</h2>
-    <p class="subheading">Requirements</p>
+    <h2>Requirements</h2>
+     <p class="subheading"></p>
 
     <form method="POST" action="/investment" class="calc-form" id="investmentForm">
 
@@ -87,6 +105,22 @@
 
     </form>
 
+    <div class="calculator-navigation">
+
+        <p class="calc-nav-title">Explore Other Planning Tools</p>
+        <div class="calculator-actions">
+          <a href="/goal" class="calculator-card">
+          <i class="fas fa-coins"></i>
+          <span>Achieve a Goal</span>
+          </a>
+
+          <a href="/retirement" class="calculator-card">
+          <i class="fas fa-user-clock"></i>
+          <span>Retire Peacefully</span>
+          </a>
+        </div>
+      </div>
+
     {% if graph_json %} 
       <h3>Expected Growth of Investments</h3>
         <div class="message-container">
@@ -105,7 +139,7 @@
         </div>
         
         <div class="chart-container" id="chart">
-          <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+          <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
           <script>
             document.addEventListener("DOMContentLoaded", function () {
 
@@ -207,6 +241,13 @@
   <!-- Footer -->
   <footer id="footer"></footer>
 
+  <div id="loading-overlay">
+    <div class="loading-box">
+      <div class="spinner"></div>
+      <p>Preparing your personalized plan…</p>
+    </div>
+  </div>
+
   <!-- JavaScript injection -->
   <script src="{{ url_for('static', filename='loadHeaderFooter.js') }}"></script>
   <!-- Allocation Validation -->
@@ -242,6 +283,13 @@
       sipType.addEventListener("change", updateSipField);
       updateSipField(); // run once on page load
 
+    });
+  </script>
+  <script>
+    document.querySelectorAll("form").forEach(form => {
+      form.addEventListener("submit", function() {
+          document.getElementById("loading-overlay").style.display = "flex";
+      });
     });
   </script>
 

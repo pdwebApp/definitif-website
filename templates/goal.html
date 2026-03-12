@@ -11,9 +11,25 @@
 <body>
   <!-- Header -->
   <header id="header"></header>
+
+  <!-- Banner-home Section -->
+  <section class="banner-goal">
+    <div class="banner-goalcalc">
+      <p class="banner-subtext">
+      Define your goals based on today's cost. We light up the path to achieve it. 
+      </p>
+    
+      <h2>
+        <span>Plannér</span>
+        <span class="red-separator">|</span>
+        <span>Future Goals</span>
+      </h2>
+    </div>
+  </section>
+
   <main class="container">
-    <h2>Goal Planner</h2>
-      <p class="subheading">Requirements</p>
+    <h2>Requirements</h2>
+    <p class="subheading"></p>
 
       <form method="POST" action="/goal" class="goalcalc-form" id="goalForm">
 
@@ -63,6 +79,22 @@
         <button type="submit" class="btn">Calculate Now</button>
       </form>
 
+      <div class="calculator-navigation">
+
+        <p class="calc-nav-title">Explore Other Planning Tools</p>
+        <div class="calculator-actions">
+          <a href="/investment" class="calculator-card">
+          <i class="fas fa-chart-line"></i>
+          <span>Create Portfolio</span>
+          </a>
+
+          <a href="/retirement" class="calculator-card">
+          <i class="fas fa-user-clock"></i>
+          <span>Retire Peacefully</span>
+          </a>
+        </div>
+      </div>  
+
       {% if goal_graph_json %}
         <h3>Your Investment Plan</h3>
         
@@ -83,7 +115,7 @@
           <div id="chart"></div>
         <div class="chart-container" id="invest_chart"></div>
         
-        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
         <script>
           document.addEventListener("DOMContentLoaded", function () {
 
@@ -182,6 +214,13 @@
   <!-- Footer -->
   <footer id="footer"></footer>
 
+  <div id="loading-overlay">
+    <div class="loading-box">
+      <div class="spinner"></div>
+      <p>Preparing your personalized plan…</p>
+    </div>
+  </div>
+
   <!-- JavaScript injection -->
   <script src="{{ url_for('static', filename='loadHeaderFooter.js') }}"></script>
   <!-- JS for dropdown mapping -->
@@ -215,6 +254,13 @@
     }
 
     handleApproach("invApproach", "invApproachValue", "custom_invApproach");
+  </script>
+  <script>
+    document.querySelectorAll("form").forEach(form => {
+      form.addEventListener("submit", function() {
+          document.getElementById("loading-overlay").style.display = "flex";
+      });
+    });
   </script>
 </body>
 </html>
