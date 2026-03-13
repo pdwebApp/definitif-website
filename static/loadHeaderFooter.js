@@ -31,16 +31,33 @@ function initHamburgerToggle() {
   }
 
   // Toggle menu open/close
-  menuToggle.addEventListener('click', () => {
+  menuToggle.addEventListener('click', (e) => {
+    e.stopPropagation();
     navLinks.classList.toggle('active');
     overlay.classList.toggle('active');
+    menuToggle.classList.toggle('active');   // ⭐ for hamburger → X
   });
 
   // Close menu when overlay is clicked
-  overlay.addEventListener('click', () => {
+  overlay.addEventListener('click', closeMenu);
+
+  // Close menu when clicking anywhere outside the menu
+  document.addEventListener('click', (e) => {
+    if (!navLinks.contains(e.target) && !menuToggle.contains(e.target)) {
+      closeMenu();
+    }
+  });
+
+  // Close menu when a link is clicked
+  document.querySelectorAll('.nav-links a').forEach(link => {
+    link.addEventListener('click', closeMenu);
+  });
+
+  function closeMenu() {
     navLinks.classList.remove('active');
     overlay.classList.remove('active');
-  });
+    menuToggle.classList.remove('active');
+  }
 }
 
 // Load header and footer on page load
