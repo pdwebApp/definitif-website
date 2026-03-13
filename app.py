@@ -116,10 +116,12 @@ def investment():
 
         return render_template(
             "investment.html",
+            results=True,
             investmentgrowth_message=investmentgrowth_message,
             graph_json=graph_json,
             investmentgrowth_excel_file=investmentgrowth_excel_path,
-            form_data=form_data
+            form_data=form_data,
+            scroll_to_results=True
         )
 
     # GET request (first load)
@@ -208,15 +210,17 @@ def retirement():
 
         return render_template(
             "retirement.html",
+            results=True,
             form_data=form_data,
             invest_graph_json=invest_graph_json,
             annuity_graph_json=annuity_graph_json,
             requirement_message=requirement_message,
             retirement_message=retirement_message,
             investmentSchedule_excel_file=investmentSchedule_excel_path,
-            annuitySchedule_excel_file=annuitySchedule_excel_path
+            annuitySchedule_excel_file=annuitySchedule_excel_path,
+            scroll_to_results=True
         )
-
+    # GET for First Load
     return render_template("retirement.html", form_data=default_data)
 
 
@@ -280,21 +284,23 @@ def goal():
 
         return render_template(
             "goal.html",
+            results=True,
             form_data=form_data,
             goal_graph_json=goal_graph_json,
             requirement_message=requirement_message,
             goal_message=goal_message,
-            goalSchedule_excel_file=goalSchedule_excel_path
+            goalSchedule_excel_file=goalSchedule_excel_path,
+            scroll_to_results=True
         )
-
+    # GET for First Load
     return render_template("goal.html", form_data=default_data)
 
 # =====================================================
 # RUN APP
 # =====================================================
 
-# if __name__ == "__main__":
-#     app.run(debug=True, host="0.0.0.0", port=5000)
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))
-    app.run(host="0.0.0.0", port=port)
+    app.run(debug=True, host="0.0.0.0", port=5000)
+# if __name__ == "__main__":
+#     port = int(os.environ.get("PORT", 8080))
+#     app.run(host="0.0.0.0", port=port)

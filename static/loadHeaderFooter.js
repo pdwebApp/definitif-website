@@ -105,5 +105,26 @@ function showSuccessPopup() {
 
   popup.classList.add("active");
 
-
 }
+
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener("click", function(e) {
+    e.preventDefault();
+
+    document.querySelector(this.getAttribute("href")).scrollIntoView({
+      behavior: "smooth"
+    });
+  });
+});
+
+window.addEventListener("scroll", function () {
+
+  const header = document.getElementById("header");
+
+  if (window.scrollY > 40) {
+      header.classList.add("scrolled");
+  } else {
+      header.classList.remove("scrolled");
+  }
+
+});

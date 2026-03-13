@@ -7,7 +7,8 @@
   --accent-color: #c40000;
   --dark-color: #000;
   --light-bg: #F8F8F3;
-  --header-bg: #E1DFDF;
+  --header-bg: #fefefe00;
+  --footer-bg: #ddddddeb;
   --header-height: 70px;
 }
 
@@ -15,16 +16,15 @@
 
   --banner-home-img: url("green_yellow_spects.jpg");
   --banner-homeportfolio-img: url("portfolio_pencils_green.jpg");
-  --banner-products-img: url("paper_boats.jpg");
+  --banner-products-img: url("products_pencils.jpg");
   --banner-insights-img: url("green_cork.jpg");
   --banner-about-img: url("about_client_specific.jpg");
   --banner-calculators-img: url("calculators_page.jpg");
-  --banner-login-img: url("outlook_bee.jpg");
+  --banner-login-img: url("reporting_pencil_marker.jpg");
   --banner-loginmessage-img: url("coming_soon_clock.jpg");
-  --banner-goalcalc-img: url("goal_pig_green.jpg");
+  --banner-goalcalc-img: url("goal_goal.jpg");
   --banner-investcalc-img: url("portfolio_play.jpg");
-  --banner-retirecalc-img: url("basket_ball_net.jpg");
-
+  --banner-retirecalc-img: url("retire_sailing.jpg");
 }
 
 /* ============================= */
@@ -84,6 +84,16 @@ header {
   position: fixed;
   top: 0;
   z-index: 1000;
+  background: rgba(255,255,255,0);
+  backdrop-filter: blur(0px);
+  transition: background 0.35s ease, backdrop-filter 0.35s ease, box-shadow 0.35s ease;
+}
+
+/* When user scrolls */
+header.scrolled {
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
 }
 
 .header-container {
@@ -367,10 +377,14 @@ header {
 
 .btn {
   display: inline-block;
-  padding: 12px 28px;
+  grid-column: span 2;
+  justify-self: center;
+  margin-top: 30px;
+  padding: 12px 35px;
   background: rgb(68, 68, 68);
   color: #ffffff;
-  border-radius: 30px;
+  border: none;
+  border-radius: 6px;
   text-decoration: none;
   cursor: pointer;
   transition: 0.3s ease;
@@ -510,69 +524,6 @@ header {
 /* CALCULATOR GRID */
 /* ===================================================== */
 
-.calc-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
-  margin-top: 2rem;
-}
-
-.calc-card {
-  background: #fafafa;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 1.5rem;
-  text-align: center;
-  transition: 
-    transform 0.3s ease,
-    box-shadow 0.3s ease,
-    background-color 0.3s ease,
-    border-color 0.3s ease;
-}
-
-.calc-card img {
-  width: 100%;
-  height: auto;
-  border-radius: 6px;
-  margin-bottom: 1rem;
-}
-
-.calc-card h3 {
-  margin: 0.5rem 0;
-}
-
-.calc-card p {
-  font-size: 14px;
-  color: #555;
-  margin-bottom: 1rem;
-}
-
-.calc-card .btn {
-  display: inline-block;
-  background-color: #000;
-  color: #fff;
-  padding: 10px 20px;
-  border-radius: 30px;
-  text-decoration: none;
-  opacity: 0.9;
-  transition: opacity 0.3s ease;
-}
-
-.calc-card:hover .btn {
-  opacity: 1;
-}
-
-.calc-card .btn:hover {
-  background-color: #c40000;
-}
-
-.calc-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 10px 22px rgba(0,0,0,0.12);
-  background-color: #ffffff;
-  border-color: #c40000;
-}
-
 #loading-overlay {
   position: fixed;
   top: 0;
@@ -678,9 +629,6 @@ header {
 }
 
 /* submit button */
-.calc-form .btn{
-  margin-top: 30px;
-}
 
 #sipTypeGroup {
   grid-column: 1;
@@ -755,23 +703,14 @@ h3 {
   font-weight: 500;
 }
 
-.goalcalc-form button {
-  grid-column: span 2;
-  justify-self: center;
-  margin-top: 30px;
-}
-
-.goalcalc-form button {
-  grid-column: span 2;
-  justify-self: center;
-  margin-top: 20px;
-  width: 220px;
-}
-
 
 /* ============================= */
 /* DOWNLOAD CONTAINER */
 /* ============================= */
+
+#results{
+  scroll-margin-top:120px;
+}
 
 .chart-wrapper {
     position: relative;
@@ -870,6 +809,8 @@ h3 {
   height: 450px;
 }
 
+
+
 /* ===================================================== */
 /* LOGIN PAGE */
 /* ===================================================== */
@@ -912,7 +853,7 @@ h3 {
 /* ===================================================== */
 
 footer {
-  background: var(--header-bg);
+  background: var(--footer-bg);
   color: black;
   padding: 0 8px;
   position: relative;
@@ -1380,7 +1321,8 @@ footer {
     --accent-color: #ff4a4a;
     --dark-color: #e8e8e8;
     --light-bg: #121212;
-    --header-bg: #1b1b1b;
+    --header-bg: #fefefe00;
+    --footer-bg: #262525;
   }
 
   .menu-toggle span {
@@ -1394,6 +1336,10 @@ footer {
 
   header {
     background: var(--header-bg);
+  }
+
+  header.scrolled {
+  background: rgba(20,20,20,0.92);
   }
 
   .nav-links {
@@ -1442,7 +1388,7 @@ footer {
   }
 
   footer {
-    background: var(--header-bg);
+    background: var(--footer-bg);
     color: #ddd;
   }
 
@@ -1530,48 +1476,38 @@ footer {
   font-weight: 600;
 }
 
+body {
+  background: var(--light-bg);
+  color: var(--dark-color);
 }
 
-@media (prefers-color-scheme: dark) {
+.banner-subtext {
+  color: #ddd;
+}
 
-  :root {
-    --dark-color: #e8e8e8;
-    --light-bg: #121212;
-    --header-bg: #1b1b1b;
-  }
+.banner-home h2,
+.banner-homeportfolio h2,
+.banner-products h2,
+.banner-insights h2,
+.banner-about h2,
+.banner-login h2,
+.banner-loginmessage h2,
+.banner-calculators h2,
+.banner-goalcalc h2,
+.banner-investcalc h2,
+.banner-retirecalc h2 {
+  color: #ffffff;
+  padding: 12px;
+  border-radius: 5px;
+}
 
-  body {
-    background: var(--light-bg);
-    color: var(--dark-color);
-  }
+.logo-light {
+  display: none;
+}
 
-  .banner-subtext {
-    color: #ddd;
-  }
-
-  .banner-home h2,
-  .banner-homeportfolio h2,
-  .banner-products h2,
-  .banner-insights h2,
-  .banner-about h2,
-  .banner-login h2,
-  .banner-loginmessage h2,
-  .banner-calculators h2,
-  .banner-goalcalc h2,
-  .banner-investcalc h2,
-  .banner-retirecalc h2 {
-    color: #ffffff;
-    padding: 12px;
-    border-radius: 5px;
-  }
-
-  .logo-light {
-    display: none;
-  }
-
-  .logo-dark {
-    display: block;
-  }
+.logo-dark {
+  display: block;
+}
 
 }
 
@@ -1644,7 +1580,7 @@ footer {
     color: #f0f0f0;
   }
 
-  .login-card:hover
+  .login-card:hover,
   .calculator-card:hover {
     background: rgba(255,255,255,0.15);
   }

@@ -31,7 +31,7 @@
     <h2>Requirements</h2>
     <p class="subheading"></p>
 
-      <form method="POST" action="/goal" class="goalcalc-form" id="goalForm">
+      <form method="POST" action="#results" class="goalcalc-form" id="goalForm">
 
         <div class="form-group">
           <label for="curCost_goal">Current Cost of the Goal (Rs)</label>
@@ -75,8 +75,8 @@
 
           </div>
         </div>
-      
         <button type="submit" class="btn">Calculate Now</button>
+
       </form>
 
       <div class="calculator-navigation">
@@ -95,7 +95,8 @@
         </div>
       </div>  
 
-      {% if goal_graph_json %}
+    <div id="results">
+      {% if results %}
         <h3>Your Investment Plan</h3>
         
         <div class="message-container">
@@ -112,8 +113,17 @@
                   <i class="fas fa-file-excel"></i>
               </a>
           </div>
-          <div id="chart"></div>
         <div class="chart-container" id="invest_chart"></div>
+
+        <div class="calculator-navigation">
+          <p class="calc-nav-title">Need help planning your investments?</p>
+            <div class="calculator-actions">
+              <a href="#get-in-touch" class="calculator-card">
+                <i class="fas fa-envelope"></i>
+                <span>Get in Touch</span>
+              </a>
+            </div>
+        </div>
         
         <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
         <script>
@@ -209,6 +219,7 @@
           window.addEventListener("resize", renderCharts);
           </script>
       {% endif %}
+    </div>
   </main>
 
   <!-- Footer -->
@@ -262,5 +273,15 @@
       });
     });
   </script>
+  <script>
+    window.onload = function() {
+        const results = document.getElementById("results");
+        if(results && results.innerHTML.trim() !== "") {
+            results.scrollIntoView({ behavior: "smooth" });
+        }
+    };
+  </script>
+  
+
 </body>
 </html>

@@ -121,7 +121,8 @@
         </div>
       </div>
 
-    {% if graph_json %} 
+  <div id="results">
+    {% if results %}
       <h3>Expected Growth of Investments</h3>
         <div class="message-container">
           <label for="summary_message" class="summary-title">Summary</label>
@@ -135,10 +136,18 @@
                   <i class="fas fa-file-excel"></i>
               </a>
           </div>
-          <div id="chart"></div>
         </div>
         
         <div class="chart-container" id="chart">
+        <div class="calculator-navigation">
+          <p class="calc-nav-title">Need help planning your investments?</p>
+            <div class="calculator-actions">
+              <a href="#get-in-touch" class="calculator-card">
+                <i class="fas fa-envelope"></i>
+                <span>Get in Touch</span>
+              </a>
+            </div>
+        </div>
           <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
           <script>
             document.addEventListener("DOMContentLoaded", function () {
@@ -233,9 +242,10 @@
 
             renderMainChart();
             window.addEventListener("resize", renderMainChart);
-            </script>
+          </script>
         </div>
-    {% endif %}
+      {% endif %}
+    </div>
   </main>
 
   <!-- Footer -->
@@ -292,6 +302,23 @@
       });
     });
   </script>
-
+  <script>
+    window.onload = function() {
+        const results = document.getElementById("results");
+        if(results && results.innerHTML.trim() !== "") {
+            results.scrollIntoView({ behavior: "smooth" });
+        }
+    };
+  </script>
+  <script>
+    {% if scroll_to_results %}
+    document.addEventListener("DOMContentLoaded", function() {
+        const results = document.getElementById("results");
+        if (results) {
+            results.scrollIntoView({ behavior: "smooth" });
+        }
+    });
+    {% endif %}
+  </script>
 </body>
 </html>
