@@ -1,11 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
+  <meta name="description" content="Définitif Investments - Disciplined wealth management, personalized advisory, and long-term partnership for building and preserving wealth.">
   <title>définitif</title>
-  <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;550;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <link rel="icon" href="{{ url_for('static', filename='definitif_Logo_wb_with_red_hl_square.png') }}">
 </head>
@@ -15,7 +19,7 @@
   <!-- Header -->
   <header id="header"></header>
 
-  <!-- Banner-home Section -->
+  <!-- Hero Section -->
   <div class="banner-home">
     <p class="banner-subtext">
     Our wealth management philosophy combines disciplined investment processes,
@@ -25,56 +29,56 @@
     <h2>
       <span>Clarity</span>
       <span class="red-separator">|</span>
-      <span>Sécurity</span>
+      <span>S&eacute;curity</span>
       <span class="red-separator">|</span>
       <span>Growth</span>
     </h2>
   </div>
 
+  <!-- Portfolio Section -->
   <div class="banner-homeportfolio">
-  <h2>Your Portfolio</h2>
-  <p class="banner-subtext">
-    Access your portfolio through our reporting platform powered by Investwell 
-    to view holdings, track performance, review transactions, 
-    and monitor your investment progress anytime.
-  </p>
+    <h2>Your Portfolio</h2>
+    <p class="banner-subtext">
+      Access your portfolio through our reporting platform powered by Investwell
+      to view holdings, track performance, review transactions,
+      and monitor your investment progress anytime.
+    </p>
+    <a href="/login" class="btn">Coming Soon</a>
+  </div>
 
-  <a href="/login" class="btn">Coming Soon</a>
-</div>
-  
-  <!-- Horizontal Sections -->
-  <div class="landing-grid">
+  <!-- Feature Cards -->
+  <div class="landing-grid stagger-children">
 
-    <a href="{{ url_for('services') }}" class="landing-card">
-      <img src="static/services_tiffin.jpg" alt="Products">
+    <a href="{{ url_for('services') }}" class="landing-card fade-up">
+      <img src="static/services_tiffin.jpg" alt="Financial Strategies">
       <div class="card-overlay">
         <h2>Strategies</h2>
         <p>Explore our complete range of financial offerings tailored to your goals.</p>
       </div>
     </a>
 
-    <a href="{{ url_for('calculators') }}" class="landing-card">
-      <img src="static/goal_arrow.jpg" alt="Calculators">
+    <a href="{{ url_for('calculators') }}" class="landing-card fade-up">
+      <img src="static/goal_arrow.jpg" alt="Financial Calculators">
       <div class="card-overlay">
         <h2>Roadmap</h2>
         <p>Plan your future with powerful financial planning tools.</p>
       </div>
     </a>
 
-    <a href="{{ url_for('insights') }}" class="landing-card">
-      <img src="static/outlook_binocular.jpg" alt="Insights">
+    <a href="{{ url_for('insights') }}" class="landing-card fade-up">
+      <img src="static/outlook_binocular.jpg" alt="Market Insights">
       <div class="card-overlay">
         <h2>Outlook</h2>
         <p>Stay informed with market updates and expert perspectives.</p>
       </div>
     </a>
   </div>
+
   <!-- Footer -->
   <footer id="footer"></footer>
 
-  <!-- JavaScript injection -->
+  <!-- JavaScript -->
   <script src="{{ url_for('static', filename='loadHeaderFooter.js') }}"></script>
 
 </body>
 </html>
-

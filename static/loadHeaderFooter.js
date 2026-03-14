@@ -6,12 +6,11 @@ async function loadComponent(id, file) {
     const html = await response.text();
     document.getElementById(id).innerHTML = html;
 
-    // Attach toggle logic only when header is loaded
     if (id === "header") {
       initHamburgerToggle();
+      highlightActiveNav();
     }
 
-    // Email Send Logic only when footer is loaded
     if (id === "footer") {
       initFooterForm();
     }
@@ -25,30 +24,23 @@ function initHamburgerToggle() {
   const navLinks = document.querySelector('.nav-links');
   const overlay = document.querySelector('.overlay');
 
-  if (!menuToggle || !navLinks || !overlay) {
-    console.error("Hamburger toggle elements not found in header.");
-    return;
-  }
+  if (!menuToggle || !navLinks || !overlay) return;
 
-  // Toggle menu open/close
   menuToggle.addEventListener('click', (e) => {
     e.stopPropagation();
     navLinks.classList.toggle('active');
     overlay.classList.toggle('active');
-    menuToggle.classList.toggle('active');   // ⭐ for hamburger → X
+    menuToggle.classList.toggle('active');
   });
 
-  // Close menu when overlay is clicked
   overlay.addEventListener('click', closeMenu);
 
-  // Close menu when clicking anywhere outside the menu
   document.addEventListener('click', (e) => {
     if (!navLinks.contains(e.target) && !menuToggle.contains(e.target)) {
       closeMenu();
     }
   });
 
-  // Close menu when a link is clicked
   document.querySelectorAll('.nav-links a').forEach(link => {
     link.addEventListener('click', closeMenu);
   });
@@ -60,15 +52,25 @@ function initHamburgerToggle() {
   }
 }
 
-// Load header and footer on page load
+function highlightActiveNav() {
+  const path = window.location.pathname;
+  document.querySelectorAll('.nav-links a').forEach(link => {
+    const href = link.getAttribute('href');
+    if (href === path || (path === '/' && href === '/')) {
+      link.style.color = 'var(--primary)';
+    }
+  });
+}
+
+// Load header and footer
 document.addEventListener("DOMContentLoaded", () => {
   loadComponent("header", "/static/header.html");
   loadComponent("footer", "/static/footer.html");
+  initScrollAnimations();
 });
 
 function initFooterForm() {
   const form = document.getElementById("contactForm");
-  console.log("Footer form found:", form);
   if (!form) return;
 
   form.addEventListener("submit", function(e) {
@@ -79,9 +81,7 @@ function initFooterForm() {
     fetch(form.action, {
       method: "POST",
       body: formData,
-      headers: {
-        'Accept': 'application/json'
-      }
+      headers: { 'Accept': 'application/json' }
     })
     .then(response => {
       if (response.ok) {
@@ -98,50 +98,65 @@ function initFooterForm() {
 }
 
 function showSuccessPopup() {
-
   let popup = document.getElementById("successPopup");
 
-  // Create popup only once
   if (!popup) {
     popup = document.createElement("div");
     popup.id = "successPopup";
     popup.className = "popup-overlay";
-
     popup.innerHTML = `
       <div class="popup-message">
         We will get back to you shortly.
       </div>
     `;
-
     document.body.appendChild(popup);
-
     popup.addEventListener("click", function() {
       popup.classList.remove("active");
     });
   }
 
   popup.classList.add("active");
-
 }
 
+// Smooth scroll for anchor links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   anchor.addEventListener("click", function(e) {
     e.preventDefault();
-
-    document.querySelector(this.getAttribute("href")).scrollIntoView({
-      behavior: "smooth"
-    });
+    const target = document.querySelector(this.getAttribute("href"));
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth" });
+    }
   });
 });
 
+// Header scroll effect
 window.addEventListener("scroll", function () {
-
   const header = document.getElementById("header");
+  if (!header) return;
 
   if (window.scrollY > 40) {
-      header.classList.add("scrolled");
+    header.classList.add("scrolled");
   } else {
-      header.classList.remove("scrolled");
+    header.classList.remove("scrolled");
   }
-
 });
+
+// Scroll-triggered fade-in animations
+function initScrollAnimations() {
+  const elements = document.querySelectorAll('.fade-up');
+  if (elements.length === 0) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, {
+    threshold: 0.1,
+    rootMargin: '0px 0px -40px 0px'
+  });
+
+  elements.forEach(el => observer.observe(el));
+}

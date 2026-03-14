@@ -1,24 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
   <title>Insights - définitif</title>
-  <link rel="icon" href="{{ url_for('static', filename='definitif_Logo_wb_with_red_hl_square.png') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <!-- Font Awesome for icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;550;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="icon" href="{{ url_for('static', filename='definitif_Logo_wb_with_red_hl_square.png') }}">
 </head>
 
 <body>
-  <!-- Header -->
   <header id="header"></header>
 
-  <!-- Banner -->
   <div class="banner-insights">
     <h2>
       <span>Outlook</span>
       <span class="red-separator">|</span>
-      <span>Trénd</span>
+      <span>Tr&eacute;nd</span>
       <span class="red-separator">|</span>
       <span>Insights</span>
     </h2>
@@ -27,7 +29,7 @@
   <section class="ssp-section">
     <div class="container">
 
-      <div class="section-header">
+      <div class="section-header fade-up">
         <h2>Snapshots</h2>
         <p>
           Stay informed with our perspectives on key developments across equity and
@@ -35,21 +37,18 @@
         </p>
       </div>
 
-      <div class="ssp-grid">
+      <div class="ssp-grid stagger-children">
 
-        <!-- Stock Market -->
-        <div class="ssp-card">
+        <div class="ssp-card fade-up">
           <div class="card-icon">
-              <i class="fas fa-chart-line"></i>
+            <i class="fas fa-chart-line"></i>
           </div>
           <h3>Indian Stock Market Trends</h3>
-
           <p>
             The Indian equity market is currently experiencing a cautious and
             consolidation-driven phase. Benchmark indices are trading within a range,
             reflecting mixed investor sentiment amid global uncertainties.
           </p>
-
           <ul>
             <li><strong>Market Sentiment:</strong> Cautious with intermittent volatility.</li>
             <li><strong>Sector Trends:</strong> IT sector pressure while select mid-cap stocks show resilience.</li>
@@ -57,25 +56,21 @@
             <li><strong>Global Influence:</strong> US markets, commodities, and geopolitics remain key drivers.</li>
             <li><strong>Outlook:</strong> Markets remain data-dependent with focus on GDP, inflation, and RBI policy.</li>
           </ul>
-
           <p>
             Overall, the equity market is currently consolidating with stock-specific
             opportunities emerging across sectors.
           </p>
         </div>
 
-        <!-- Bond Market -->
-        <div class="ssp-card">
+        <div class="ssp-card fade-up">
           <div class="card-icon">
-              <i class="fas fa-landmark"></i>
+            <i class="fas fa-landmark"></i>
           </div>
           <h3>Indian Bond Market Trends</h3>
-
           <p>
             The Indian bond market has shown relative stability, with government bond
             yields softening slightly as institutional demand supports prices.
           </p>
-
           <ul>
             <li><strong>Yield Movement:</strong> 10-year government bond yield around mid-6% range.</li>
             <li><strong>Auction Demand:</strong> Strong participation in government debt auctions.</li>
@@ -83,7 +78,6 @@
             <li><strong>Policy Watch:</strong> Inflation data and RBI policy remain key drivers.</li>
             <li><strong>Investment View:</strong> Fixed income remains attractive for conservative investors.</li>
           </ul>
-
           <p>
             Stable yields and supportive liquidity conditions continue to make fixed
             income an important component of diversified portfolios.
@@ -94,10 +88,8 @@
 
     </div>
   </section>
-  <!-- Footer -->
-  <footer id="footer"></footer>
 
-  <!-- JavaScript injection -->
+  <footer id="footer"></footer>
   <script src="{{ url_for('static', filename='loadHeaderFooter.js') }}"></script>
 </body>
 </html>

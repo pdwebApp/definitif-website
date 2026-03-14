@@ -1,26 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
   <title>Login - définitif</title>
-  <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;550;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <link rel="icon" href="{{ url_for('static', filename='definitif_Logo_wb_with_red_hl_square.png') }}">
 </head>
 
 <body>
-
-  <!-- Header -->
   <header id="header"></header>
 
-  <!-- Banner-home Section -->
   <div class="banner-login">
     <h2>
       <span>Simple</span>
       <span class="red-separator">|</span>
-      <span>Sécure</span>
+      <span>S&eacute;cure</span>
       <span class="red-separator">|</span>
       <span>Insightful</span>
     </h2>
@@ -29,33 +29,27 @@
   <div class="banner-loginmessage">
     <h2>Coming Soon</h2>
     <p class="banner-subtext">
-    Our client reporting portal will soon be available.
-    Through this portal you will be able to securely access
-    your portfolio reports powered by Investwell.
+      Our client reporting portal will soon be available.
+      Through this portal you will be able to securely access
+      your portfolio reports powered by Investwell.
     </p>
     <div class="login-actions">
-        <a href="/services" class="login-card">
+      <a href="/services" class="login-card">
         <i class="fas fa-briefcase"></i>
         <span>Explore Services</span>
-        </a>
-
-        <a href="/calculators" class="login-card">
+      </a>
+      <a href="/calculators" class="login-card">
         <i class="fas fa-calculator"></i>
         <span>Financial Tools</span>
-        </a>
-
-        <a href="/insights" class="login-card">
+      </a>
+      <a href="/insights" class="login-card">
         <i class="fas fa-chart-line"></i>
         <span>Market Insights</span>
-        </a>
+      </a>
     </div>
   </div>
-  <!-- Footer -->
+
   <footer id="footer"></footer>
-
-  <!-- JavaScript injection -->
   <script src="{{ url_for('static', filename='loadHeaderFooter.js') }}"></script>
-
 </body>
 </html>
-

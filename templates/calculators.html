@@ -1,42 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
   <title>Tools - définitif</title>
-  <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;550;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <link rel="icon" href="{{ url_for('static', filename='definitif_Logo_wb_with_red_hl_square.png') }}">
 </head>
 
 <body>
-  <!-- Common header injected -->
   <header id="header"></header>
 
-  <!-- Banner-home Section -->
   <div class="banner-calculators">
     <p class="banner-subtext">
-    Simple tools to turn your financial goals into achievable plans. 
+      Simple tools to turn your financial goals into achievable plans.
     </p>
     <h2>
-      <span>Dréam</span>
+      <span>Dr&eacute;am</span>
       <span class="red-separator">|</span>
       <span>Plan</span>
       <span class="red-separator">|</span>
       <span>Prosper</span>
     </h2>
   </div>
-    <!-- Horizontal Sections -->
-  <div class="landing-grid">
-    <a href="{{ url_for('investment') }}" class="landing-card">
-      <img src="static/growth_hand.jpg" alt="Investment Growth">
+
+  <div class="landing-grid stagger-children">
+    <a href="{{ url_for('investment') }}" class="landing-card fade-up">
+      <img src="static/growth_hand.jpg" alt="Investment Growth Calculator">
       <div class="card-overlay">
         <h2>Investment Growth</h2>
         <p>Estimate your investment growth over time.</p>
       </div>
     </a>
-    
-    <a href="{{ url_for('goal') }}" class="landing-card">
+
+    <a href="{{ url_for('goal') }}" class="landing-card fade-up">
       <img src="static/goal_peak.jpg" alt="Goal Planner">
       <div class="card-overlay">
         <h2>Goal Planner</h2>
@@ -44,8 +46,8 @@
       </div>
     </a>
 
-    <a href="{{ url_for('retirement') }}" class="landing-card">
-      <img src="static/retire_couple.jpg" alt="Retirement">
+    <a href="{{ url_for('retirement') }}" class="landing-card fade-up">
+      <img src="static/retire_couple.jpg" alt="Retirement Planner">
       <div class="card-overlay">
         <h2>Retirement</h2>
         <p>Plan your retirement with our advanced retirement planning tool.</p>
@@ -53,11 +55,7 @@
     </a>
   </div>
 
-  <!-- Common footer injected -->
   <footer id="footer"></footer>
-
-  <!-- JavaScript injection -->
   <script src="{{ url_for('static', filename='loadHeaderFooter.js') }}"></script>
-
 </body>
 </html>
