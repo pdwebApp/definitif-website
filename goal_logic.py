@@ -216,21 +216,21 @@ def goalCalci(curCost_goal,investTenure,currentSavings_goal,expInflation,invAppr
     # Requirement Message
     requirement_message = (
         f"At the time when your goal approaches, you will need Rs. {int(amtRequired_goal)}. \n\n"
-        f"Currently you have earmarked Rs. {int(currentSavings_goal)} for the goal."
+        f"Currently you have earmarked Rs. {int(currentSavings_goal)} for the same."
     )
     
     if (quantumSIPinc == 0) or (investTenure <=1):
         goal_message = (
-            f"There are <b>two</b> ways to achieve your perfect retirement.<br><br>"
-            f"1. Invest <b>Rs. {investToday}</b> today for the next <b>{investTenure}</b> years.<br>"
-            f"2. Invest <b>Rs. {amountSIP}</b> monthly for the next <b>{investTenure}</b> years."
+            f"We can help you implement either of the <b>two</b> options to achieve your goal successfully.<br><br>"
+            f"Option 1. Invest <b>Rs. {investToday}</b> today for the next <b>{investTenure}</b> years.<br>"
+            f"Option 2. Invest <b>Rs. {amountSIP}</b> monthly for the next <b>{investTenure}</b> years."
         )
     else:
         goal_message = (
-            f"There are <b>three</b> ways to achieve your goal.<br><br>"
-            f"1. Invest <b>Rs. {investToday}</b> today for the next <b>{investTenure}</b> years.<br>"
-            f"2. Invest <b>Rs. {amountSIP}</b> monthly for the next <b>{investTenure}</b> years.<br>"
-            f"3. Start investing <b>Rs. {incSIPschedule['SIP Amount'].iloc[0]}</b> monthly "
+            f"We can help you implement either of the <b>three</b> options to achieve your goal.<br><br>"
+            f"Option 1. Invest <b>Rs. {investToday}</b> today for the next <b>{investTenure}</b> years.<br>"
+            f"Option 2. Invest <b>Rs. {amountSIP}</b> monthly for the next <b>{investTenure}</b> years.<br>"
+            f"Option 3. Start investing <b>Rs. {incSIPschedule['SIP Amount'].iloc[0]}</b> monthly "
             f"and increase it by <b>{percentage_SIPinc}%</b> annually."
         )
 

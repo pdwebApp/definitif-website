@@ -17,9 +17,9 @@
   <section class="banner-invest">
     <div class="banner-investcalc">
       <p class="banner-subtext">
-      You can create a Portfolio of your choice by selecting 
-      the required Asset Allocation, expected Returns and the mode of 
-      investment. We show you the expected value at the end of tenure. 
+        Create a portfolio of your choice by selecting the desired asset allocation, 
+        expected returns, and investment mode. The tool estimates the potential value 
+        of your portfolio at the end of the chosen investment period. 
       </p>
     
       <h2>
@@ -32,7 +32,7 @@
 
 
   <main class="container">
-    <h2>Requirements</h2>
+    <h2>Portfolio Details</h2>
      <p class="subheading"></p>
 
     <form method="POST" action="/investment" class="calc-form" id="investmentForm">
@@ -41,17 +41,17 @@
 
       <!-- Returns -->
       <div class="form-group">
-        <label for="equity_return">Equity Return (%)</label>
+        <label for="equity_return">Expected Equity Return (%)</label>
         <input type="number" id="equity_return" name="equity_return" value="{{ form_data.get('equity_return', 12) }}" required>
       </div>
 
       <div class="form-group">
-        <label for="debt_return">Debt Return (%)</label>
+        <label for="debt_return">Expected Debt Return (%)</label>
         <input type="number" id="debt_return" name="debt_return" value="{{ form_data.get('debt_return', 6) }}" required>
       </div>
 
       <div class="form-group">
-        <label for="other_return">Other Return (%)</label>
+        <label for="other_return">Expected Other Return (%)</label>
         <input type="number" id="other_return" name="other_return" value="{{ form_data.get('other_return', 8) }}" required>
       </div>
 
@@ -111,12 +111,12 @@
         <div class="calculator-actions">
           <a href="/goal" class="calculator-card">
           <i class="fas fa-coins"></i>
-          <span>Achieve a Goal</span>
+          <span>Goal Planning</span>
           </a>
 
           <a href="/retirement" class="calculator-card">
           <i class="fas fa-user-clock"></i>
-          <span>Retire Peacefully</span>
+          <span>Retirement Planning</span>
           </a>
         </div>
       </div>

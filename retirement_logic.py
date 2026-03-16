@@ -350,25 +350,25 @@ def retirementCalci(clientAge, clientRetAge, curMthExp, invApproach, principalPr
 
     if currentSavings_Retire > 0:
         requirement_message = (
-            f"At the Retirement Age, you need Rs. {amtRequired_retire}. \n\n"
-            f"Currently you have earmarked Rs. {currentSavings_Retire} for the retirement."
+            f"At the Retirement Age, you will need Rs. {amtRequired_retire}. \n\n"
+            f"Currently you have earmarked Rs. {currentSavings_Retire} for your retirement."
         )
     else:
         requirement_message = (
-            f"At the Retirement Age, you need Rs. {amtRequired_retire} to achieve your retirement goal."
+            f"At the Retirement Age, you will need Rs. {amtRequired_retire}."
         )
     if (quantumSIPinc == 0) or (invTenure <= 1):
         retirement_message = (
-            f"There are <b>two</b> ways to achieve your perfect retirement.<br><br>"
-            f"1. Invest <b>Rs. {investToday}</b> today for the next <b>{invTenure}</b> years.<br>"
-            f"2. Invest <b>Rs. {amountSIP}</b> monthly for the next <b>{invTenure}</b> years."
+            f"We can help you implement either of the <b>two</b> options to achieve your perfect retirement.<br><br>"
+            f"Option 1. Invest <b>Rs. {investToday}</b> today for the next <b>{invTenure}</b> years.<br>"
+            f"Option 2. Invest <b>Rs. {amountSIP}</b> monthly for the next <b>{invTenure}</b> years."
         )
     else:
         retirement_message = (
-            f"There are <b>three</b> ways to achieve your perfect retirement.<br><br>"
-            f"1. Invest <b>Rs. {investToday}</b> today for the next <b>{invTenure}</b> years.<br>"
-            f"2. Invest <b>Rs. {amountSIP}</b> monthly for the next <b>{invTenure}</b> years.<br>"
-            f"3. Start investing <b>Rs. {incSIPschedule['SIP Amount'].iloc[0]}</b> monthly "
+            f"We can help you implement either of the <b>three</b> options to achieve your perfect retirement.<br><br>"
+            f"Option 1. Invest <b>Rs. {investToday}</b> today for the next <b>{invTenure}</b> years.<br>"
+            f"Option 2. Invest <b>Rs. {amountSIP}</b> monthly for the next <b>{invTenure}</b> years.<br>"
+            f"Option 3. Start investing <b>Rs. {incSIPschedule['SIP Amount'].iloc[0]}</b> monthly "
             f"and increase it by <b>{percentage_SIPinc}%</b> annually."
         )
 
