@@ -1,6 +1,5 @@
 import os
-
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 import pandas as pd
 import plotly
 import json
@@ -9,6 +8,16 @@ import investment_logic
 from retirement_logic import retirementCalci
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
+
+# =====================================================
+# WEBSITE REROUTING
+# =====================================================
+
+@app.before_request
+def redirect_to_www():
+    host = request.host
+    if host == "definitif.app":
+        return redirect(f"https://www.definitif.app{request.full_path}", code=301)
 
 # =====================================================
 # BASIC ROUTES
