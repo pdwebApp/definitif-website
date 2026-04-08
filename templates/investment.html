@@ -91,13 +91,13 @@
       <div class="form-group sip-group">
         <label>Annual SIP Increment Type</label>
         <div class="input-with-value">
-          <select name="sipIncrementType" id="sipIncrementType" class="approach-input">
-            <option value="Nil" {% if form_data.sipIncrementType == "Nil" %}selected{% endif %}>Nil</option>
-            <option value="Percentage" {% if form_data.sipIncrementType == "Percentage" %}selected{% endif %}>Percentage</option>
-            <option value="Fixed" {% if form_data.sipIncrementType == "Fixed" %}selected{% endif %}>Fixed</option>
+          <select name="annual_SIP_increment_in" id="sipIncrementType" class="approach-input">
+            <option value="Nil" {% if form_data.annual_SIP_increment_in == "Nil" %}selected{% endif %}>Nil</option>
+            <option value="Percentage" {% if form_data.annual_SIP_increment_in == "Percentage" %}selected{% endif %}>Percentage</option>
+            <option value="Fixed Amount" {% if form_data.annual_SIP_increment_in == "Fixed Amount" %}selected{% endif %}>Fixed Amount</option>
           </select>
-          <input type="number" id="sipIncrementValue" name="sipIncrementValue" class="approach-input"
-                value="{{ form_data.sipIncrementValue or '' }}" placeholder="Enter value" style="display:none;">
+          <input type="number" id="sip_increment" name="sip_increment" class="approach-input"
+                value="{{ form_data.sip_increment or '' }}" placeholder="Enter value" style="display:none;">
         </div>
        </div>
       </div>
@@ -280,7 +280,7 @@
          SIP Increment Toggle
       ------------------------- */
       const sipType = document.getElementById("sipIncrementType");
-      const sipValue = document.getElementById("sipIncrementValue");
+      const sipValue = document.getElementById("sip_increment");
 
       function updateSipField() {
         if (sipType.value === "Nil") {

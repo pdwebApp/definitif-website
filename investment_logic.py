@@ -7,6 +7,12 @@ def investmentGrowth_calci(equity_return, debt_return, other_return,
                            equity_allocation, debt_allocation, other_allocation,
                            onetime_amount, sip_amount, tenure_months,
                            annual_SIP_increment_in, sip_increment=0):
+    
+    print("annual_SIP_increment_in:", annual_SIP_increment_in)
+    print("sip_increment:", sip_increment)
+
+    # Since tenure starts with 0th month, adding 1 extra month for calculations
+    tenure_months = tenure_months + 1
 
     if annual_SIP_increment_in != 'Nil':
         no_inc = tenure_months // 12 + (1 if tenure_months % 12 > 0 else 0)
@@ -14,7 +20,7 @@ def investmentGrowth_calci(equity_return, debt_return, other_return,
     # SIP Cashflow
     if annual_SIP_increment_in == 'Nil':
         sip_amt = [sip_amount for _ in range(tenure_months)]
-    elif annual_SIP_increment_in == 'Amount':
+    elif annual_SIP_increment_in == 'Fixed Amount':
         sip_amt = []
         for multiple in range(no_inc):
             for _ in range(12):
@@ -26,6 +32,8 @@ def investmentGrowth_calci(equity_return, debt_return, other_return,
             for _ in range(12):
                 sip_amt.append(round(sip_amount * (1 + sip_increment/100)**multiple))
         sip_amt = sip_amt[:tenure_months]
+    # Since the tenure is actually 12 and we have added 1 month to negate the 
+    sip_amt[-1] = 0
 
     # Portfolio return
     equity_return /= 100

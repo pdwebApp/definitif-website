@@ -139,6 +139,10 @@
         <div class="message-container">
           <label for="summary_message" class="summary-title">Summary</label>
           <div class="summary-text">
+            {{ requirement_message | safe }}
+          </div>
+          <br>
+          <div class="summary-text">
             {{ retirement_message | safe }}
           </div>
         </div>

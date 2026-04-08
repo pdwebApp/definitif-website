@@ -11,6 +11,7 @@ from pandas.tseries.offsets import Day, MonthEnd
 
 def incrementalSIP(pf_return, tenure, amount, quantSIPinc):
 # Number of increments (If there are any kind of increments in monthly investments)
+    tenure = tenure + 1
     no_inc = np.nan
     if tenure  % 12 > 0:
         no_inc = tenure // 12 + 1
@@ -23,6 +24,8 @@ def incrementalSIP(pf_return, tenure, amount, quantSIPinc):
             sip_amt.append(round(amount*(1 + quantSIPinc)**multiple))
     if tenure % 12 > 0:
         sip_amt = sip_amt[:-(no_inc*12 - tenure)]
+    # Correcting the 0th month issue by making the last month SIP as ZERO
+    sip_amt[-1] = 0
 
     # Incremental Principle Amounts
     inc_principle = [amount]
@@ -204,8 +207,11 @@ def retirementCalci(clientAge, clientRetAge, curMthExp, invApproach, principalPr
                         ((1 + annual_inv_return) ** invTenure)
                     )
     # Monthly SIP needed to achieve the target principal amount required on the first yaer of retirement
-    amountSIP = int(npf.pmt(portfolio_return_mth, invTenure*12, 0, 
-                            -(annuitySchedule['Remaining Amount'].iloc[0]-value_currentSavings), 0))
+    if investToday <= 0:
+        amountSIP = 0
+    else:
+        amountSIP = int(npf.pmt(portfolio_return_mth, invTenure*12, 0, 
+                                -(annuitySchedule['Remaining Amount'].iloc[0]-value_currentSavings), 0))
     
     # Creating dummy dates based on todays dates (Taking month start)
     initial_date = datetime.today().strftime('%Y-%m-%d')
@@ -216,40 +222,48 @@ def retirementCalci(clientAge, clientRetAge, curMthExp, invApproach, principalPr
             
     # Extracting the dates based on the chosen tenure
     value_dates = [initial_date]
-    for month in range(1,invTenure*12):
+    for month in range(1,invTenure*12+1):
         value_dates.append((datetime.strptime(initial_date, '%Y-%m-%d') +     \
                             relativedelta.relativedelta(months=month)).strftime('%Y-%m-%d'))
-    # Incremental SIP value - Back Calculation
-    period = invTenure*12
-    upperSIPlimit = int(npf.pmt(portfolio_return_mth, period, 0, -(annuitySchedule['Remaining Amount'].iloc[0]-value_currentSavings), 0))
-    # Setting up the Left Right and Mid point of the data for Binary Search
-    sipStart_left = int(1)
-    sipStart_right = int(upperSIPlimit)
-    sipStart_mid = int((sipStart_left + sipStart_right)/2)
-    # Just a dummy value to start the while loop
-    sipError_mid = errorAcceptFactor*2
     
-    # Loop runs as long as the error factor is above "errorAcceptFactor"
-    while (sipError_mid >= errorAcceptFactor):   
-        value_left = incrementalSIP(portfolio_return_mth, period, sipStart_left, quantumSIPinc)
-        value_right = incrementalSIP(portfolio_return_mth, period, sipStart_right, quantumSIPinc)
-        value_mid = incrementalSIP(portfolio_return_mth, period, sipStart_mid, quantumSIPinc)
-    # Error Values
-        sipError_left = abs(value_left[1][-1] - (annuitySchedule['Remaining Amount'].iloc[0]-value_currentSavings))
-        sipError_right = abs(value_right[1][-1] - (annuitySchedule['Remaining Amount'].iloc[0]-value_currentSavings))
-        sipError_mid = abs(value_mid[1][-1] - (annuitySchedule['Remaining Amount'].iloc[0]-value_currentSavings))
-    # Binary Search method to eleminate data quickly
-        if (sipError_mid == sipError_left) & (sipError_mid == sipError_left):
-            sipError_mid = errorAcceptFactor - 1
-        elif sipError_left == max(sipError_left, sipError_mid, sipError_right):
-            sipStart_left = sipStart_mid
-        elif sipError_right == max(sipError_left, sipError_mid, sipError_right):
-            sipStart_right = sipStart_mid
-        sipStart_mid = int((sipStart_left + sipStart_right)/2)
-    # Preparing the data frame to store the results
+    # Dataframe to save the investment schedule
     incSIPschedule = pd.DataFrame(index = value_dates, columns = ['SIP Amount', 'SIP Value'])
-    incSIPschedule['SIP Amount'] = value_mid[0]
-    incSIPschedule['SIP Value'] = value_mid[1]
+
+    if investToday <= 0:
+        incSIPschedule['SIP Amount'] = 0
+        incSIPschedule['SIP Value'] = 0
+    else: 
+
+        # Incremental SIP value - Back Calculation
+        period = invTenure*12
+        upperSIPlimit = int(npf.pmt(portfolio_return_mth, period, 0, -(annuitySchedule['Remaining Amount'].iloc[0]-value_currentSavings), 0))
+        # Setting up the Left Right and Mid point of the data for Binary Search
+        sipStart_left = int(1)
+        sipStart_right = int(upperSIPlimit)
+        sipStart_mid = int((sipStart_left + sipStart_right)/2)
+        # Just a dummy value to start the while loop
+        sipError_mid = errorAcceptFactor*2
+        
+        # Loop runs as long as the error factor is above "errorAcceptFactor"
+        while (sipError_mid >= errorAcceptFactor):   
+            value_left = incrementalSIP(portfolio_return_mth, period, sipStart_left, quantumSIPinc)
+            value_right = incrementalSIP(portfolio_return_mth, period, sipStart_right, quantumSIPinc)
+            value_mid = incrementalSIP(portfolio_return_mth, period, sipStart_mid, quantumSIPinc)
+        # Error Values
+            sipError_left = abs(value_left[1][-1] - (annuitySchedule['Remaining Amount'].iloc[0]-value_currentSavings))
+            sipError_right = abs(value_right[1][-1] - (annuitySchedule['Remaining Amount'].iloc[0]-value_currentSavings))
+            sipError_mid = abs(value_mid[1][-1] - (annuitySchedule['Remaining Amount'].iloc[0]-value_currentSavings))
+        # Binary Search method to eleminate data quickly
+            if (sipError_mid == sipError_left) & (sipError_mid == sipError_left):
+                sipError_mid = errorAcceptFactor - 1
+            elif sipError_left == max(sipError_left, sipError_mid, sipError_right):
+                sipStart_left = sipStart_mid
+            elif sipError_right == max(sipError_left, sipError_mid, sipError_right):
+                sipStart_right = sipStart_mid
+            sipStart_mid = int((sipStart_left + sipStart_right)/2)
+        # Allocating the data to respective fields in the dataframe
+        incSIPschedule['SIP Amount'] = value_mid[0]
+        incSIPschedule['SIP Value'] = value_mid[1]
     
     # Current Savings Schedule
     savingsSchedule = pd.DataFrame(index = value_dates, columns = ['Savings Amount', 'Savings Value'])
@@ -350,26 +364,32 @@ def retirementCalci(clientAge, clientRetAge, curMthExp, invApproach, principalPr
 
     if currentSavings_Retire > 0:
         requirement_message = (
-            f"At the Retirement Age, you will need Rs. {amtRequired_retire}. \n\n"
-            f"Currently you have earmarked Rs. {currentSavings_Retire} for your retirement."
+            f"At the Retirement Age, you will need Rs. {amtRequired_retire} \n\n"
+            f"and currently you have earmarked Rs. {int(currentSavings_Retire)} for the same."
         )
     else:
         requirement_message = (
             f"At the Retirement Age, you will need Rs. {amtRequired_retire}."
         )
-    if (quantumSIPinc == 0) or (invTenure <= 1):
+    if investToday <= 0:
         retirement_message = (
-            f"We can help you implement either of the <b>two</b> options to achieve your perfect retirement.<br><br>"
-            f"Option 1. Invest <b>Rs. {investToday}</b> today for the next <b>{invTenure}</b> years.<br>"
-            f"Option 2. Invest <b>Rs. {amountSIP}</b> monthly for the next <b>{invTenure}</b> years."
+            f"Your current savings put you in a strong position for retirement. \n\n"
+            f"With our guidance on investment decisions, you’ll remain on track throughout your journey."
         )
     else:
-        retirement_message = (
-            f"We can help you implement either of the <b>three</b> options to achieve your perfect retirement.<br><br>"
-            f"Option 1. Invest <b>Rs. {investToday}</b> today for the next <b>{invTenure}</b> years.<br>"
-            f"Option 2. Invest <b>Rs. {amountSIP}</b> monthly for the next <b>{invTenure}</b> years.<br>"
-            f"Option 3. Start investing <b>Rs. {incSIPschedule['SIP Amount'].iloc[0]}</b> monthly "
-            f"and increase it by <b>{percentage_SIPinc}%</b> annually."
-        )
+        if (quantumSIPinc == 0) or (invTenure <= 1):
+            retirement_message = (
+                f"We can help you implement either of the <b>two</b> options to achieve your perfect retirement.<br>"
+                f"<i>Option 1. Invest <b>Rs. {investToday}</b> today for the next <b>{invTenure}</b> years.<br></i>"
+                f"<i>Option 2. Invest <b>Rs. {amountSIP}</b> monthly for the next <b>{invTenure}</b> years.</i>"
+            )
+        else:
+            retirement_message = (
+                f"We can help you implement either of the <b>three</b> options to achieve your perfect retirement.<br>"
+                f"<i>Option 1. Invest <b>Rs. {investToday}</b> today for the next <b>{invTenure}</b> years.<br></i>"
+                f"<i>Option 2. Invest <b>Rs. {amountSIP}</b> monthly for the next <b>{invTenure}</b> years.<br></i>"
+                f"<i>Option 3. Start investing <b>Rs. {incSIPschedule['SIP Amount'].iloc[0]}</b> monthly "
+                f"and increase it by <b>{percentage_SIPinc}%</b> annually.</i>"
+            )
 
     return investmentSchedule, annuitySchedule, fig1, fig2, requirement_message, retirement_message
