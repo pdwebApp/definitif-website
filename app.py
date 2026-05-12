@@ -48,7 +48,13 @@ SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise ValueError("SUPABASE_URL and SUPABASE_KEY must be set")
 
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+def get_supabase_client():
+    return create_client(
+        os.environ["SUPABASE_URL"],
+        os.environ["SUPABASE_KEY"]
+    )
+
+supabase = get_supabase_client()
 
 # =====================================================
 # FLASK APP
@@ -60,10 +66,10 @@ app = Flask(
     static_folder=os.path.join(BASE_DIR, "static")
 )
 
-app.secret_key = os.environ.get("FLASK_SECRET_KEY")
+app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
 if not app.secret_key:
-    raise RuntimeError("FLASK_SECRET_KEY environment variable is not set!")
+    app.secret_key = "dev-only-fallback"
 
 # =====================================================
 # CONFIG
@@ -668,5 +674,21 @@ def goal():
 # RUN APP FOR CLOUDRUN
 # =====================================================
 
+def create_app():
+
+    app = Flask(__name__)
+
+    app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev")
+
+    return app
+
+app = create_app()
+
+supabase = create_client(
+    os.environ["SUPABASE_URL"],
+    os.environ["SUPABASE_KEY"]
+)
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
