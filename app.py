@@ -65,7 +65,6 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY")
 if not app.secret_key:
     raise RuntimeError("FLASK_SECRET_KEY environment variable is not set!")
 
-
 # =====================================================
 # CONFIG
 # =====================================================
@@ -652,25 +651,22 @@ def goal():
 
 
 # =====================================================
-# MAIN
+# RUN APP FOR LOCAL
+# =====================================================
+
+# if __name__ == "__main__":
+
+#     port = int(os.environ.get("PORT", 5000))
+
+#     app.run(
+#         host="0.0.0.0",
+#         port=port,
+#         debug=False
+#     )
+
+# =====================================================
+# RUN APP FOR CLOUDRUN
 # =====================================================
 
 if __name__ == "__main__":
-
-    port = int(os.environ.get("PORT", 5000))
-
-    app.run(
-        host="0.0.0.0",
-        port=port,
-        debug=False
-    )
-
-# =====================================================
-# RUN APP
-# =====================================================
-
-# if __name__ == "__main__":
-# #     app.run(debug=True, host="0.0.0.0", port=5000)
-# if __name__ == "__main__":
-#     port = int(os.environ.get("PORT", 8080))
-#     app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
