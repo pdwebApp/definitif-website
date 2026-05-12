@@ -1,0 +1,3848 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<style>
+body{visibility:hidden}
+</style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>écho - Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='dash.css') }}">
+<link rel="icon" href="{{ url_for('static', filename='dashLogos/echo-logo-square.png') }}">
+
+</head>
+<body>
+
+<div id="dashHeader"></div>
+<!-- LOGIN -->
+<div class="login" id="loginPage">
+<div class="login-card">
+<h2 id="loginTitle">Loading...</h2>
+<input id="email" placeholder="Login-Id"/>
+<input id="password" type="password" placeholder="Password"/>
+<button id="loginBtn" class="btn primary" onclick="login()" disabled>Login</button>
+<div class="error" id="loginError">Invalid credentials</div>
+</div>
+</div>
+
+<!-- APP -->
+<div class="container" id="app">
+<!-- ADMIN TABS -->
+<div id="adminTabs" class="tabs" style="display:none">
+    <button class="tab active" data-admin="overview">Overview</button>
+    <button class="tab" data-admin="clients">Clients</button>
+</div>
+<!-- USER TABS -->
+<div class="tabs" id="userTabs">
+<button class="tab active" data-tab="overview">Overview</button>
+<button class="tab" data-tab="holdings">Clanview</button>
+<button class="tab" data-tab="performance">Performance</button>
+<button class="tab" data-tab="profit">Profitbook</button>
+<button class="tab" data-tab="transactions">Holdings</button>
+</div>
+
+<div class="tab-panel" id="admin-overview" style="display:none"></div>
+<div class="tab-panel" id="admin-clients" style="display:none"></div>
+
+<div class="tab-panel active" id="tab-overview">
+<div class="kpis">
+<div class="card"><div class="kpi-title">Portfolio Value</div><div id="kpi_value" class="kpi-value"></div></div>
+<div class="card"><div class="kpi-title">Invested</div><div id="kpi_invested" class="kpi-value"></div></div>
+<div class="card"><div class="kpi-title">Unrealised Gain</div><div id="kpi_gain" class="kpi-value"></div></div>
+<div class="card"><div class="kpi-title">Realised Gain</div><div id="kpi_relgain" class="kpi-value"></div></div>
+<div class="card"><div class="kpi-title">Absolute Return</div><div id="kpi_return" class="kpi-value"></div></div>
+<div class="card"><div class="kpi-title">XIRR (Holdings)</div><div id="kpi_xirr_current" class="kpi-value"></div></div>
+<div class="card"><div class="kpi-title">XIRR (SI)</div><div id="kpi_xirr_entire" class="kpi-value"></div></div>
+</div>
+
+
+<div class="card">
+    <div class="card-header">
+        <h3 id="assetTitle">Asset Allocation</h3>
+        <button id="assetClose" style="display:none">Close</button>
+    </div>
+    <canvas id="assetChart"></canvas>
+    <div id="assetDrilldown" class="drilldown"></div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 id="strategyTitle">Strategy Allocation</h3>
+        <button id="strategyClose" style="display:none">Close</button>
+    </div>
+    <canvas id="strategyChart"></canvas>
+    <div id="strategyDrilldown" class="drilldown"></div>
+</div>
+
+</div>
+
+<div class="tab-panel" id="tab-holdings">
+    <div class="card">
+        <h3>PAN Summary</h3>
+        <div class="download-icons">
+            <span class="expand-all" title="Expand All" onclick="toggleExpandAll()">⤢</span>
+            <img src="static/icons/pdf.png"
+                id="panPDF"
+                class="download-icon"
+                title="Download PDF"
+                onclick="downloadPanPDF()">
+            <img src="static/icons/xls.png" 
+                id="panExcel"
+                class="download-icon"
+                title="Download Excel"
+                onclick="downloadPanExcel()">
+        </div>
+        <div class="table-scroll">
+            <table class="freeze-table" id="panTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Weight</th>
+                        <th>Invested</th>
+                        <th>Value</th>
+                        <th>Gain</th>
+                        <th>Return</th>
+                        <th>XIRR (Holdings)</th>
+                        <th>XIRR (SI)</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="tab-panel" id="tab-performance">
+    <div class="card">
+        <h3>Fund Performance (Strategy Wise)</h3>
+        <div class="download-icons">
+            <span class="expand-all" title="Expand All" onclick="toggleExpandAll()">⤢</span>
+            <img src="static/icons/pdf.png"
+                id="prefPDF"
+                class="download-icon"
+                title="Download PDF"
+                onclick="downloadPrefPDF()">
+            <img src="static/icons/xls.png" 
+                id="prefExcel"
+                class="download-icon"
+                title="Download Excel"
+                onclick="downloadPrefExcel()">
+        </div>
+        <div class="table-scroll">
+            <div id="perfContainer"></div>
+        </div>
+    </div>
+</div>
+
+<div class="tab-panel" id="tab-profit">
+    <div class="card">
+        <div class="profit-header">
+            <h3>Profit Booking</h3>
+                <div class="download-icons">
+                    <span class="expand-all" title="Expand All" onclick="toggleExpandAll()">⤢</span>
+                    <img src="static/icons/pdf.png"
+                        id="profitPDF"
+                        class="download-icon"
+                        title="Download PDF"
+                        onclick="downloadProfitPDF()">
+                    <img src="static/icons/xls.png" 
+                        id="profitExcel"
+                        class="download-icon"
+                        title="Download Excel"
+                        onclick="downloadProfitExcel()">
+                </div>
+        </div>
+        <div class="table-scroll">
+            <div id="profitContainer"></div>
+        </div>
+    </div>
+</div>
+
+<div class="tab-panel" id="tab-transactions">
+    <div class="card">
+        <h3 class="page-title">
+            Holdings <span>| Redemption Planner</span>
+        </h3>
+        <div class="download-icons">
+            <span class="expand-all" title="Expand All" onclick="toggleExpandAll()">⤢</span>
+            <img src="static/icons/pdf.png"
+                id="txnPDF"
+                class="download-icon"
+                title="Download PDF"
+                onclick="downloadTxnPDF()">
+            <img src="static/icons/xls.png" 
+                id="txnExcel"
+                class="download-icon"
+                title="Download Excel"
+                onclick="downloadTxnExcel()">
+        </div>
+        <div id="txnSummaryTop"></div>
+        <div id="transactionContainer"></div>
+    </div>
+</div>
+</div>
+<script>
+window.txnCache = window.txnCache || {};
+window.currentTxnKey = window.currentTxnKey || null;
+
+let rawData = {};
+let login_credentials = [];
+let dataLoaded = false;
+let currentUser=null;
+let assetChart;
+let assetDrillChart;
+let strategyChart;
+let strategyDrillChart;
+let drillMode = "asset";
+let strategyMode = "strategy";
+let singlePanMode = false;
+let activePan = null;
+let activeData = null;
+let isAdmin = false;
+let adminSessionUser = null;
+let USER_INDEX = null;
+let ADMIN_CLIENTS = [];
+let FAMILYUSER = null;
+let SESSION_USER = null;   // who logged in
+let VIEW_USER = null;      // whose dashboard is currently shown
+let PAN_MAP = {};
+
+function getActiveData(){
+  return activeData || rawData[currentUser]?.data || null;
+}
+
+function bootstrapTxnView(){
+  if(!window.currentTxnKey) return;
+  loadTransactionData(window.currentTxnKey);
+}
+
+document.addEventListener("DOMContentLoaded", bootstrapTxnView);
+
+const palette = [  
+    "#5B8FF9",
+    "#61DDAA",
+    "#65789B",
+    "#F6BD16",
+    "#7262fd",
+    "#78D3F8",
+    "#9661BC",
+    "#F6903D",
+    "#008685",
+    "#F08BB4",
+    "#C2C8D5"
+    ];
+
+const KEYMAP = {
+    pv:"portfolio_value",
+    inv:"invested",
+    ugl:"unrealised_gl",
+    rgl:"realised_gl",
+    ret:"abs_return_pct",
+    x1:"xirr_existing",
+    x2:"xirr_entire",
+    cv:"current_value",
+    w:"weight_pct",
+    l:"label",
+    v:"value",
+    p:"pan",
+    n:"inv_name",
+    c:"morningstar_category",
+    g:"global_broad_category_group"
+    };
+
+function expandKeys(obj){
+
+if(Array.isArray(obj)){
+return obj.map(expandKeys);
+}
+
+if(obj && typeof obj === "object"){
+
+const out = {};
+
+for(const k in obj){
+
+const newKey = KEYMAP[k] || k;
+
+out[newKey] = expandKeys(obj[k]);
+
+}
+
+return out;
+}
+
+return obj;
+}
+
+async function loadUserIndex(){
+
+  if (USER_INDEX && Object.keys(PAN_MAP).length) return;
+
+  const res = await fetch("/api/user-index?v=" + Date.now());
+  const payload = await res.json();
+
+  USER_INDEX = payload;
+  PAN_MAP = {};
+
+  (payload.users || []).forEach(user => {
+    const type = (user.type || "").toLowerCase();
+
+    if (type === "admin" || type === "family") return;
+
+    (user.pans || []).forEach(pan => {
+      if (pan) PAN_MAP[pan] = user.login;
+    });
+  });
+}
+
+/* ================= ASYNC FUNCTIONS ================= */
+
+async function loadDashLayout(){
+
+  const header = await fetch("/static/dash-header.html").then(r => r.text());
+  const footer = await fetch("/static/dash-footer.html").then(r => r.text());
+
+  document.getElementById("dashHeader").innerHTML = header;
+
+  const footerEl = document.getElementById("dashFooter");
+  if (footerEl) footerEl.innerHTML = footer;
+}
+
+async function loadTransactionView() {
+  const container = document.getElementById("transactionContainer");
+  if (!container) return;
+
+  if (!activePan) {
+    container.innerHTML = `
+      <div class="admin-loading-state txn-loading-state">
+        <div class="admin-loading-card">No PAN selected.</div>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="admin-loading-state txn-loading-state">
+      <div class="admin-loading-card">Loading transaction view...</div>
+    </div>
+  `;
+
+  try {
+    const res = await fetch(`/transaction_view?pan=${encodeURIComponent(activePan)}`);
+    if (!res.ok) throw new Error("API failed");
+
+    const rows = await res.json();
+    renderTransactionView(rows || []);
+  } catch (e) {
+    console.error(e);
+    container.innerHTML = `
+      <div class="admin-loading-state txn-loading-state">
+        <div class="admin-loading-card">Unable to load transactions.</div>
+      </div>
+    `;
+  }
+}
+
+async function loadTransactionData(txnKey, force=false){
+  if(!force && window.txnCache[txnKey]) {
+    renderTransactionView(window.txnCache[txnKey]);
+    return window.txnCache[txnKey];
+  }
+
+  const rows = await fetchTransactionRowsFromSupabase(txnKey); // your existing query
+  window.txnCache[txnKey] = rows || [];
+  renderTransactionView(window.txnCache[txnKey]);
+  return window.txnCache[txnKey];
+}
+
+function weightedAverage(arr, field, weightField){
+let num=0, den=0;
+
+arr.forEach(x=>{
+const v = x[field];
+const w = x[weightField];
+
+if(v!=null && w>0){
+num += v*w;
+den += w;
+}
+});
+
+return den ? num/den : null;
+}
+
+function buildStrategyTree(data){
+
+const stratMap = {}
+
+(data.perfStrat || []).forEach(s=>{
+    stratMap[s.global_broad_category_group] = {
+        ...s,
+        categories:[]
+    }
+})
+
+(data.categoryAlloc || []).forEach(c=>{
+    const strat = c.global_broad_category_group
+    if(stratMap[strat]){
+        stratMap[strat].categories.push(c)
+    }
+})
+
+return Object.values(stratMap)
+}
+
+function autoChartHeight(canvasId, items, rowHeight = 36, min = 120){
+const h = Math.max(min, items * rowHeight);
+document.getElementById(canvasId).style.height = h + "px";
+}
+
+function clearAssetDrilldown(){
+if(assetDrillChart){
+assetDrillChart.destroy();
+}
+}
+
+function clearStrategyDrilldown(){
+document.getElementById("strategyDrilldown").innerHTML="";
+document.getElementById("strategyClose").style.display="none";
+strategyMode = "strategy";
+}
+
+function hideTooltip(){
+    const tooltip = document.getElementById("drillTooltip");
+    if(tooltip){
+        tooltip.classList.remove("show");
+    }
+}
+
+function toggleExpandAll(){
+
+const expanding = !document.body.classList.contains("expand-all-active");
+document.body.classList.toggle("expand-all-active");
+
+/* click all toggles */
+document.querySelectorAll(".ui-toggle").forEach(toggle=>{
+
+const tr = toggle.closest("tr");
+if(!tr) return;
+
+const isOpen = tr.classList.contains("open");
+
+/* expand */
+if(expanding && !isOpen){
+toggle.click();
+}
+
+/* collapse */
+if(!expanding && isOpen){
+toggle.click();
+}
+
+});
+
+}
+
+/* RESTORE SESSION */
+async function restoreSession() {
+  const savedUser = localStorage.getItem("loggedUser");
+  const savedPan = localStorage.getItem("activePan");
+
+  if (!savedUser) {
+    document.getElementById("loginPage").style.display = "flex";
+    document.getElementById("app").style.display = "none";
+    return;
+  }
+
+  try {
+    await loadUserIndex();
+
+    const rec = await getUserIndexRecord(savedUser);
+    const fileName = rec?.file || `${savedUser}.json.gz`;
+
+    const res = await fetch(`/api/portfolio/${fileName}?v=${Date.now()}`);
+    if (!res.ok) throw new Error(`Restore failed for ${savedUser}`);
+
+    const text = await res.text();
+    const user = expandKeys(JSON.parse(text));
+
+    rawData = rawData || {};
+    rawData[savedUser] = user;
+
+    await startSession(savedUser);
+
+    if (savedPan) {
+      activePan = savedPan;
+      singlePanMode = true;
+      await openClientDashboard(savedPan);
+    } else {
+      activePan = null;
+      singlePanMode = false;
+      applyPanModeTabs();
+    }
+  } catch (err) {
+    console.error("restoreSession failed", err);
+
+    document.getElementById("loginPage").style.display = "flex";
+    document.getElementById("app").style.display = "none";
+    console.error("restoreSession failed", savedUser, savedPan, err);
+  }
+}
+
+function attachDrillHover(selector){
+
+document.querySelectorAll(selector).forEach(el=>{
+
+const fill = el.querySelector(".drill-fill") || el;
+
+fill.addEventListener("mousemove", e => {
+
+const label = fill.dataset.label;
+const value = fill.dataset.value;
+
+showTooltip(`${label} : ${value}%`, e.clientX, e.clientY);
+
+});
+
+fill.addEventListener("mouseleave", hideTooltip);
+
+});
+}
+
+function attachToggle(selector, tbody){
+
+tbody.querySelectorAll(selector).forEach(cell=>{
+
+cell.onclick = function(e){
+
+e.stopPropagation();
+
+const tr  = this.closest("tr");
+const key = tr.dataset.key;
+
+const open = tr.classList.toggle("open");
+
+tbody
+.querySelectorAll(`tr[data-parent="${key}"]`)
+.forEach(r=>{
+r.style.display = open ? "" : "none";
+});
+
+};
+
+});
+}
+
+function toggleTree(tbody, key, open){
+
+    const children = tbody.querySelectorAll(
+    `tr[data-parent="${key}"]`
+    );
+
+    children.forEach(row=>{
+
+    row.style.display = open ? "" : "none";
+
+    if(!open){
+    row.classList.remove("open");
+    }
+
+    const childKey = row.dataset.key;
+
+    if(childKey){
+    toggleTree(
+    tbody,
+    childKey,
+    open && row.classList.contains("open")
+    );
+    }
+
+    });
+}
+
+function bindToggle(el, key, tbody){
+if(!el) return;
+
+el.onclick = (e)=>{
+e.stopPropagation();
+
+const tr = el.closest("tr");
+const open = tr.classList.toggle("open");
+
+toggleTree(tbody, key, open);
+};
+}
+
+const urlParams = new URLSearchParams(window.location.search);
+const forcedPan = urlParams.get("pan")
+
+async function loadData(){
+    document.getElementById("loginBtn").disabled = false;
+    document.getElementById("loginTitle").textContent = "Login";
+}
+
+function extractTableData(tableSelector){
+
+const table = document.querySelector(tableSelector);
+
+// headers
+const headers = [];
+table.querySelectorAll("thead th").forEach(th=>{
+headers.push(th.innerText.trim());
+});
+
+// body
+const body = [];
+
+table.querySelectorAll("tbody tr").forEach(tr=>{
+
+if(tr.style.display === "none") return;
+
+const row = [];
+tr.querySelectorAll("td").forEach(td=>{
+row.push(td.innerText.trim());
+});
+
+body.push(row);
+
+});
+
+return { headers, body };
+
+}
+
+function drawPdfFooter(doc){
+
+const pageWidth  = doc.internal.pageSize.width;
+const pageHeight = doc.internal.pageSize.height;
+
+// divider
+doc.setDrawColor(210);
+doc.line(40, pageHeight - 38, pageWidth - 40, pageHeight - 38);
+
+// brand
+doc.setFontSize(9);
+doc.setFont(undefined,"bold");
+
+doc.text(
+"définitif | écho",
+pageWidth/2,
+pageHeight - 26,
+{ align:"center" }
+);
+
+// copyright
+doc.setFont(undefined,"normal");
+doc.setFontSize(8);
+
+doc.text(
+"©" + new Date().getFullYear() + ". All Rights Reserved.",
+pageWidth/2,
+pageHeight - 14,
+{ align:"center" }
+);
+
+}
+
+async function downloadPanPDF(){
+
+const { jsPDF } = window.jspdf;
+
+const doc = new jsPDF({
+orientation: "landscape",
+unit: "pt",
+format: "A4"
+});
+
+// ---------- EXTRACT TABLE ----------
+const table = document.querySelector("#panTable");
+
+const headers = [];
+table.querySelectorAll("thead th").forEach(th=>{
+headers.push(th.innerText.trim());
+});
+
+const body = [];
+table.querySelectorAll("tbody tr").forEach(tr=>{
+
+if(tr.style.display === "none") return;
+
+const row = [];
+tr.querySelectorAll("td").forEach(td=>{
+row.push(td.innerText.trim());
+});
+
+body.push(row);
+
+});
+
+// ---------- HEADER DATA ----------
+const client =
+document.getElementById("clientNameHeader")?.innerText || "";
+
+
+// ---------- LOGO ----------
+const logo = new Image();
+logo.src = "static/dashLogos/echo_wb_flat_logo.png";
+
+await new Promise(resolve => logo.onload = resolve);
+
+const logoWidth = 110;
+const logoHeight = (logo.height / logo.width) * logoWidth;
+
+const logoX = 40;
+const logoY = 18;
+
+doc.addImage(logo, "PNG", logoX, logoY, logoWidth, logoHeight);
+
+
+// ---------- RIGHT HEADER (BOTTOM ALIGN WITH LOGO) ----------
+const pageWidth = doc.internal.pageSize.width;
+
+// client aligned with logo bottom
+const clientY = logoY + logoHeight - 2;
+
+
+// CLIENT
+doc.setFontSize(12);
+doc.setFont(undefined, "bold");
+
+doc.text(
+client,
+pageWidth - 40,
+clientY,
+{ align: "right" }
+);
+
+
+// TITLE
+doc.setFontSize(18);
+doc.setFont(undefined, "bold");
+
+doc.text(
+"Clientwise Summary",
+pageWidth - 40,
+clientY - 16,
+{ align: "right" }
+);
+
+// ---------- TABLE ----------
+doc.autoTable({
+
+head:[headers],
+body:body,
+startY: logoY + logoHeight + 16,
+
+styles:{
+fontSize:8,
+cellPadding:4
+},
+
+headStyles:{
+fillColor:[20,35,55],
+textColor:255,
+fontStyle:"bold"
+},
+
+margin:{
+top:85,
+bottom:50
+},
+
+didParseCell: function (data){
+
+const rightCols = [1,2,3,4,5,6,7];
+if(rightCols.includes(data.column.index)){
+data.cell.styles.halign = "right";
+}
+
+if(data.section !== 'body') return;
+
+const row = data.row.raw || [];
+const rowText = String(row[0] || "").trim();
+const cellText = String(data.cell.raw || "").trim();
+
+const strategyRows = [
+"Equity",
+"Fixed Income",
+"Allocation",
+"Alternative Strategies",
+"Real Assets",
+"Capital Preservation"
+];
+
+const hasFundWord = /fund/i.test(rowText);
+const hasDash = rowText.includes("-");
+const isNumericLike = /^[0-9.,₹%() ]+$/.test(rowText);
+
+const nonEmptyCount = row.filter(v => String(v || "").trim() !== "").length;
+const numericCount = row.slice(1).filter(v => String(v || "").trim() !== "").length;
+
+const isStrategy = strategyRows.includes(rowText);
+const isClientName =
+rowText &&
+!isStrategy &&
+!hasFundWord &&
+!hasDash &&
+!isNumericLike &&
+nonEmptyCount >= 6 &&
+numericCount >= 5;
+
+const isCategory =
+rowText &&
+!isStrategy &&
+!isClientName &&
+!isNumericLike &&
+!hasFundWord &&
+rowText !== "Name";
+
+const isFund =
+rowText &&
+!isStrategy &&
+!isClientName &&
+!isCategory &&
+rowText !== "Name";
+
+// ---------- CLIENT NAME ----------
+if(isClientName){
+data.cell.styles.fontStyle = "bold";
+data.cell.styles.fillColor = [232,237,243];
+data.cell.styles.textColor = [20,35,55];
+}
+
+// ---------- STRATEGY ----------
+else if(isStrategy){
+data.cell.styles.fontStyle = "bold";
+data.cell.styles.fillColor = [240,244,252];
+data.cell.styles.textColor = [20,35,55];
+}
+
+// ---------- CATEGORY ----------
+else if(isCategory){
+data.cell.styles.fontStyle = "bold";
+data.cell.styles.fillColor = [248,250,252];
+data.cell.styles.textColor = [71,85,105];
+}
+
+// ---------- FUND ----------
+else if(isFund){
+data.cell.styles.fontStyle = "normal";
+}
+
+// ---------- NEGATIVE RED ----------
+const num = parseFloat(cellText.replace(/[₹,%]/g,'').replace(/,/g,''));
+if(!isNaN(num) && num < 0){
+data.cell.styles.textColor = [200,0,0];
+}
+
+// ---------- INDENT ----------
+if(data.column.index === 0){
+data.cell.styles.halign = "left";
+
+if(isClientName){
+data.cell.styles.cellPadding = {left:4,top:3,bottom:3};
+}
+else if(isStrategy){
+data.cell.styles.cellPadding = {left:16,top:3,bottom:3};
+}
+else if(isCategory){
+data.cell.styles.cellPadding = {left:30,top:3,bottom:3};
+}
+else{
+data.cell.styles.cellPadding = {left:44,top:3,bottom:3};
+}
+}
+
+},
+
+// ---------- FOOTER ----------
+didDrawPage: function(){
+
+drawPdfFooter(doc);
+
+const pageWidth  = doc.internal.pageSize.width;
+const pageHeight = doc.internal.pageSize.height;
+
+doc.setFontSize(8);
+
+doc.text(
+"Page " + doc.internal.getNumberOfPages(),
+pageWidth - 60,
+pageHeight - 14
+);
+
+}
+
+});
+
+
+// ---------- SAVE ----------
+doc.save("PAN_Summary.pdf");
+
+}
+
+async function downloadPrefPDF(){
+
+const { jsPDF } = window.jspdf;
+
+const doc = new jsPDF({
+orientation:"landscape",
+unit:"pt",
+format:"A4"
+});
+
+// ---------- TABLE ----------
+const table = document.querySelector("#perfContainer table");
+
+const headers = [];
+table.querySelectorAll("thead th").forEach(th=>{
+headers.push(th.innerText.trim());
+});
+
+const body = [];
+table.querySelectorAll("tbody tr").forEach(tr=>{
+
+if(tr.style.display==="none") return;
+
+const row=[];
+tr.querySelectorAll("td").forEach(td=>{
+row.push(td.innerText.trim());
+});
+
+body.push(row);
+
+});
+
+// ---------- CLIENT ----------
+const client =
+document.getElementById("clientNameHeader")?.innerText || "";
+
+
+// ---------- LOGO ----------
+const logo = new Image();
+logo.src="static/dashLogos/echo_wb_flat_logo.png";
+
+await new Promise(resolve=>logo.onload=resolve);
+
+const logoWidth=110;
+const logoHeight=(logo.height/logo.width)*logoWidth;
+
+const logoX=40;
+const logoY=18;
+
+doc.addImage(logo,"PNG",logoX,logoY,logoWidth,logoHeight);
+
+
+// ---------- RIGHT HEADER ----------
+const pageWidth=doc.internal.pageSize.width;
+const clientY=logoY+logoHeight-2;
+
+doc.setFontSize(12);
+doc.setFont(undefined,"bold");
+
+doc.text(client,pageWidth-40,clientY,{align:"right"});
+
+doc.setFontSize(18);
+doc.setFont(undefined,"bold");
+
+doc.text(
+"Fund Performance (Strategy Wise)",
+pageWidth-40,
+clientY-16,
+{align:"right"}
+);
+
+
+// ---------- TABLE ----------
+doc.autoTable({
+
+head:[headers],
+body:body,
+startY:logoY+logoHeight+16,
+
+styles:{
+fontSize:8,
+cellPadding:4
+},
+
+headStyles:{
+fillColor:[20,35,55],
+textColor:255,
+fontStyle:"bold"
+},
+
+margin:{
+bottom:50
+},
+
+didParseCell:function(data){
+
+
+const rightCols=[2,3,4,5,6,7];
+
+
+if(rightCols.includes(data.column.index)){
+data.cell.styles.halign="right";
+}
+
+
+if(data.section!=='body') return;
+
+
+const row = data.row.raw || [];
+const rowText = String(row[0] || "").trim();
+const cellText = String(data.cell.raw || "").trim();
+
+const strategyRows = [
+"Equity",
+"Fixed Income",
+"Capital Preservation",
+"Allocation",
+"Alternative Strategies",
+"Real Assets"
+];
+
+const isStrategy = strategyRows.includes(rowText);
+const isCategory =
+rowText &&
+!isStrategy &&
+!row[2] && !row[3] && !row[4] && !row[5] && !row[6] && !row[7];
+
+
+// ---------- STRATEGY ----------
+if(isStrategy){
+data.cell.styles.fontStyle="bold";
+data.cell.styles.fillColor=[240,244,252];
+}
+
+
+// ---------- CATEGORY ----------
+else if(isCategory){
+data.cell.styles.fontStyle="bold";
+data.cell.styles.fillColor=[248,250,252];
+data.cell.styles.textColor=[71,85,105];
+}
+
+
+// ---------- NEGATIVE ----------
+const num=parseFloat(
+cellText.replace(/[₹,%]/g,'').replace(/,/g,'')
+);
+
+
+if(!isNaN(num)&&num<0){
+data.cell.styles.textColor=[200,0,0];
+}
+
+if(data.column.index === 0){
+data.cell.styles.halign = "left";
+
+if(isStrategy){
+data.cell.styles.cellPadding = {left:14,top:3,bottom:3};
+}
+else if(isCategory){
+data.cell.styles.cellPadding = {left:24,top:3,bottom:3};
+}
+else{
+data.cell.styles.cellPadding = {left:34,top:3,bottom:3};
+}
+
+}
+
+},
+
+didDrawPage:function(){
+
+drawPdfFooter(doc);
+
+const pageWidth=doc.internal.pageSize.width;
+const pageHeight=doc.internal.pageSize.height;
+
+doc.setFontSize(8);
+
+doc.text(
+"Page "+doc.internal.getNumberOfPages(),
+pageWidth-60,
+pageHeight-14
+);
+
+}
+
+});
+
+doc.save("Performance.pdf");
+
+}
+
+async function downloadProfitPDF(){
+
+const { jsPDF } = window.jspdf;
+
+const doc = new jsPDF({
+orientation: "landscape",
+unit: "pt",
+format: "A4"
+});
+
+// ---------- EXTRACT TABLE ----------
+const table = document.querySelector("#profitContainer table");
+
+const headers = [];
+table.querySelectorAll("thead th").forEach(th=>{
+headers.push(th.innerText.trim());
+});
+
+const body = [];
+table.querySelectorAll("tbody tr").forEach(tr=>{
+
+if(tr.style.display === "none") return;
+
+const row = [];
+tr.querySelectorAll("td").forEach(td=>{
+row.push(td.innerText.trim());
+});
+
+body.push(row);
+
+});
+
+// ---------- HEADER DATA ----------
+const client =
+document.getElementById("clientNameHeader")?.innerText || "";
+
+
+// ---------- LOGO ----------
+const logo = new Image();
+logo.src = "static/dashLogos/echo_wb_flat_logo.png";
+
+await new Promise(resolve => logo.onload = resolve);
+
+const logoWidth = 110;
+const logoHeight = (logo.height/logo.width)*logoWidth;
+
+const logoX = 40;
+const logoY = 18;
+
+doc.addImage(logo,"PNG",logoX,logoY,logoWidth,logoHeight);
+
+
+// ---------- RIGHT HEADER (BOTTOM ALIGN WITH LOGO) ----------
+const pageWidth = doc.internal.pageSize.width;
+
+// bottom aligned to logo bottom
+const clientY = logoY + logoHeight - 2;
+
+// CLIENT NAME (bigger)
+doc.setFontSize(12);
+doc.setFont(undefined,"bold");
+
+doc.text(
+client,
+pageWidth - 40,
+clientY,
+{ align: "right" }
+);
+
+
+// TITLE (larger, above client)
+doc.setFontSize(18);
+doc.setFont(undefined,"bold");
+
+doc.text(
+"Profit Booking",
+pageWidth - 40,
+clientY - 16,
+{ align: "right" }
+);
+
+// ---------- TABLE ----------
+doc.autoTable({
+
+head:[headers],
+body:body,
+startY: logoY + logoHeight + 18,
+
+styles:{
+fontSize:8,
+cellPadding:4
+},
+
+headStyles:{
+fillColor:[20,35,55],
+textColor:255,
+fontStyle:"bold"
+},
+
+margin:{
+top:85,
+bottom:50
+},
+
+didParseCell: function (data){
+
+
+const rightCols = [4,5,6,7,8];
+if(rightCols.includes(data.column.index)){
+data.cell.styles.halign = "right";
+}
+
+
+if(data.section !== 'body') return;
+
+
+const row = data.row.raw || [];
+const rowText = String(row[0] || "").trim();
+const cellText = String(data.cell.raw || "").trim();
+
+const strategyRows = [
+"Equity",
+"Fixed Income",
+"Capital Preservation",
+"Allocation",
+"Alternative Strategies",
+"Real Assets"
+];
+
+const isFY = /^FY/i.test(rowText);
+const isStrategy = strategyRows.includes(rowText);
+const isClient =
+rowText &&
+!isFY &&
+!isStrategy &&
+!row[1] && !row[2] && !row[3] &&
+row[5] && row[6] && row[7] && row[8];
+
+if(isClient){
+data.cell.styles.fontStyle = "bold";
+data.cell.styles.fillColor = [232,237,243];
+data.cell.styles.textColor = [20,35,55];
+}
+else if(isFY){
+data.cell.styles.fontStyle = "bold";
+data.cell.styles.fontSize = 10;
+data.cell.styles.fillColor = [236,253,245];
+data.cell.styles.textColor = [6,95,70];
+}
+else if(isStrategy){
+data.cell.styles.fontStyle = "bold";
+data.cell.styles.fillColor = [240,244,252];
+}
+
+
+// ---------- NEGATIVE RED ----------
+const num = parseFloat(
+cellText.replace(/[₹,%]/g,'').replace(/,/g,'')
+);
+
+
+if(!isNaN(num) && num < 0){
+data.cell.styles.textColor = [200,0,0];
+}
+
+
+// ---------- INDENT ----------
+if(data.column.index === 0){
+data.cell.styles.halign = "left";
+
+if(isClient){
+data.cell.styles.cellPadding = {left:4,top:3,bottom:3};
+}
+else if(isFY){
+data.cell.styles.cellPadding = {left:10,top:3,bottom:3};
+}
+else if(isStrategy){
+data.cell.styles.cellPadding = {left:18,top:3,bottom:3};
+}
+else{
+data.cell.styles.cellPadding = {left:26,top:3,bottom:3};
+}
+
+}
+
+
+},
+
+
+// ---------- FOOTER ----------
+didDrawPage: function(){
+
+drawPdfFooter(doc);
+
+const pageWidth  = doc.internal.pageSize.width;
+const pageHeight = doc.internal.pageSize.height;
+
+doc.setFontSize(8);
+
+doc.text(
+"Page " + doc.internal.getNumberOfPages(),
+pageWidth - 60,
+pageHeight - 14
+);
+
+}
+
+});
+
+
+// ---------- SAVE ----------
+doc.save("Profit_Booking.pdf");
+
+}
+
+
+function getTxnExportData() {
+  const tables = document.querySelectorAll("#transactionContainer table");
+  const headers = [];
+  const body = [];
+
+  const strategyRows = [
+    "Equity",
+    "Fixed Income",
+    "Allocation",
+    "Alternative Strategies",
+    "Real Assets",
+    "Capital Preservation"
+  ];
+
+  tables.forEach((table, index) => {
+    if (index === 0) {
+      table.querySelectorAll("thead th").forEach((th, i) => {
+        if (i === 0) return;
+        headers.push(th.innerText.trim());
+      });
+    }
+
+    table.querySelectorAll("tbody tr").forEach(tr => {
+      if (tr.style.display === "none") return;
+
+      const cells = Array.from(tr.querySelectorAll("td")).map(td => td.innerText.trim());
+
+      if (cells.length <= 1) return;
+
+      const row = cells.slice(1);
+      const labelText = String(row[0] || "").trim();
+
+      const isStrategyRow = strategyRows.includes(labelText);
+      const isTxnRow = /^\d{4}-\d{2}-\d{2}$/.test(labelText);
+      const isFundHeaderRow = row.length < 9 && labelText && !isStrategyRow && !isTxnRow;
+
+      let outRow = [];
+
+      if (isStrategyRow) {
+        outRow = [labelText, "", "", "", "", "", "", "", ""];
+      } else if (isTxnRow) {
+        outRow = row.slice(0, 9);
+        while (outRow.length < 9) outRow.push("");
+      } else if (isFundHeaderRow) {
+        outRow = [
+          row[0] || "", // Fund/Date
+          "",           // Txn
+          row[1] || "", // Units
+          row[2] || "", // Cost
+          row[3] || "", // CMV
+          row[4] || "", // Investment
+          row[5] || "", // Current Value
+          row[6] || "", // Gain
+          row[7] || ""  // Return
+        ];
+      } else {
+        outRow = row.slice(0, 9);
+        while (outRow.length < 9) outRow.push("");
+      }
+      console.log("TXN EXPORT ROW", row, outRow);
+      body.push(outRow);
+    });
+  });
+
+  return { headers, body };
+}
+
+async function downloadTxnPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "A4" });
+  const { headers, body } = getTxnExportData();
+
+  // ... your logo/header code ...
+
+  doc.autoTable({
+    head: [headers],
+    body,
+    startY: 16,
+    styles: { fontSize: 8, cellPadding: 4, overflow: "linebreak" },
+    headStyles: { fillColor: [20, 35, 55], textColor: 255, fontStyle: "bold" },
+    margin: { bottom: 50 },
+
+    didParseCell: function (data) {
+      const rightCols = [4, 5, 6, 7, 8, 9];
+      if (rightCols.includes(data.column.index)) {
+        data.cell.styles.halign = "right";
+      }
+
+      if (data.section !== "body") return;
+
+      const rowText = String(data.row.raw?.[0] || "").trim();
+      const cellText = String(data.cell.raw || "");
+
+      const strategyRows = [
+        "Equity",
+        "Fixed Income",
+        "Allocation",
+        "Alternative Strategies",
+        "Real Assets",
+        "Capital Preservation"
+      ];
+
+      if (strategyRows.includes(rowText)) {
+        data.cell.styles.fontStyle = "bold";
+        data.cell.styles.fillColor = [240, 244, 252];
+        data.cell.styles.textColor = [20, 35, 55];
+      }
+
+      const num = parseFloat(cellText.replace(/,/g, "").replace(/%/g, ""));
+      if (!isNaN(num) && num < 0) {
+        data.cell.styles.textColor = [200, 0, 0];
+      }
+    }
+  });
+
+  doc.save("Transactions.pdf");
+}
+
+
+function downloadTxnExcel() {
+  const { headers, body } = getTxnExportData();
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...body]);
+
+  ws["!freeze"] = { xSplit: 0, ySplit: 1 };
+  ws["!autofilter"] = {
+    ref: XLSX.utils.encode_range({
+      s: { r: 0, c: 0 },
+      e: { r: body.length, c: headers.length - 1 }
+    })
+  };
+
+  ws["!cols"] = [
+    { wch: 40 },
+    { wch: 16 },
+    { wch: 12 },
+    { wch: 12 },
+    { wch: 12 },
+    { wch: 14 },
+    { wch: 14 },
+    { wch: 12 },
+    { wch: 10 }
+  ];
+
+  styleExcelSheet(ws, headers, [2, 3, 4, 5, 6, 7]);
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Transactions");
+  XLSX.writeFile(wb, "Transactions.xlsx");
+}
+
+async function downloadPrefExcel(){
+
+const table = document.querySelector("#perfContainer table");
+
+const headers = [];
+table.querySelectorAll("thead th").forEach(th=>{
+headers.push(th.innerText.trim());
+});
+
+const body = [];
+table.querySelectorAll("tbody tr").forEach(tr=>{
+if(tr.style.display === "none") return;
+
+const row = [];
+tr.querySelectorAll("td").forEach(td=>{
+row.push(td.innerText.trim());
+});
+
+body.push(row);
+});
+
+const wsData = [headers, ...body];
+const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+ws["!freeze"] = { xSplit: 1, ySplit: 1 };
+ws["!autofilter"] = { ref: XLSX.utils.encode_range({
+  s: { r: 0, c: 0 },
+  e: { r: body.length, c: headers.length - 1 }
+}) };
+
+ws["!cols"] = [
+  { wch: 34 }, // Strategy
+  { wch: 22 }, // Category
+  { wch: 14 }, // Weight
+  { wch: 14 }, // Invested
+  { wch: 14 }, // Value
+  { wch: 14 }, // Gain
+  { wch: 12 }, // Return
+  { wch: 14 }  // XIRR
+];
+
+styleExcelSheet(ws, headers, [2,3,4,5,6,7]);
+
+const wb = XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb, ws, "Performance");
+XLSX.writeFile(wb, "Performance.xlsx");
+
+}
+
+function downloadProfitExcel(){
+
+const table = document.querySelector("#profitContainer table");
+
+// ---------- HEADERS ----------
+const headers = [];
+table.querySelectorAll("thead th").forEach(th=>{
+headers.push(th.innerText.trim());
+});
+
+// ---------- BODY ----------
+const body = [];
+table.querySelectorAll("tbody tr").forEach(tr=>{
+
+if(tr.style.display === "none") return;
+
+const row = [];
+tr.querySelectorAll("td").forEach(td=>{
+row.push(td.innerText.trim());
+});
+
+body.push(row);
+
+});
+
+// ---------- BUILD SHEET ----------
+const ws_data = [headers, ...body];
+const ws = XLSX.utils.aoa_to_sheet(ws_data);
+
+// ---------- FREEZE ----------
+ws["!freeze"] = { xSplit: 1, ySplit: 1 };
+
+// ---------- FILTER ----------
+ws['!autofilter'] = {
+ref: XLSX.utils.encode_range({
+s:{r:0,c:0},
+e:{r:body.length,c:headers.length-1}
+})
+};
+
+// ---------- WIDTHS ----------
+ws['!cols'] = [
+{ wch:42 },
+{ wch:16 },
+{ wch:12 },
+{ wch:12 },
+{ wch:12 },
+{ wch:14 },
+{ wch:14 },
+{ wch:12 },
+{ wch:10 },
+{ wch:8 }
+];
+
+// ---------- COMMON STYLING ----------
+styleExcelSheet(ws, headers, [4,5,6,7,8]);
+
+// ---------- WORKBOOK ----------
+const wb = XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb, ws, "Profit Booking");
+
+// ---------- SAVE ----------
+XLSX.writeFile(wb,"Profit_Booking.xlsx");
+
+}
+
+
+function styleExcelSheet(ws, headers, rightCols) {
+  const range = XLSX.utils.decode_range(ws["!ref"]);
+
+  const strategyRows = [
+    "Equity",
+    "Fixed Income",
+    "Allocation",
+    "Alternative Strategies",
+    "Real Assets",
+    "Capital Preservation"
+  ];
+
+  const isPerfSheet = headers.includes("Weight") && headers.includes("XIRR (SI)");
+  const isPanSheet = headers.includes("Weight") && headers.includes("Invested") && headers.includes("XIRR (Holdings)");
+  const isTxnSheet = headers.includes("Fund/Date") && headers.includes("Txn") && headers.includes("Units");
+
+  for (let R = 1; R <= range.e.r; ++R) {
+    const rowVals = [];
+    for (let C = 0; C <= range.e.c; ++C) {
+      const ref = XLSX.utils.encode_cell({ r: R, c: C });
+      rowVals[C] = ws[ref]?.v ?? "";
+    }
+
+    const rowText = String(rowVals[0] || "").trim();
+    const rowText1 = String(rowVals[1] || "").trim();
+
+    const isStrategy = strategyRows.includes(rowText) || strategyRows.includes(rowText1);
+
+    const hasFundWord = /fund/i.test(rowText) || /fund/i.test(rowText1);
+    const hasDash = rowText.includes("-") || rowText1.includes("-");
+    const isNumericLike = /^[0-9.,₹%() ]+$/.test(rowText) && /^[0-9.,₹%() ]+$/.test(rowText1);
+
+    const nonEmptyCount = rowVals.filter(v => String(v || "").trim() !== "").length;
+    const numericCount = rowVals.slice(1).filter(v => String(v || "").trim() !== "").length;
+
+    const isClientPan =
+      isPanSheet &&
+      rowText &&
+      !isStrategy &&
+      !hasFundWord &&
+      !hasDash &&
+      !isNumericLike &&
+      nonEmptyCount >= 6 &&
+      numericCount >= 5;
+
+    const isCategoryPan =
+      isPanSheet &&
+      rowText &&
+      !isStrategy &&
+      !isClientPan &&
+      !isNumericLike &&
+      !hasFundWord &&
+      rowText !== "Name";
+
+    const isPerfCategory =
+      isPerfSheet &&
+      rowText &&
+      !isStrategy &&
+      rowVals[2] === "" && rowVals[3] === "" && rowVals[4] === "" &&
+      rowVals[5] === "" && rowVals[6] === "" && rowVals[7] === "";
+
+    const isTxnFund =
+      isTxnSheet &&
+      rowText &&
+      !isStrategy &&
+      !/^\d{4}-\d{2}-\d{2}$/.test(rowText) &&
+      (/fund/i.test(rowText) || /\|/.test(rowText) || /^[A-Za-z]/.test(rowText));
+
+    const isTxnDate =
+      isTxnSheet &&
+      /^\d{4}-\d{2}-\d{2}$/.test(rowText);
+
+    for (let C = 0; C <= range.e.c; ++C) {
+      const ref = XLSX.utils.encode_cell({ r: R, c: C });
+      const cell = ws[ref];
+      if (!cell) continue;
+
+      cell.s = cell.s || {};
+      cell.s.font = cell.s.font || {};
+      cell.s.alignment = cell.s.alignment || {};
+
+      if (rightCols.includes(C)) {
+        cell.s.alignment.horizontal = "right";
+      }
+
+      const raw = String(cell.v ?? "").trim();
+      const val = parseFloat(raw.replace(/[₹,%]/g, "").replace(/,/g, ""));
+
+      if (!isNaN(val) && rightCols.includes(C)) {
+        cell.v = val;
+        cell.t = "n";
+
+        if (isTxnSheet) {
+          if (C === 2 || C === 3 || C === 4) {
+            cell.z = "#,##0.00";
+          } else if (C === 5 || C === 6 || C === 7) {
+            cell.z = "#,##0";
+          } else if (C === 8) {
+            cell.z = "0.00%";
+            cell.v = val / 100;
+          }
+        } else if (isPerfSheet || isPanSheet) {
+          cell.z = C === rightCols[rightCols.length - 1] ? "0.00%" : "#,##0";
+          if (C === rightCols[rightCols.length - 1]) {
+            cell.v = val / 100;
+          }
+        } else {
+          cell.z = "#,##0";
+        }
+
+        if (val < 0) {
+          cell.s.font.color = { rgb: "C00000" };
+        }
+      }
+
+      if (isClientPan) {
+        cell.s.font.bold = true;
+        cell.s.fill = { fgColor: { rgb: "E8EDF3" } };
+        cell.s.font.color = { rgb: "142337" };
+      } else if (isStrategy) {
+        cell.s.font.bold = true;
+        cell.s.fill = { fgColor: { rgb: "F0F4FC" } };
+        cell.s.font.color = { rgb: "142337" };
+      } else if (isCategoryPan || isPerfCategory) {
+        cell.s.font.bold = true;
+        cell.s.fill = { fgColor: { rgb: "F8FAFC" } };
+        cell.s.font.color = { rgb: "475569" };
+      } else if (isTxnFund) {
+        cell.s.font.bold = true;
+        cell.s.fill = { fgColor: { rgb: "F8FAFC" } };
+        cell.s.font.color = { rgb: "475569" };
+      }
+
+      if (C === 0) {
+        cell.s.alignment.horizontal = "left";
+
+        if (isClientPan) {
+          cell.s.alignment.indent = 0;
+        } else if (isStrategy) {
+          cell.s.alignment.indent = 1;
+        } else if (isCategoryPan || isPerfCategory) {
+          cell.s.alignment.indent = 2;
+        } else if (isTxnFund) {
+          cell.s.alignment.indent = 2;
+        } else if (isTxnDate) {
+          cell.s.alignment.indent = 3;
+        } else {
+          cell.s.alignment.indent = 3;
+        }
+      }
+    }
+  }
+
+  for (let C = 0; C < headers.length; C++) {
+    const ref = XLSX.utils.encode_cell({ r: 0, c: C });
+    const cell = ws[ref];
+    if (!cell) continue;
+
+    cell.s = {
+      font: { bold: true, color: { rgb: "FFFFFF" } },
+      fill: { fgColor: { rgb: "142337" } },
+      alignment: { horizontal: rightCols.includes(C) ? "right" : "left" }
+    };
+  }
+}
+
+async function login(){
+    const email =
+        document.getElementById("email").value.trim();
+    const password =
+        document.getElementById("password").value.trim();
+    try{
+        const res = await fetch(`/api/portfolio/${email}.json?v=` + Date.now());
+        if(!res.ok){
+            alert("Invalid login");
+            return;
+        }
+        const compressed = await res.json();
+        const user = expandKeys(compressed);
+        if(user.password !== password){
+            alert("Invalid login");
+            return;
+        }
+        /* IMPORTANT: rebuild old structure */
+        rawData = {};
+        rawData[email] = user;
+        startSession(email);
+    }catch(e){
+        console.error(e);
+        alert("Login failed");
+    }
+}
+
+async function startSession(email){
+  localStorage.setItem("loggedUser", email);
+  SESSION_USER = email;
+  VIEW_USER = email;
+  currentUser = email;
+
+  const user = rawData[email];
+  const userType = (user?.user_type || "").toLowerCase();
+
+  isAdmin = (userType === "admin");
+  adminSessionUser = isAdmin ? email : null;
+
+  document.getElementById("logoutBtn").style.display = "inline-flex";
+  document.getElementById("loginPage").style.display = "none";
+  document.getElementById("app").style.display = "block";
+
+  if(isAdmin){
+    await loadAdminDashboard();
+    return;
+  }
+
+  document.getElementById("adminTabs").style.display = "none";
+  document.getElementById("admin-overview").style.display = "none";
+  document.getElementById("admin-clients").style.display = "none";
+
+  document.getElementById("userTabs").style.display = "flex";
+
+  document.querySelectorAll("#userTabs .tab").forEach(t => t.classList.remove("active"));
+  document.querySelector('[data-tab="overview"]').classList.add("active");
+
+  document.querySelectorAll('[id^="tab-"]').forEach(p => {
+    p.classList.remove("active");
+    p.style.display = "none";
+  });
+
+  document.getElementById("tab-overview").classList.add("active");
+  document.getElementById("tab-overview").style.display = "block";
+
+  await loadUser(email);
+  applyPanModeTabs();
+}
+
+async function fetchUserIndex() {
+  if (USER_INDEX) return USER_INDEX;
+
+  const res = await fetch(`/api/user-index?v=${Date.now()}`);
+  if (!res.ok) throw new Error("Unable to load users index");
+
+  USER_INDEX = await res.json();
+  return USER_INDEX;
+}
+
+async function getUserIndexRecord(login) {
+  const idx = await fetchUserIndex();
+  return (idx.users || []).find(u => u.login === login) || null;
+}
+
+async function loadClientFile(login) {
+  if (rawData[login]) return rawData[login];
+
+  const res = await fetch(`/api/portfolio/${login}.json?v=${Date.now()}`);
+  if (!res.ok) throw new Error(`User not found: ${login}`);
+
+  const user = expandKeys(await res.json());
+
+  rawData[login] = user;
+  return user;
+}
+
+async function loadUserForAdminOnly(login, fileName){
+  if (rawData[login]) return rawData[login];
+
+  const res = await fetch(`/api/portfolio/${fileName}?v=${Date.now()}`);
+  if (!res.ok) throw new Error(`User not found: ${login}`);
+
+  const user = expandKeys(await res.json());
+  rawData[login] = user;
+  return user;
+}
+
+async function loadAllClientSummaries(){
+  if (ADMIN_CLIENTS.length) return ADMIN_CLIENTS;
+
+  const idx = await fetchUserIndex();
+
+  const eligible = (idx.users || []).filter(u => {
+    const t = (u.type || "").toLowerCase();
+    return t !== "family" && t !== "admin";
+  });
+
+  const rows = [];
+
+  for (const u of eligible) {
+    try {
+      const user = await loadUserForAdminOnly(u.login, u.file);
+      const kpi = user?.data?.kpi || {};
+      const panSummary = user?.data?.panSummary || [];
+
+      let portfolioValue = Number(kpi.portfolio_value || 0);
+      let invested = Number(kpi.invested || 0);
+
+      if (!portfolioValue && panSummary.length) {
+        portfolioValue = panSummary.reduce((s, p) => s + Number(p.current_value || 0), 0);
+      }
+
+      if (!invested && panSummary.length) {
+        invested = panSummary.reduce((s, p) => s + Number(p.invested || 0), 0);
+      }
+
+      rows.push({
+        login: u.login,
+        name: user?.name || u.name || u.login,
+        pans: Array.isArray(u.pans) ? u.pans.filter(Boolean) : [],
+        mfu_can: u.mfu_can || "",
+        mobile: u.mobile || "",
+        email_connect: u.email_connect || "",
+        dob: u.dob || "",
+        portfolio_value: portfolioValue,
+        invested: invested
+      });
+    } catch (e) {
+      console.error("Admin client load failed:", u.login, e);
+    }
+  }
+
+  rows.sort((a, b) => a.name.localeCompare(b.name));
+  ADMIN_CLIENTS = rows;
+  return rows;
+}
+
+async function loadAdminDashboard(){
+
+  isAdmin = true;
+
+  document.getElementById("userTabs").style.display = "none";
+  document.getElementById("adminTabs").style.display = "flex";
+  document.getElementById("backToFamily").style.display = "none";
+  document.getElementById("clientNameHeader").textContent = "Admin Dashboard";
+
+  document.querySelectorAll('[id^="tab-"]').forEach(p => {
+    p.classList.remove("active");
+    p.style.display = "none";
+  });
+
+  document.querySelectorAll("#adminTabs .tab")
+    .forEach(t => t.classList.remove("active"));
+
+  const overviewBtn = document.querySelector('#adminTabs .tab[data-admin="overview"]');
+  if (overviewBtn) overviewBtn.classList.add("active");
+
+  document.getElementById("admin-overview").style.display = "block";
+  document.getElementById("admin-clients").style.display = "none";
+
+  document.getElementById("admin-overview").innerHTML = `
+    <div class="admin-loading-state">
+      <div class="admin-loading-card">Loading admin dashboard...</div>
+    </div>
+  `;
+
+  document.getElementById("admin-clients").innerHTML = `
+    <div class="admin-loading-state">
+      <div class="admin-loading-card">Loading clients...</div>
+    </div>
+  `;
+
+  await renderAdminOverview();
+  await renderAdminClients();
+}
+
+async function renderAdminClients(){
+
+  const panel = document.getElementById("admin-clients");
+  const clients = await loadAllClientSummaries();
+
+  panel.innerHTML = `
+    <div class="card">
+
+        <h3>Client Search</h3>
+
+        <div class="admin-clients-wrap">
+        <input
+            type="text"
+            id="adminClientSearch"
+            placeholder="Search client name or PAN"
+            class="admin-client-search"
+        />
+
+        <div class="table-scroll admin-table-wrap">
+            <table id="adminClientsTable">
+            <thead>
+                <tr>
+                <th>Client</th>
+                <th>PAN</th>
+                <th>MFU CAN</th>
+                <th>Mobile</th>
+                <th>Email Connect</th>
+                <th>DOB</th>
+                <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${clients.map(c => `
+                <tr class="admin-client-row" data-email="${c.login}">
+                    <td>${c.name || "-"}</td>
+                    <td>${(c.pans || []).join(", ") || "-"}</td>
+                    <td>${c.mfu_can || "-"}</td>
+                    <td>${c.mobile || "-"}</td>
+                    <td>${c.email_connect || "-"}</td>
+                    <td>${c.dob || "-"}</td>
+                    <td>${formatNumber(c.portfolio_value || 0)}</td>
+                </tr>
+                `).join("")}
+            </tbody>
+            </table>
+        </div>
+        </div>
+
+    </div>
+    `;
+
+  document.getElementById("adminClientSearch")
+    .addEventListener("input", e => {
+      const q = e.target.value.toLowerCase();
+
+      document.querySelectorAll(".admin-client-row").forEach(row => {
+        row.style.display = row.innerText.toLowerCase().includes(q) ? "" : "none";
+      });
+    });
+
+  document.querySelectorAll(".admin-client-row").forEach(row => {
+    row.addEventListener("click", async () => {
+      await openAdminClient(row.dataset.email);
+    });
+  });
+}
+
+async function openAdminClient(email) {
+  if (!adminSessionUser) adminSessionUser = currentUser;
+
+  const rec = await getUserIndexRecord(email);
+  const pans = Array.isArray(rec?.pans) ? rec.pans.filter(Boolean) : [];
+
+  isAdmin = false;
+  currentUser = email;
+  document.getElementById("adminTabs").style.display = "none";
+  document.getElementById("userTabs").style.display = "flex";
+  document.getElementById("backToFamily").style.display = "inline-flex";
+
+  if (pans.length === 1) {
+    singlePanMode = true;
+    activePan = pans[0];
+    localStorage.setItem("activePan", activePan);
+    document.querySelector('[data-tab="transactions"]').style.display = "";
+  } else {
+    singlePanMode = false;
+    activePan = null;
+    localStorage.removeItem("activePan");
+    document.querySelector('[data-tab="transactions"]').style.display = "none";
+  }
+
+  await loadUser(email);
+
+  document.querySelectorAll("#userTabs .tab").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll('[id^="tab-"]').forEach(p => {
+    p.classList.remove("active");
+    p.style.display = "none";
+  });
+
+  document.querySelector('[data-tab="overview"]').classList.add("active");
+  document.getElementById("tab-overview").classList.add("active");
+  document.getElementById("tab-overview").style.display = "block";
+
+  window.scrollTo(0, 0);
+}
+
+function logout(){
+
+  localStorage.removeItem("loggedUser");
+  localStorage.removeItem("activePan");
+
+  currentUser = null;
+  activePan = null;
+  singlePanMode = false;
+  isAdmin = false;
+  adminSessionUser = null;
+
+  document.getElementById("app").style.display = "none";
+  document.getElementById("loginPage").style.display = "flex";
+
+  document.getElementById("email").value = "";
+  document.getElementById("password").value = "";
+
+  document.getElementById("logoutBtn").style.display = "none";
+  document.getElementById("backToFamily").style.display = "none";
+
+  const header = document.getElementById("clientNameHeader");
+  if(header) header.textContent = "";
+
+  const clientName = document.getElementById("clientName");
+  if(clientName) clientName.textContent = "";
+
+  document.getElementById("adminTabs").style.display = "none";
+  document.getElementById("admin-overview").style.display = "none";
+  document.getElementById("admin-clients").style.display = "none";
+
+  document.getElementById("userTabs").style.display = "flex";
+
+  document.querySelectorAll("#userTabs .tab").forEach(t => t.classList.remove("active"));
+  document.querySelector('[data-tab="overview"]').classList.add("active");
+
+  document.querySelectorAll('[id^="tab-"]').forEach(p => {
+    p.classList.remove("active");
+    p.style.display = "none";
+  });
+
+  document.getElementById("tab-overview").classList.add("active");
+  document.getElementById("tab-overview").style.display = "block";
+}
+
+
+function formatNumber(n){
+if(n === null || n === undefined) return "-";
+return new Intl.NumberFormat('en-IN',{
+maximumFractionDigits:0
+}).format(n);
+}
+
+function formatCurrency(n){
+    return new Intl.NumberFormat('en-IN',{
+        currency:'INR',maximumFractionDigits:0
+    }).format(n);
+}
+
+function formatPct(n){
+    return (n??0).toFixed(2)+"%";
+}
+
+async function getUserFileName(login){
+  const idx = await fetchUserIndex();
+  const rec = (idx.users || []).find(u => u.login === login);
+  return rec?.file || `${login}.json.gz`;
+}
+
+async function loadUser(email){
+  if(!rawData[email]){
+    try{
+      const res = await fetch(`/api/portfolio/${email}.json?v=` + Date.now());
+
+      if(!res.ok){
+        console.error("User not found:", email);
+        return;
+      }
+
+      const compressed = await res.json();
+      const user = expandKeys(compressed);
+      rawData[email] = user;
+
+    }catch(e){
+      console.error("loadUser fetch failed", e);
+      return;
+    }
+  }
+
+  VIEW_USER = email;
+  currentUser = email;
+  isAdmin = false;
+
+  const user = rawData[email];
+  const d = user?.data;
+
+  if(!d){
+    console.error("No dashboard data for", email, user);
+    return;
+  }
+
+  activeData = d;
+
+  document.querySelectorAll('[id^="tab-"]').forEach(p => {
+    p.classList.remove("active");
+    p.style.display = "none";
+  });
+
+  document.querySelectorAll("#userTabs .tab").forEach(t => t.classList.remove("active"));
+  document.querySelector('[data-tab="overview"]').classList.add("active");
+  document.getElementById("tab-overview").classList.add("active");
+  document.getElementById("tab-overview").style.display = "block";
+
+  const isIndividualLogin = Array.isArray(d.panSummary) && d.panSummary.length === 1;
+
+  if (isIndividualLogin) {
+    singlePanMode = true;
+    activePan = d.panSummary[0]?.pan || null;
+
+    document.querySelector('[data-tab="holdings"]').style.display = "none";
+    document.getElementById("tab-holdings").style.display = "none";
+    document.querySelector('[data-tab="transactions"]').style.display = "";
+  } else {
+    singlePanMode = false;
+    activePan = null;
+
+    document.querySelector('[data-tab="holdings"]').style.display = "";
+    document.getElementById("tab-holdings").style.display = "none";
+    document.querySelector('[data-tab="transactions"]').style.display = "none";
+  }
+
+  document.getElementById("clientNameHeader").textContent = d.label || user.name || email;
+
+  const clientName = document.getElementById("clientName");
+  if(clientName) clientName.textContent = d.label || user.name || email;
+
+  document.getElementById("kpi_value").textContent = formatCurrency(d.kpi?.portfolio_value || 0);
+  document.getElementById("kpi_invested").textContent = formatCurrency(d.kpi?.invested || 0);
+  document.getElementById("kpi_gain").textContent = formatCurrency(d.kpi?.unrealised_gl || 0);
+  document.getElementById("kpi_relgain").textContent = formatCurrency(d.kpi?.realised_gl || 0);
+  document.getElementById("kpi_return").textContent = formatPct(d.kpi?.abs_return_pct || 0);
+  document.getElementById("kpi_xirr_current").textContent = formatPct(d.kpi?.xirr_existing || 0);
+  document.getElementById("kpi_xirr_entire").textContent = formatPct(d.kpi?.xirr_entire || 0);
+
+  renderAsset(d.assetAlloc || []);
+  renderStrategy(d.strategyAlloc || []);
+  renderPan(d.panSummary || []);
+  renderPerfGrouped(d.perfIsin || []);
+  renderProfit(d.profitBookFund || []);
+
+  const backBtn = document.getElementById("backToFamily");
+  if (adminSessionUser || FAMILYUSER) {
+    backBtn.style.display = "inline-flex";
+  } else {
+    backBtn.style.display = "none";
+  }
+}
+
+function hidePanSummary(){
+
+document.querySelector('[data-tab="holdings"]').style.display="none";
+document.getElementById("tab-holdings").style.display="none";
+
+}
+
+function showPanSummary(){
+
+document.querySelector('[data-tab="holdings"]').style.display="";
+document.getElementById("tab-holdings").style.display="";
+document.querySelector('[data-tab="transactions"]').style.display="none";
+
+}
+
+async function openClientDashboard(pan) {
+  await loadUserIndex();
+
+  const login = PAN_MAP[pan];
+  if (!login) {
+    console.error("PAN not mapped:", pan);
+    alert(`No individual login mapped for PAN: ${pan}`);
+    return;
+  }
+
+  // Preserve parent family login before switching
+  if (!singlePanMode) {
+    FAMILYUSER = currentUser;
+  }
+
+  const rec = await getUserIndexRecord(login);
+  const fileName = rec?.file || `${login}.json`;
+
+  const res = await fetch(`/api/portfolio/${fileName}?v=${Date.now()}`);
+
+  if (!res.ok) {
+    throw new Error(`User not found: ${login}`);
+  }
+
+  const user = expandKeys(await res.json());
+
+  rawData = rawData || {};
+  rawData[login] = user;
+
+  currentUser = login;
+  activePan = pan;
+  singlePanMode = true;
+  activeData = user.data || null;
+
+  localStorage.setItem("activePan", pan);
+
+  await loadUser(login);
+  applyPanModeTabs();
+
+  document.getElementById("backToFamily").style.display = "inline-flex";
+}
+
+/* ================= PERCENT NORMALIZER ================= */
+
+function toPct(arr){
+
+if(!arr || !arr.length) return [];
+
+/* if already percent (PAN mode) skip */
+const total = arr.reduce((a,b)=>a+(b.value||0),0);
+
+if(total <= 101 && total >= 99){
+return arr;
+}
+
+/* else normalize (family mode) */
+return arr.map(x=>({
+...x,
+value: total ? (x.value/total*100) : 0
+}));
+
+}
+
+/* ================= ASSET ================= */
+
+function renderAsset(arr){
+
+const d = arr || [];
+
+/* normalize structure */
+arr = d.map(x=>({
+label: x.label ?? x.asset,
+value: x.value ?? x.weight_pct
+}));
+
+arr = toPct(arr);
+
+if(assetDrillChart){
+assetDrillChart.destroy();
+assetDrillChart = null;
+}
+
+document.getElementById("assetDrilldown").innerHTML="";
+document.getElementById("assetClose").style.display="none";
+
+document.getElementById("assetTitle").textContent="Asset Allocation";
+
+if(assetChart) assetChart.destroy();
+
+const ctx = document.getElementById("assetChart");
+
+autoChartHeight("assetChart", 1, 60);
+assetChart = new Chart(ctx,{
+type:"bar",
+options:{
+indexAxis:'y',
+responsive:true,
+maintainAspectRatio:false,
+
+plugins:{
+legend:{ display:false }
+},
+
+scales:{
+x:{
+stacked:true,
+grid:{display:false},
+display:false,
+max:100
+},
+y:{
+stacked:true,
+grid:{display:false},
+display:false
+}
+},
+
+onClick:(e,els)=>{
+if(!els.length) return;
+
+const index = els[0].datasetIndex;
+const label = arr[index].label;
+
+if(label==="Equity"){
+renderMarket(getActiveData()?.marketCap || []);
+}
+}
+},
+
+data:{
+labels:["Asset"],
+datasets:arr.map((x,i)=>({
+label:x.label,
+data:[x.value],
+backgroundColor:palette[i],
+borderRadius:6
+}))
+}
+});
+
+}
+
+/* ================= MARKET ================= */
+
+function renderMarket(arr){
+
+arr = toPct(arr || []);
+
+drillMode="market";
+
+document.getElementById("assetTitle").textContent="Market Cap";
+
+if(assetChart) assetChart.destroy();
+
+const ctx = document.getElementById("assetChart");
+const closeBtn = document.getElementById("assetClose");
+if(closeBtn) closeBtn.style.display="inline-block";
+autoChartHeight("assetChart", arr.length);
+
+assetDrillChart = new Chart(ctx,{
+type:"bar",
+options:{
+indexAxis:'y',
+plugins:{legend:{display:false}},
+scales:{
+x:{
+display:false
+},
+y:{
+display:true,
+ticks:{
+color:getComputedStyle(document.body)
+.getPropertyValue('--chart-label') || '#cfd6e4',
+font:{
+size:13,
+weight:'500'
+}
+},
+grid:{
+display:false
+}
+}
+}
+},
+data:{
+labels:arr.map(x=>x.label),
+datasets:[{
+data:arr.map(x=>x.value),
+backgroundColor:palette
+}]
+}
+});
+}
+
+/* ================= STRATEGY ================= */
+
+function renderStrategy(arr){
+
+/* destroy BOTH charts */
+if(strategyChart){
+strategyChart.destroy();
+strategyChart = null;
+}
+
+if(strategyDrillChart){
+strategyDrillChart.destroy();
+strategyDrillChart = null;
+}
+
+const d = arr || [];
+
+arr = d.map(x=>({
+label: x.label || x.global_broad_category_group,
+value: x.value ?? x.weight_pct
+}));
+
+arr = toPct(arr);
+
+document.getElementById("strategyTitle")
+.textContent = "Strategy Allocation";
+
+document.getElementById("strategyClose").style.display="none";
+
+const ctx = document.getElementById("strategyChart");
+autoChartHeight("strategyChart", 1, 60);
+
+strategyChart = new Chart(ctx,{
+type:"bar",
+options:{
+indexAxis:'y',
+responsive:true,
+maintainAspectRatio:false,
+plugins:{legend:{display:false}},
+scales:{
+x:{stacked:true,display:false,max:100},
+y:{stacked:true,display:false}
+},
+onClick:(e,els)=>{
+if(!els.length) return;
+const label = arr[els[0].datasetIndex].label;
+renderCategory(label);
+}
+},
+data:{
+labels:["Strategy"],
+datasets:arr.map((x,i)=>({
+label:x.label,
+data:[x.value],
+backgroundColor:palette[i],
+borderRadius:6
+}))
+}
+});
+}
+
+/* ================= CATEGORY ================= */
+
+function renderCategory(strategy){
+
+strategyMode = "category";
+
+document.getElementById("strategyTitle")
+.textContent = strategy + " - Category";
+
+/* destroy stacked chart */
+if(strategyChart){
+strategyChart.destroy();
+}
+
+/* prepare data */
+let data =
+(activeData?.categoryAlloc || [])
+.filter(x => x.global_broad_category_group === strategy)
+.map(x => ({
+label: x.morningstar_category,
+value: x.weight_pct
+}));
+
+/* sort high → low */
+data.sort((a,b)=>b.value-a.value);
+
+const ctx = document.getElementById("strategyChart");
+
+/* show close button */
+document.getElementById("strategyClose").style.display="inline-block";
+
+autoChartHeight("strategyChart", data.length);
+/* draw drill chart (IDENTICAL TO renderMarket) */
+strategyDrillChart = new Chart(ctx,{
+type:"bar",
+options:{
+indexAxis:'y',
+maintainAspectRatio:false,
+plugins:{legend:{display:false}},
+scales:{
+x:{
+display:false
+},
+y:{
+display:true,
+ticks:{
+color:getComputedStyle(document.body)
+.getPropertyValue('--chart-label') || '#cfd6e4',
+font:{
+size:13,
+weight:'500'
+}
+},
+grid:{
+display:false
+}
+}
+}
+},
+data:{
+labels:data.map(x=>x.label),
+datasets:[{
+data:data.map(x=>x.value),
+backgroundColor:palette
+}]
+}
+});
+
+}
+
+document.getElementById("strategyClose").onclick = () => {
+
+document.getElementById("strategyTitle")
+.textContent = "Strategy Allocation";
+
+/* destroy drill chart */
+if(strategyDrillChart){
+strategyDrillChart.destroy();
+strategyDrillChart = null;
+}
+
+/* destroy main chart (safety) */
+if(strategyChart){
+strategyChart.destroy();
+strategyChart = null;
+}
+
+/* redraw stacked */
+renderStrategy(getActiveData().strategyAlloc);
+
+/* hide close */
+document.getElementById("strategyClose").style.display="none";
+
+};
+
+
+function renderPan(arr){
+
+  const tbody = document.querySelector("#panTable tbody");
+  tbody.innerHTML = "";
+
+  const data = getActiveData();
+  if(!data){
+    return;
+  }
+
+  const perfIsin = data.perfIsin || [];
+
+  arr.forEach(p => {
+
+    const panKey = "pan_" + p.pan;
+
+    const tr = document.createElement("tr");
+    tr.classList.add("level-1");
+    tr.dataset.key = panKey;
+
+    tr.innerHTML = `
+    <td>
+      <span class="ui-toggle"></span>
+      <span class="panLink" data-pan="${p.pan}">
+        ${p.inv_name}
+      </span>
+    </td>
+    <td></td>
+    <td>${formatCurrency(p.invested)}</td>
+    <td>${formatCurrency(p.current_value)}</td>
+    <td>${formatCurrency(p.unrealised_gl)}</td>
+    <td>${formatPct(p.abs_return_pct)}</td>
+    <td>${formatPct(p.xirr_existing)}</td>
+    <td>${formatPct(p.xirr_entire)}</td>
+    `;
+
+    tbody.appendChild(tr);
+
+    tr.querySelector(".panLink").onclick = (e) => {
+      e.stopPropagation();
+      openClientDashboard(p.pan);
+    };
+
+    bindToggle(tr.querySelector(".ui-toggle"), panKey, tbody);
+
+    const funds = perfIsin.filter(x => x.pan === p.pan);
+
+    const stratMap = {};
+
+    funds.forEach(f => {
+      const s = f.global_broad_category_group || "Other";
+      if(!stratMap[s]) stratMap[s] = [];
+      stratMap[s].push(f);
+    });
+
+    Object.keys(stratMap).forEach(strategy => {
+
+      const stratKey = panKey + "_s_" + strategy;
+      const stratFunds = stratMap[strategy];
+
+      const invested = stratFunds.reduce((a,b) => a + (b.invested || 0), 0);
+      const value = stratFunds.reduce((a,b) => a + (b.current_value || 0), 0);
+      const gain = stratFunds.reduce((a,b) => a + (b.unrealised_gl || 0), 0);
+      const weight = p.current_value ? (value / p.current_value * 100) : 0;
+
+      const xirr_existing = weightedAverage(stratFunds, "xirr_existing", "current_value");
+      const xirr_entire = weightedAverage(stratFunds, "xirr_entire", "current_value");
+
+      const trS = document.createElement("tr");
+      trS.classList.add("level-2");
+      trS.dataset.parent = panKey;
+      trS.dataset.key = stratKey;
+      trS.style.display = "none";
+
+      trS.innerHTML = `
+      <td>
+        <span class="ui-toggle"></span>
+        <b>${strategy}</b>
+      </td>
+      <td>${formatPct(weight)}</td>
+      <td>${formatCurrency(invested)}</td>
+      <td>${formatCurrency(value)}</td>
+      <td>${formatCurrency(gain)}</td>
+      <td>${formatPct(invested ? (gain / invested * 100) : 0)}</td>
+      <td>${formatPct(xirr_existing)}</td>
+      <td>${formatPct(xirr_entire)}</td>
+      `;
+
+      tbody.appendChild(trS);
+
+      bindToggle(trS.querySelector(".ui-toggle"), stratKey, tbody);
+
+      const catMap = {};
+
+      stratFunds.forEach(f => {
+        const c = f.morningstar_category || "Other";
+        if(!catMap[c]) catMap[c] = [];
+        catMap[c].push(f);
+      });
+
+      Object.keys(catMap).forEach(category => {
+
+        const trC = document.createElement("tr");
+        trC.classList.add("level-3");
+        trC.dataset.parent = stratKey;
+        trC.style.display = "none";
+
+        trC.innerHTML = `
+        <td><b>${category}</b></td>
+        <td></td><td></td><td></td>
+        <td></td><td></td><td></td><td></td>
+        `;
+
+        tbody.appendChild(trC);
+
+        catMap[category].forEach(f => {
+
+          const trF = document.createElement("tr");
+          trF.classList.add("level-3");
+          trF.dataset.parent = stratKey;
+          trF.style.display = "none";
+
+          trF.innerHTML = `
+          <td>${f.fund_display}</td>
+          <td></td>
+          <td>${formatCurrency(f.invested)}</td>
+          <td>${formatCurrency(f.current_value)}</td>
+          <td>${formatCurrency(f.unrealised_gl)}</td>
+          <td>${formatPct(f.abs_return_pct)}</td>
+          <td>${formatPct(f.xirr_existing)}</td>
+          <td>${formatPct(f.xirr_entire)}</td>
+          `;
+
+          tbody.appendChild(trF);
+        });
+      });
+    });
+  });
+}
+
+function openClientPan(pan){
+alert("Open client drilldown: "+pan);
+}
+
+async function backToFamily() {
+  if (adminSessionUser) {
+    currentUser = adminSessionUser;
+    isAdmin = true;
+    singlePanMode = false;
+    activePan = null;
+    activeData = null;
+
+    localStorage.removeItem("activePan");
+
+    document.getElementById("backToFamily").style.display = "none";
+    document.getElementById("userTabs").style.display = "none";
+    document.getElementById("adminTabs").style.display = "flex";
+    document.getElementById("clientNameHeader").textContent = "Admin Dashboard";
+
+    document.querySelectorAll('[id^="tab-"]').forEach(p => {
+      p.classList.remove("active");
+      p.style.display = "none";
+    });
+
+    document.getElementById("admin-overview").style.display = "block";
+    document.getElementById("admin-clients").style.display = "none";
+
+    document.querySelectorAll("#adminTabs .tab").forEach(t => t.classList.remove("active"));
+    document
+      .querySelector('#adminTabs .tab[data-admin="overview"]')
+      ?.classList.add("active");
+
+    await renderAdminOverview();
+    await renderAdminClients();
+
+    window.scrollTo(0, 0);
+    return;
+  }
+
+  activePan = null;
+  singlePanMode = false;
+  localStorage.removeItem("activePan");
+  document.getElementById("backToFamily").style.display = "none";
+  loadUser(FAMILYUSER || currentUser);
+  window.scrollTo(0, 0);
+}
+
+function renderPerfGrouped(fundsOverride){
+
+const data = getActiveData();
+
+const funds =
+fundsOverride || data.perfIsin;
+
+const strategies =
+data.perfStrat || [];
+
+const container=document.getElementById("perfContainer");
+container.innerHTML="";
+
+const table=document.createElement("table");
+
+table.innerHTML=`
+<thead>
+<tr>
+<th>Name</th>
+<th>Weight</th>
+<th>Invested</th>
+<th>Value</th>
+<th>Gain</th>
+<th>Return</th>
+<th>XIRR (Holdings)</th>
+<th>XIRR (SI)</th>
+</tr>
+</thead>
+<tbody></tbody>
+`;
+
+const tbody=table.querySelector("tbody");
+
+/* MAP FUNDS BY STRATEGY */
+
+const stratMap={};
+
+funds.forEach(f=>{
+const s=f.global_broad_category_group || "Other";
+if(!stratMap[s]) stratMap[s]=[];
+stratMap[s].push(f);
+});
+
+
+/* USE perfStrat FROM BACKEND */
+
+strategies.forEach(strat=>{
+
+const strategy = strat.global_broad_category_group;
+const stratKey="s_"+strategy;
+
+const stratFunds = stratMap[strategy] || [];
+
+/* STRATEGY ROW */
+
+const trS=document.createElement("tr");
+trS.classList.add("level-1");
+trS.dataset.key=stratKey;
+
+trS.innerHTML=`
+<td>
+<span class="ui-toggle"></span>
+<b>${strategy}</b>
+</td>
+<td><b>${formatPct(strat.weight_pct)}</b></td>
+<td><b>${formatCurrency(strat.invested)}</b></td>
+<td><b>${formatCurrency(strat.current_value)}</b></td>
+<td><b>${formatCurrency(strat.unrealised_gl)}</b></td>
+<td><b>${formatPct(strat.abs_return_pct)}</b></td>
+<td><b>${formatPct(strat.xirr_existing)}</b></td>
+<td><b>${formatPct(strat.xirr_entire)}</b></td>
+`;
+
+tbody.appendChild(trS);
+
+
+/* STRATEGY TOGGLE */
+
+bindToggle(trS.querySelector(".ui-toggle"), stratKey, tbody);
+
+
+/* CATEGORY GROUP */
+
+const catMap={};
+
+stratFunds.forEach(f=>{
+const c=f.morningstar_category || "Other";
+if(!catMap[c]) catMap[c]=[];
+catMap[c].push(f);
+});
+
+
+Object.keys(catMap).forEach(category=>{
+
+const trC=document.createElement("tr");
+trC.classList.add("level-2");
+trC.dataset.parent=stratKey;
+trC.style.display="none";
+
+trC.innerHTML=`
+<td style="padding-left:20px"><b>${category}</b></td>
+<td></td><td></td><td></td>
+<td></td><td></td><td></td><td></td>
+`;
+
+tbody.appendChild(trC);
+
+
+/* FUND ROWS */
+
+catMap[category].forEach(f=>{
+
+const tr=document.createElement("tr");
+tr.classList.add("level-3");
+tr.dataset.parent=stratKey;
+tr.style.display="none";
+
+tr.innerHTML=`
+<td style="padding-left:40px">${f.fund_display}</td>
+<td></td>
+<td>${formatCurrency(f.invested)}</td>
+<td>${formatCurrency(f.current_value)}</td>
+<td>${formatCurrency(f.unrealised_gl)}</td>
+<td>${formatPct(f.abs_return_pct)}</td>
+<td>${formatPct(f.xirr_existing)}</td>
+<td>${formatPct(f.xirr_entire)}</td>
+`;
+
+tbody.appendChild(tr);
+
+});
+
+});
+
+});
+
+container.appendChild(table);
+}
+
+function renderProfit(rowsOverride){
+
+const rows =
+rowsOverride || getActiveData()?.profitBookFund || [];
+
+const container=document.getElementById("profitContainer");
+container.innerHTML="";
+
+if(!rows.length){
+container.innerHTML="<div>No profit booking</div>";
+return;
+}
+
+const isPanView = rows.length && rows.every(r=>r.pan===rows[0].pan);
+
+const table=document.createElement("table");
+
+table.innerHTML=`
+<thead>
+<tr>
+<th>Fund</th>
+<th>Folio</th>
+<th>DOP</th>
+<th>DOS</th>
+<th>Units</th>
+<th>Investment</th>
+<th>Sale Value</th>
+<th>Gain</th>
+<th>Return</th>
+<th>Type</th>
+</tr>
+</thead>
+<tbody></tbody>
+`;
+
+const tbody=table.querySelector("tbody");
+
+/* ================= GROUP CLIENT ================= */
+
+const clientMap={};
+
+rows.forEach(r=>{
+const key = r.inv_name || "Client";
+if(!clientMap[key]) clientMap[key]=[];
+clientMap[key].push(r);
+});
+
+Object.keys(clientMap).forEach(client=>{
+
+const clientRows = clientMap[client];
+const clientKey = "client_"+client;
+
+/* ================= CLIENT ROW ================= */
+
+if(!isPanView){
+
+const cInv =
+clientRows.reduce((a,b)=>a+(b.total_cost||0),0);
+
+const cSale =
+clientRows.reduce((a,b)=>a+(b.total_proceeds||0),0);
+
+const cGain =
+clientRows.reduce((a,b)=>a+(b.total_gain_loss||0),0);
+
+const cPct =
+cInv ? cGain/cInv*100 : 0;
+
+const trC=document.createElement("tr");
+trC.classList.add("level-1");
+trC.dataset.key = clientKey;
+
+trC.innerHTML=`
+<td>
+<span class="ui-toggle"></span>
+<b>${client}</b>
+</td>
+<td></td><td></td><td></td><td></td>
+<td><b>${formatCurrency(cInv)}</b></td>
+<td><b>${formatCurrency(cSale)}</b></td>
+<td><b>${formatCurrency(cGain)}</b></td>
+<td><b>${formatPct(cPct)}</b></td>
+<td></td>
+`;
+
+tbody.appendChild(trC);
+
+bindToggle(trC.querySelector(".ui-toggle"), clientKey, tbody);
+
+}
+
+/* ================= GROUP FY ================= */
+
+const fyMap={};
+
+clientRows.forEach(r=>{
+const fy = r.financial_year || "Unknown";
+if(!fyMap[fy]) fyMap[fy]=[];
+fyMap[fy].push(r);
+});
+
+Object.keys(fyMap).sort().reverse().forEach(fy=>{
+
+const fyRows = fyMap[fy];
+const fyKey = clientKey+"_fy_"+fy;
+
+/* FY TOTAL */
+
+const inv =
+fyRows.reduce((a,b)=>a+(b.total_cost||0),0);
+
+const sale =
+fyRows.reduce((a,b)=>a+(b.total_proceeds||0),0);
+
+const gain =
+fyRows.reduce((a,b)=>a+(b.total_gain_loss||0),0);
+
+const pct =
+inv ? gain/inv*100 : 0;
+
+const trFY=document.createElement("tr");
+trFY.classList.add("level-1");
+
+trFY.style.display = isPanView ? "" : "none";
+trFY.dataset.parent = isPanView ? "" : clientKey;
+trFY.dataset.key = fyKey;
+
+trFY.innerHTML=`
+<td>
+<span class="ui-toggle"></span>
+<b>${fy}</b>
+</td>
+<td></td><td></td><td></td><td></td>
+<td><b>${formatCurrency(inv)}</b></td>
+<td><b>${formatCurrency(sale)}</b></td>
+<td><b>${formatCurrency(gain)}</b></td>
+<td><b>${formatPct(pct)}</b></td>
+<td></td>
+`;
+
+tbody.appendChild(trFY);
+
+bindToggle(trFY.querySelector(".ui-toggle"), fyKey, tbody);
+
+/* ================= GROUP STRATEGY ================= */
+
+const stratMap={};
+
+fyRows.forEach(r=>{
+const s = r.global_broad_category_group || "Other";
+if(!stratMap[s]) stratMap[s]=[];
+stratMap[s].push(r);
+});
+
+Object.keys(stratMap).forEach(strategy=>{
+
+const stratRows = stratMap[strategy];
+const stratKey = fyKey+"_s_"+strategy;
+
+/* STRAT TOTAL */
+
+const sInv =
+stratRows.reduce((a,b)=>a+(b.total_cost||0),0);
+
+const sSale =
+stratRows.reduce((a,b)=>a+(b.total_proceeds||0),0);
+
+const sGain =
+stratRows.reduce((a,b)=>a+(b.total_gain_loss||0),0);
+
+const sPct =
+sInv ? sGain/sInv*100 : 0;
+
+const trS=document.createElement("tr");
+trS.classList.add("level-2");
+
+trS.dataset.parent = fyKey;
+trS.dataset.key = stratKey;
+trS.style.display="none";
+
+trS.innerHTML=`
+<td>
+<span class="ui-toggle"></span>
+<b>${strategy}</b>
+</td>
+<td></td><td></td><td></td><td></td>
+<td><b>${formatCurrency(sInv)}</b></td>
+<td><b>${formatCurrency(sSale)}</b></td>
+<td><b>${formatCurrency(sGain)}</b></td>
+<td><b>${formatPct(sPct)}</b></td>
+<td></td>
+`;
+
+tbody.appendChild(trS);
+
+bindToggle(trS.querySelector(".ui-toggle"), stratKey, tbody);
+
+/* ================= FUND ROWS ================= */
+
+stratRows.forEach(r=>{
+
+const tr=document.createElement("tr");
+tr.classList.add("level-3");
+
+tr.dataset.parent = stratKey;
+tr.style.display="none";
+
+tr.innerHTML=`
+<td>
+${r.fund_display}
+</td>
+<td>${r.folio_no||""}</td>
+<td>${r.dop||""}</td>
+<td>${r.dos||""}</td>
+<td>${r.total_units??""}</td>
+<td>${formatCurrency(r.total_cost||0)}</td>
+<td>${formatCurrency(r.total_proceeds||0)}</td>
+<td>${formatCurrency(r.total_gain_loss||0)}</td>
+<td>${formatPct(r.gain_loss_pct)}</td>
+<td>${r.gain_type||""}</td>
+`;
+
+tbody.appendChild(tr);
+
+});
+
+});
+
+});
+
+});
+
+container.appendChild(table);
+}
+
+function renderTransactionView(rows){
+
+const container = document.getElementById("transactionContainer");
+
+/* ---------- SORT ---------- */
+
+rows.sort((a,b)=>{
+
+if(a.strategy !== b.strategy)
+return (a.strategy || "").localeCompare(b.strategy || "");
+
+if(a.fund !== b.fund)
+return (a.fund || "").localeCompare(b.fund || "");
+
+if(a.folio !== b.folio)
+return (a.folio || "").localeCompare(b.folio || "");
+
+return new Date(a.purchase_date) - new Date(b.purchase_date);
+
+});
+
+
+/* ---------- TABLE ---------- */
+
+container.innerHTML = `
+<div id="txnSummaryTop" class="txn-summary-holder"></div>
+
+<div class="txn-layout">
+
+<div class="txn-topbar">
+  <div class="txn-filters">
+
+    <label class="txn-switch">
+      <input type="checkbox" id="txnFilter1Y">
+      <span class="slider"></span>
+      <span class="switch-label">&gt; 1Y</span>
+    </label>
+
+    <label class="txn-switch">
+      <input type="checkbox" id="txnFilterAll">
+      <span class="slider"></span>
+      <span class="switch-label">All</span>
+    </label>
+
+  </div>
+</div>
+
+<div class="txn-scroll-body">
+
+<table class="txn-table">
+<thead>
+<tr>
+<th></th>
+<th>Fund/Date</th>
+<th>Txn</th>
+<th>Units</th>
+<th>Cost</th>
+<th>CMV</th>
+<th>Investment</th>
+<th>Current Value</th>
+<th>Gain</th>
+<th>Return</th>
+</tr>
+</thead>
+
+<tbody id="txnBody"></tbody>
+
+</table>
+
+</div>
+</div>
+`;
+
+const tbody = document.getElementById("txnBody");
+
+
+/* ---------- GROUPING ---------- */
+
+const map = {};
+
+rows.forEach(r=>{
+
+const key = (r.fund || "") + "||" + (r.folio || "");
+
+if(!map[key]){
+map[key] = {
+strategy: r.strategy,
+fund : r.fund,
+folio: r.folio,
+rows : [],
+units:0,
+invested:0,
+value:0
+};
+}
+
+map[key].rows.push(r);
+
+map[key].units    += (r.units || 0);
+map[key].invested += (r.investment || 0);
+map[key].value    += (r.current_value || 0);
+
+});
+
+
+/* ---------- RENDER ---------- */
+
+let lastStrategy = null;
+
+Object.values(map).forEach(group=>{
+
+/* ---------- STRATEGY DIVIDER ---------- */
+
+if(group.strategy !== lastStrategy){
+
+const trStrat = document.createElement("tr");
+trStrat.className = "txn-strategy-divider";
+
+trStrat.innerHTML = `
+<td></td>
+<td class="txn-strategy-name">
+<b>${group.rows[0].strategy || "Other"}</b>
+</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+`;
+
+tbody.appendChild(trStrat);
+
+lastStrategy = group.strategy;
+}
+
+
+/* ---------- FUND SUMMARY ---------- */
+
+const gain = group.value - group.invested;
+const ret  = group.invested ? (gain/group.invested*100) : 0;
+
+const key =
+"group_" +
+(group.fund||"").replace(/\W/g,'') +
+(group.folio||"").replace(/\W/g,'');
+
+const trHead = document.createElement("tr");
+trHead.className = "txn-group-header";
+trHead.dataset.key = key;
+
+trHead.innerHTML = `
+<td class="txn-control-cell">
+<label class="round-check">
+<input type="checkbox" class="txn-select-group">
+<span></span>
+</label>
+<span class="ui-toggle"></span>
+</td>
+
+<td colspan="2" class="txn-fund-header">
+<b>${group.fund}</b> | ${group.folio || ""}
+</td>
+
+<td><b>${group.units.toFixed(3)}</b></td>
+<td></td>
+<td></td>
+<td><b>${formatCurrency(group.invested)}</b></td>
+<td><b>${formatCurrency(group.value)}</b></td>
+<td><b>${formatCurrency(gain)}</b></td>
+<td><b>${ret.toFixed(2)}%</b></td>
+`;
+
+tbody.appendChild(trHead);
+
+/* bind toggle */
+bindToggle(trHead.querySelector(".ui-toggle"), key, tbody);
+
+
+/* ---------- LOT ROWS ---------- */
+
+group.rows.forEach(r=>{
+
+const gain = (r.current_value||0) - (r.investment||0);
+
+const tr = document.createElement("tr");
+tr.className="txn-row";
+tr.dataset.parent = key;
+tr.style.display = "none";
+
+tr.innerHTML=`
+<td>
+<label class="round-check">
+<input type="checkbox"
+class="txn-check"
+data-fund="${group.fund}"
+data-folio="${group.folio}"
+data-units="${r.units ?? 0}"
+data-invested="${r.investment ?? 0}"
+data-value="${r.current_value ?? 0}"
+data-gain="${gain}"
+>
+<span></span>
+</label>
+</td>
+
+<td>${r.purchase_date || ""}</td>
+
+<td>${r.transaction_type || ""}</td>
+
+<td class="units">${r.units ?? 0}</td>
+
+<td>${r.purchase_nav ?? 0}</td>
+
+<td>${r.cmv ?? 0}</td>
+
+<td class="invested">
+${formatCurrency(r.investment ?? 0)}
+</td>
+
+<td class="value">
+${formatCurrency(r.current_value ?? 0)}
+</td>
+
+<td class="gain">
+${formatCurrency(gain)}
+</td>
+
+<td>${(r.return_pct ?? 0).toFixed(2)}%</td>
+`;
+
+tbody.appendChild(tr);
+
+});
+
+});
+
+
+/* ---------- GROUP SELECT ---------- */
+
+document.querySelectorAll(".txn-select-group")
+.forEach(cb=>{
+
+cb.addEventListener("change", function(){
+
+const header = this.closest("tr");
+const key = header.dataset.key;
+
+document
+.querySelectorAll(`tr[data-parent="${key}"] .txn-check`)
+.forEach(c=>{
+c.checked = this.checked;
+c.dispatchEvent(new Event("change"));
+});
+
+});
+
+});
+
+
+/* ---------- SELECTION ---------- */
+
+attachTxnSelection();
+attachTxnFilters();
+
+}
+
+function attachTxnFilters(){
+
+const filterAll = document.getElementById("txnFilterAll");
+const filter1Y  = document.getElementById("txnFilter1Y");
+
+if(!filterAll || !filter1Y) return;
+
+
+/* ================= SELECT ALL ================= */
+
+filterAll.addEventListener("change", function(){
+
+const checked = this.checked;
+
+/* uncheck other filter */
+if(checked) filter1Y.checked = false;
+
+/* select ALL checkboxes (even hidden) */
+document.querySelectorAll(".txn-check")
+.forEach(cb=>{
+cb.checked = checked;
+});
+
+/* expand groups */
+document.querySelectorAll(".txn-group-header")
+.forEach(row=>{
+
+row.classList.toggle("open", checked);
+
+const toggle = row.querySelector(".txn-toggle");
+if(toggle) toggle.textContent = checked ? "▼" : "▶";
+
+const key = row.dataset.key;
+
+document
+.querySelectorAll(`tr[data-parent="${key}"]`)
+.forEach(r=>{
+r.style.display = checked ? "" : "none";
+});
+
+});
+
+updateTxnSelection();
+
+});
+
+/* ================= > 1 YEAR ================= */
+
+filter1Y.addEventListener("change", function(){
+
+const cutoff = new Date();
+cutoff.setDate(cutoff.getDate() - 366);
+
+const checked = this.checked;
+
+if(checked) filterAll.checked = false;
+
+/* show everything first */
+document.querySelectorAll(".txn-row").forEach(r=>{
+r.style.display = "";
+});
+
+/* now only select > 1Y */
+document.querySelectorAll(".txn-row")
+.forEach(row=>{
+
+const dateText = row.children[1].textContent.trim();
+const purchaseDate = new Date(dateText);
+
+const cb = row.querySelector(".txn-check");
+if(!cb) return;
+
+cb.checked = checked && purchaseDate <= cutoff;
+
+});
+
+updateTxnSelection();
+
+});
+
+}
+
+function updateTxnSelection(){
+
+const map = {};
+
+document.querySelectorAll(".txn-check:checked")
+.forEach(cb=>{
+
+console.log("CHECKED:", cb.dataset);
+
+const fund  = cb.dataset.fund;
+const folio = cb.dataset.folio;
+
+const units    = parseFloat(cb.dataset.units || 0);
+const invested = parseFloat(cb.dataset.invested || 0);
+const value    = parseFloat(cb.dataset.value || 0);
+const gain     = parseFloat(cb.dataset.gain || 0);
+
+const key = fund + "||" + folio;
+
+if(!map[key]){
+map[key] = {
+fund,
+folio,
+units:0,
+invested:0,
+value:0,
+gain:0
+};
+}
+
+map[key].units += units;
+map[key].invested += invested;
+map[key].value += value;
+map[key].gain += gain;
+
+});
+
+renderTxnSummary(Object.values(map));
+
+}
+
+function renderTxnSummary(rows){
+
+const container = document.getElementById("txnSummaryTop");
+if(!container) return;
+
+if(!rows || !rows.length){
+container.classList.remove("active");
+container.innerHTML = "";
+return;
+}
+
+let tUnits=0, tInv=0, tVal=0, tGain=0;
+
+rows.forEach(r=>{
+tUnits+=r.units;
+tInv+=r.invested;
+tVal+=r.value;
+tGain+=r.gain;
+});
+
+container.classList.add("active");
+
+container.innerHTML = `
+<div class="txn-summary">
+
+<div class="txn-summary-title">
+Selected Lots for Redemption (${rows.length})
+</div>
+
+<table class="txn-summary-table">
+<thead>
+<tr>
+<th>Fund</th>
+<th>Units</th>
+<th>Investment</th>
+<th>Current Value</th>
+<th>Gain</th>
+<th>Return</th>
+</tr>
+</thead>
+
+<tbody>
+
+${rows.map(r=>{
+
+const ret = r.invested ? (r.gain/r.invested*100) : 0;
+
+return `
+<tr>
+<td>${r.fund} | ${r.folio}</td>
+<td>${r.units.toFixed(3)}</td>
+<td>${formatCurrency(r.invested)}</td>
+<td>${formatCurrency(r.value)}</td>
+<td>${formatCurrency(r.gain)}</td>
+<td>${ret.toFixed(2)}%</td>
+</tr>
+`;
+
+}).join("")}
+
+<tr class="txn-summary-total">
+<td>Total</td>
+<td></td>
+<td>${formatCurrency(tInv)}</td>
+<td>${formatCurrency(tVal)}</td>
+<td>${formatCurrency(tGain)}</td>
+<td>${tInv ? (tGain/tInv*100).toFixed(2) : 0}%</td>
+</tr>
+
+</tbody>
+</table>
+</div>
+`;
+
+}
+
+async function renderAdminOverview(){
+
+  const clients = await loadAllClientSummaries();
+
+  const totalClients = clients.length;
+  const totalValue = clients.reduce((s, c) => s + Number(c.portfolio_value || 0), 0);
+  const totalInvested = clients.reduce((s, c) => s + Number(c.invested || 0), 0);
+
+  document.getElementById("admin-overview").innerHTML = `
+    <div class="admin-overview-grid">
+
+      <div class="card admin-kpi-card">
+        <div class="kpi-title">Total Clients</div>
+        <div class="kpi-value">${formatNumber(totalClients)}</div>
+      </div>
+
+      <div class="card admin-kpi-card">
+        <div class="kpi-title">Total AUM</div>
+        <div class="kpi-value">${formatNumber(totalValue)}</div>
+      </div>
+
+      <div class="card admin-kpi-card">
+        <div class="kpi-title">Total Invested</div>
+        <div class="kpi-value">${formatNumber(totalInvested)}</div>
+      </div>
+
+    </div>
+  `;
+}
+
+function attachTxnSelection(){
+
+const checks = document.querySelectorAll(".txn-check");
+
+checks.forEach(c=>{
+c.addEventListener("change",updateTxnSelection);
+});
+
+}
+
+document.getElementById("password")
+    .addEventListener("keypress", function(e){
+    if(e.key==="Enter") login();
+    });
+
+function applyPanModeTabs(){
+
+const d = getActiveData();
+
+if(d.panSummary && d.panSummary.length === 1){
+
+/* Individual login */
+singlePanMode = true;
+activePan = d.panSummary[0].pan;
+
+/* hide holdings */
+document.querySelector('[data-tab="holdings"]').style.display="none";
+document.getElementById("tab-holdings").style.display="none";
+
+/* show transactions */
+document.querySelector('[data-tab="transactions"]').style.display="";
+
+}else{
+
+/* family login */
+singlePanMode = false;
+activePan = null;
+
+document.querySelector('[data-tab="holdings"]').style.display="";
+document.getElementById("tab-holdings").style.display="";
+
+document.querySelector('[data-tab="transactions"]').style.display="none";
+
+}
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+
+    if (window.Chart) {
+        Chart.defaults.animation.duration = 700;
+        Chart.defaults.animation.easing = 'easeOutQuart';
+
+        Chart.defaults.animations = Chart.defaults.animations || {};
+        Chart.defaults.animations.x = {
+            duration: 700,
+            easing: 'easeOutQuart',
+            from: 0
+        };
+    }
+
+    await loadDashLayout();
+    await loadData();
+
+    restoreSession();
+
+    /* HEADER SCROLL EFFECT */
+    const header = document.querySelector(".dash-header");
+
+    window.addEventListener("scroll", () => {
+        if(window.scrollY > 10){
+            header.classList.add("scrolled");
+        }else{
+            header.classList.remove("scrolled");
+        }
+    });
+
+    document.getElementById("assetClose").onclick = () => {
+    renderAsset(getActiveData().assetAlloc);
+    };
+
+    document.getElementById("backToFamily").onclick = backToFamily;
+    document.body.style.visibility = "visible";
+
+    });
+
+document.querySelectorAll("#userTabs .tab").forEach(btn => {
+  btn.onclick = () => {
+
+    if (isAdmin) return;
+
+    document.querySelectorAll("#userTabs .tab")
+      .forEach(t => t.classList.remove("active"));
+
+    document.querySelectorAll('[id^="tab-"]')
+      .forEach(p => {
+        p.classList.remove("active");
+        p.style.display = "none";
+      });
+
+    btn.classList.add("active");
+
+    const panelId = "tab-" + btn.dataset.tab;
+    const panel = document.getElementById(panelId);
+
+    if (panel) {
+      panel.classList.add("active");
+      panel.style.display = "block";
+    }
+
+    if(btn.dataset.tab === "overview" && currentUser){
+      const d = activeData || rawData[currentUser]?.data;
+      if (d) {
+        renderAsset(d.assetAlloc);
+        renderStrategy(d.strategyAlloc);
+      }
+    }
+
+    if(btn.dataset.tab === "transactions"){
+      loadTransactionView();
+    }
+  };
+});
+
+</script>
+
+<div id="dashFooter"></div>
+<div id="drillTooltip" class="drill-tooltip"></div>
+
+<script>
+let tooltip = null;
+
+window.onload = () => {
+
+    tooltip = document.getElementById("drillTooltip");
+
+    document.addEventListener("mousemove", function(e){
+
+        const bar = e.target.closest(".drill-fill");
+
+        if(!bar){
+            if(tooltip) tooltip.classList.remove("show");
+            return;
+        }
+
+        if(!tooltip) return;
+
+        tooltip.innerHTML =
+            bar.dataset.label + " : " + bar.dataset.value + "%";
+
+        tooltip.style.left = (e.pageX + 12) + "px";
+        tooltip.style.top  = (e.pageY - 28) + "px";
+
+        tooltip.classList.add("show");
+
+    });
+
+};
+</script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+if (window.matchMedia('(prefers-color-scheme: dark)').matches){
+document.body.classList.add("dark");
+}
+
+});
+
+document.addEventListener("change", function(e){
+
+if(e.target.id !== "expandAllToggle") return;
+
+const expand = e.target.checked;
+
+document.querySelectorAll(
+"#profitContainer tr, \
+ #perfContainer tr, \
+ #transactionContainer tr, \
+ #panTable tr"
+).forEach(tr=>{
+
+if(tr.classList.contains("level-1") ||
+   tr.classList.contains("level-2") ||
+   tr.classList.contains("level-3")){
+
+tr.style.display = expand ? "" : "none";
+
+}
+
+});
+
+// rotate arrows
+document.querySelectorAll(".toggle-arrow").forEach(a=>{
+a.classList.toggle("open", expand);
+});
+
+});
+
+</script>
+
+<script>
+document.addEventListener("click", e => {
+
+  if(!e.target.matches("#adminTabs .tab")) return;
+
+  document.querySelectorAll("#adminTabs .tab")
+    .forEach(t => t.classList.remove("active"));
+
+  e.target.classList.add("active");
+
+  /* keep normal user panels hidden in admin mode */
+  document.querySelectorAll('[id^="tab-"]').forEach(p => {
+    p.classList.remove("active");
+    p.style.display = "none";
+  });
+
+  document.getElementById("admin-overview").style.display = "none";
+  document.getElementById("admin-clients").style.display = "none";
+
+  if(e.target.dataset.admin === "overview"){
+    document.getElementById("admin-overview").style.display = "block";
+  }
+
+  if(e.target.dataset.admin === "clients"){
+    document.getElementById("admin-clients").style.display = "block";
+  }
+
+});
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+</body>
+</html>

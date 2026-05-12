@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
-  <title>définitif</title>
+  <title>définitif.investments</title>
   <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <link rel="icon" href="{{ url_for('static', filename='definitif_Logo_wb_with_red_hl_square.png') }}">
+  <link rel="icon" href="{{ url_for('static', filename='websiteLogos/definitif_Logo_wb_with_red_hl_square.png') }}">
 </head>
 
 <body>
@@ -30,24 +30,12 @@
       <span>Growth</span>
     </h2>
   </div>
-
-  <div class="banner-homeportfolio">
-  <h2>Your Portfolio</h2>
-  <p class="banner-subtext">
-    Access your portfolio through our reporting platform 
-    powered by a proprietary model or a third party software
-    to view holdings, track performance, review transactions, 
-    and monitor your investment progress anytime.
-  </p>
-
-  <a href="/login" class="btn">Coming Soon</a>
-</div>
   
   <!-- Horizontal Sections -->
   <div class="landing-grid">
 
     <a href="{{ url_for('services') }}" class="landing-card">
-      <img src="static/services_tiffin.jpg" alt="Products">
+      <img src="static/cardImg/products.jpg" alt="Products">
       <div class="card-overlay">
         <h2>Strategies</h2>
         <p>Explore our complete range of financial offerings tailored to your requirements.</p>
@@ -55,20 +43,38 @@
     </a>
 
     <a href="{{ url_for('calculators') }}" class="landing-card">
-      <img src="static/goal_arrow.jpg" alt="Calculators">
+      <img src="static/cardImg/road_ahead.jpg" alt="Calculators">
       <div class="card-overlay">
-        <h2>Roadmap</h2>
+        <h2>Planners</h2>
         <p>Plan your future with powerful financial planning tools.</p>
       </div>
     </a>
 
     <a href="{{ url_for('insights') }}" class="landing-card">
-      <img src="static/outlook_binocular.jpg" alt="Insights">
+      <img src="static/cardImg/outlook.jpg" alt="Insights">
       <div class="card-overlay">
-        <h2>Outlook</h2>
+        <h2>Insights</h2>
         <p>Stay informed with market updates and our perspectives.</p>
       </div>
     </a>
+  </div>
+
+  <div class="banner-homeportfolio">
+    <h1>
+      écho
+    </h1>
+    <p class="banner-subtext">
+      <p class="banner-subtext">
+        Track performance, manage your holdings and profit booking anytime, anywhere. 
+        It is powered by a proprietary model designed to be simple, 
+        insightful, and easy to use.
+        </p>
+        <p class="banner-subtext">
+        Please note that the model is currently in its beta phase, 
+        so you may experience occasional hiccups as we continue to refine and improve it.
+        </p>
+    </p>
+    <a href="/dashboard" class="btn" target="_blank" rel="noopener noreferrer">Dashboard</a>
   </div>
   <!-- Footer -->
   <footer id="footer"></footer>
@@ -78,4 +84,3 @@
 
 </body>
 </html>
-

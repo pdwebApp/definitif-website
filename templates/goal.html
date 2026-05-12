@@ -4,7 +4,7 @@
   <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Goal - définitif</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <link rel="icon" href="{{ url_for('static', filename='definitif_Logo_wb_with_red_hl_square.png') }}">
+  <link rel="icon" href="{{ url_for('static', filename='websiteLogos/definitif_Logo_wb_with_red_hl_square.png') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 
@@ -167,57 +167,71 @@
         <script>
           function renderCharts() {
 
-            var isMobile = window.innerWidth <= 768;
-            var chartHeight = isMobile ? 260 : 420;
+              var isMobile = window.innerWidth <= 768;
+              var chartHeight = isMobile ? 260 : 420;
 
-            var goal_graph = {{ goal_graph_json | safe }};
-            goal_graph.layout.height = chartHeight;
-            goal_graph.layout.autosize = true;
+              var goal_graph = JSON.parse(`{{ goal_graph_json | safe }}`);
 
-            if (isMobile) {
+              goal_graph.layout.height = chartHeight;
+              goal_graph.layout.autosize = true;
 
-              // 🔥 Smaller legend
-              goal_graph.layout.legend = {
-                orientation: "h",
-                x: 0,
-                y: -0.30,
-                font: { size: 6 },
-                bgcolor: "rgba(0,0,0,0)"
-              };
+              if (isMobile) {
 
-              // 🔥 Smaller axis fonts
-              goal_graph.layout.xaxis = {
-                ...goal_graph.layout.xaxis,
-                title: { text: ""},
-                tickfont: { size: 7 }
-              };
+                  // Smaller legend
+                  goal_graph.layout.legend = {
+                      orientation: "h",
+                      x: 0,
+                      y: -0.30,
+                      font: { size: 6 },
+                      bgcolor: "rgba(0,0,0,0)"
+                  };
 
-              goal_graph.layout.yaxis = {
-                ...goal_graph.layout.yaxis,
-                title: { text: ""},
-                tickfont: { size: 7 }
-              };
+                  // Smaller axis fonts
+                  goal_graph.layout.xaxis = Object.assign(
+                      {},
+                      goal_graph.layout.xaxis,
+                      {
+                          title: { text: "" },
+                          tickfont: { size: 7 }
+                      }
+                  );
 
-              // 🔥 Smaller hover font
-              goal_graph.layout.hoverlabel = {
-                font: { size: 8 }
-              };
+                  goal_graph.layout.yaxis = Object.assign(
+                      {},
+                      goal_graph.layout.yaxis,
+                      {
+                          title: { text: "" },
+                          tickfont: { size: 7 }
+                      }
+                  );
 
-              goal_graph.layout.margin = { l: 5, r: 5, t: 10, b: 10 };
-            }
+                  // Smaller hover font
+                  goal_graph.layout.hoverlabel = {
+                      font: { size: 8 }
+                  };
 
-            Plotly.newPlot(
-              'invest_chart',
-              goal_graph.data,
-              goal_graph.layout,
-              { responsive: true, displaylogo: false }
-            );
+                  goal_graph.layout.margin = {
+                      l: 5,
+                      r: 5,
+                      t: 10,
+                      b: 10
+                  };
+              }
 
+              Plotly.newPlot(
+                  'invest_chart',
+                  goal_graph.data,
+                  goal_graph.layout,
+                  {
+                      responsive: true,
+                      displaylogo: false
+                  }
+              );
           }
 
           renderCharts();
           window.addEventListener("resize", renderCharts);
-          </script>
+        </script>
       {% endif %}
     </div>
   </main>

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Investment - définitif</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <link rel="icon" href="{{ url_for('static', filename='definitif_Logo_wb_with_red_hl_square.png') }}">
+  <link rel="icon" href="{{ url_for('static', filename='websiteLogos/definitif_Logo_wb_with_red_hl_square.png') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 
@@ -190,54 +190,47 @@
           <script>
             function renderMainChart() {
 
-              var isMobile = window.innerWidth <= 768;
-              var chartHeight = isMobile ? 260 : 420;
+                var isMobile = window.innerWidth <= 768;
+                var chartHeight = isMobile ? 260 : 420;
 
-              var graph = {{ graph_json | safe }};
+                var graph = JSON.parse('{{ graph_json | safe }}');
 
-              graph.layout.height = chartHeight;
-              graph.layout.autosize = true;
+                graph.layout.height = chartHeight;
+                graph.layout.autosize = true;
 
-              if (isMobile) {
+                if (isMobile) {
 
-                // 🔥 Smaller legend
-                graph.layout.legend = {
-                  orientation: "h",
-                  x: 0,
-                  y: -0.30,
-                  font: { size: 6 },
-                  bgcolor: "rgba(0,0,0,0)"
-                };
+                    graph.layout.legend = {
+                        orientation: "h",
+                        x: 0,
+                        y: -0.30,
+                        font: { size: 6 },
+                        bgcolor: "rgba(0,0,0,0)"
+                    };
 
-                // 🔥 Smaller X-axis
-                graph.layout.xaxis = {
-                  ...graph.layout.xaxis,
-                  title: { text: "" },
-                  tickfont: { size: 7 }
-                };
+                    graph.layout.xaxis = Object.assign({}, graph.layout.xaxis, {
+                        title: { text: "" },
+                        tickfont: { size: 7 }
+                    });
 
-                // 🔥 Smaller Y-axis
-                graph.layout.yaxis = {
-                  ...graph.layout.yaxis,
-                  title: { text: "" },
-                  tickfont: { size: 7 }
-                };
+                    graph.layout.yaxis = Object.assign({}, graph.layout.yaxis, {
+                        title: { text: "" },
+                        tickfont: { size: 7 }
+                    });
 
-                // 🔥 Smaller hover font
-                graph.layout.hoverlabel = {
-                  font: { size: 8 }
-                };
+                    graph.layout.hoverlabel = {
+                        font: { size: 8 }
+                    };
 
-                // 🔥 Tight margins for mobile
-                graph.layout.margin = { l: 5, r: 5, t: 10, b: 10 };
-              }
+                    graph.layout.margin = { l: 5, r: 5, t: 10, b: 10 };
+                }
 
-              Plotly.newPlot(
-                'chart',
-                graph.data,
-                graph.layout,
-                { responsive: true, displaylogo: false }
-              );
+                Plotly.newPlot(
+                    'chart',
+                    graph.data,
+                    graph.layout,
+                    { responsive: true, displaylogo: false }
+                );
             }
 
             renderMainChart();
@@ -310,15 +303,15 @@
         }
     };
   </script>
+  {% if scroll_to_results %}
   <script>
-    {% if scroll_to_results %}
     document.addEventListener("DOMContentLoaded", function() {
         const results = document.getElementById("results");
         if (results) {
             results.scrollIntoView({ behavior: "smooth" });
         }
     });
-    {% endif %}
   </script>
+  {% endif %}
 </body>
 </html>

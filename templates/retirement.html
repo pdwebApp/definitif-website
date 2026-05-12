@@ -4,7 +4,7 @@
   <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Retirement - définitif</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <link rel="icon" href="{{ url_for('static', filename='definitif_Logo_wb_with_red_hl_square.png') }}">
+  <link rel="icon" href="{{ url_for('static', filename='websiteLogos/definitif_Logo_wb_with_red_hl_square.png') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 
@@ -217,102 +217,134 @@
         <script>
           function renderCharts() {
 
-            var isMobile = window.innerWidth <= 768;
-            var chartHeight = isMobile ? 260 : 420;
+              var isMobile = window.innerWidth <= 768;
+              var chartHeight = isMobile ? 260 : 420;
 
-            var invest_graph = {{ invest_graph_json | safe }};
-            invest_graph.layout.height = chartHeight;
-            invest_graph.layout.autosize = true;
+              // INVEST GRAPH
+              var invest_graph = JSON.parse(`{{ invest_graph_json | safe }}`);
 
-            if (isMobile) {
+              invest_graph.layout.height = chartHeight;
+              invest_graph.layout.autosize = true;
 
-              // 🔥 Smaller legend
-              invest_graph.layout.legend = {
-                orientation: "h",
-                x: 0,
-                y: -0.30,
-                font: { size: 6 },
-                bgcolor: "rgba(0,0,0,0)"
-              };
+              if (isMobile) {
 
-              // 🔥 Smaller axis fonts
-              invest_graph.layout.xaxis = {
-                ...invest_graph.layout.xaxis,
-                title: { text: ""},
-                tickfont: { size: 7 }
-              };
+                  invest_graph.layout.legend = {
+                      orientation: "h",
+                      x: 0,
+                      y: -0.30,
+                      font: { size: 6 },
+                      bgcolor: "rgba(0,0,0,0)"
+                  };
 
-              invest_graph.layout.yaxis = {
-                ...invest_graph.layout.yaxis,
-                title: { text: ""},
-                tickfont: { size: 7 }
-              };
+                  invest_graph.layout.xaxis = Object.assign(
+                      {},
+                      invest_graph.layout.xaxis,
+                      {
+                          title: { text: "" },
+                          tickfont: { size: 7 }
+                      }
+                  );
 
-              // 🔥 Smaller hover font
-              invest_graph.layout.hoverlabel = {
-                font: { size: 8 }
-              };
+                  invest_graph.layout.yaxis = Object.assign(
+                      {},
+                      invest_graph.layout.yaxis,
+                      {
+                          title: { text: "" },
+                          tickfont: { size: 7 }
+                      }
+                  );
 
-              invest_graph.layout.margin = { l: 5, r: 5, t: 10, b: 10 };
-            }
+                  invest_graph.layout.hoverlabel = {
+                      font: { size: 8 }
+                  };
 
-            Plotly.newPlot(
-              'invest_chart',
-              invest_graph.data,
-              invest_graph.layout,
-              { responsive: true, displaylogo: false }
-            );
+                  invest_graph.layout.margin = {
+                      l: 5,
+                      r: 5,
+                      t: 10,
+                      b: 10
+                  };
+              }
 
-            var annuity_graph = {{ annuity_graph_json | safe }};
-            annuity_graph.layout.height = chartHeight;
-            annuity_graph.layout.autosize = true;
+              Plotly.newPlot(
+                  'invest_chart',
+                  invest_graph.data,
+                  invest_graph.layout,
+                  {
+                      responsive: true,
+                      displaylogo: false
+                  }
+              );
 
-            if (isMobile) {
+              // ANNUITY GRAPH
+              var annuity_graph = JSON.parse(`{{ annuity_graph_json | safe }}`);
 
-              annuity_graph.layout.legend = {
-                orientation: "h",
-                x: 0,
-                y: -0.30,
-                font: { size: 6 },
-                bgcolor: "rgba(0,0,0,0)"
-              };
+              annuity_graph.layout.height = chartHeight;
+              annuity_graph.layout.autosize = true;
 
-              annuity_graph.layout.xaxis = {
-                ...annuity_graph.layout.xaxis,
-                title: { text: ""},
-                tickfont: { size: 7 }
-              };
+              if (isMobile) {
 
-              annuity_graph.layout.yaxis = {
-                ...annuity_graph.layout.yaxis,
-                title: { text: ""},
-                tickfont: { size: 7 }
-              };
+                  annuity_graph.layout.legend = {
+                      orientation: "h",
+                      x: 0,
+                      y: -0.30,
+                      font: { size: 6 },
+                      bgcolor: "rgba(0,0,0,0)"
+                  };
 
-              annuity_graph.layout.yaxis2 = {
-                ...annuity_graph.layout.yaxis2,
-                title: { text: ""},
-                tickfont: { size: 7 }
-              };
+                  annuity_graph.layout.xaxis = Object.assign(
+                      {},
+                      annuity_graph.layout.xaxis,
+                      {
+                          title: { text: "" },
+                          tickfont: { size: 7 }
+                      }
+                  );
 
-              annuity_graph.layout.hoverlabel = {
-                font: { size: 8 }
-              };
+                  annuity_graph.layout.yaxis = Object.assign(
+                      {},
+                      annuity_graph.layout.yaxis,
+                      {
+                          title: { text: "" },
+                          tickfont: { size: 7 }
+                      }
+                  );
 
-              annuity_graph.layout.margin = { l: 5, r: 5, t: 10, b: 10 };
-            }
+                  annuity_graph.layout.yaxis2 = Object.assign(
+                      {},
+                      annuity_graph.layout.yaxis2,
+                      {
+                          title: { text: "" },
+                          tickfont: { size: 7 }
+                      }
+                  );
 
-            Plotly.newPlot(
-              'annuity_chart',
-              annuity_graph.data,
-              annuity_graph.layout,
-              { responsive: true, displaylogo: false }
-            );
+                  annuity_graph.layout.hoverlabel = {
+                      font: { size: 8 }
+                  };
+
+                  annuity_graph.layout.margin = {
+                      l: 5,
+                      r: 5,
+                      t: 10,
+                      b: 10
+                  };
+              }
+
+              Plotly.newPlot(
+                  'annuity_chart',
+                  annuity_graph.data,
+                  annuity_graph.layout,
+                  {
+                      responsive: true,
+                      displaylogo: false
+                  }
+              );
           }
 
           renderCharts();
           window.addEventListener("resize", renderCharts);
-          </script>
+        </script>
         </div>
       {% endif %}
     </div>
@@ -379,15 +411,15 @@
         }
     };
   </script>
+  {% if scroll_to_results %}
   <script>
-    {% if scroll_to_results %}
     document.addEventListener("DOMContentLoaded", function() {
         const results = document.getElementById("results");
         if (results) {
             results.scrollIntoView({ behavior: "smooth" });
         }
       });
-    {% endif %}
   </script>
+  {% endif %}
 </body>
 </html>

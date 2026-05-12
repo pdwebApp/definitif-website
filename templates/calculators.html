@@ -6,7 +6,7 @@
   <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <link rel="icon" href="{{ url_for('static', filename='definitif_Logo_wb_with_red_hl_square.png') }}">
+  <link rel="icon" href="{{ url_for('static', filename='websiteLogos/definitif_Logo_wb_with_red_hl_square.png') }}">
 </head>
 
 <body>
@@ -16,7 +16,9 @@
   <!-- Banner-home Section -->
   <div class="banner-calculators">
     <p class="banner-subtext">
-    Simple tools to turn your financial goals into achievable plans. 
+    Simple tools that turn financial goals into clear, achievable plans. 
+    Break ambitions into manageable steps, stay disciplined, 
+    track progress, and build confidence with every milestone.
     </p>
     <h2>
       <span>Dréam</span>
@@ -29,7 +31,7 @@
     <!-- Horizontal Sections -->
   <div class="landing-grid">
     <a href="{{ url_for('investment') }}" class="landing-card">
-      <img src="static/growth_hand.jpg" alt="Investment Growth">
+      <img src="static/cardImg/growth_hand.jpg" alt="Investment Growth">
       <div class="card-overlay">
         <h2>Portfolio Creation</h2>
         <p>Estimate the potential growth of your portfolio over time.</p>
@@ -37,7 +39,7 @@
     </a>
     
     <a href="{{ url_for('goal') }}" class="landing-card">
-      <img src="static/goal_peak.jpg" alt="Goal Planner">
+      <img src="static/cardImg/goal_peak.jpg" alt="Goal Planner">
       <div class="card-overlay">
         <h2>Goal Planner</h2>
         <p>Plan your financial goals with our effortless goal planning tool.</p>
@@ -45,7 +47,7 @@
     </a>
 
     <a href="{{ url_for('retirement') }}" class="landing-card">
-      <img src="static/retire_couple.jpg" alt="Retirement">
+      <img src="static/cardImg/retire_couple.jpg" alt="Retirement">
       <div class="card-overlay">
         <h2>Retirement Planner</h2>
         <p>Plan your retirement with our intuitive retirement planning tool.</p>
