@@ -16,22 +16,13 @@ supabase = create_client(
 
 def fetch_json(filename):
 
+    bucket = "portfolio-data"
+
     try:
-
-        response = (
-            supabase
-            .storage
-            .from_(BUCKET_NAME)
-            .download(filename)
-        )
-
-        return json.loads(
-            response.decode("utf-8")
-        )
+        res = supabase.storage.from_(bucket).download(filename)
+        return json.loads(res.decode("utf-8"))
 
     except Exception as e:
-
-        print(f"Storage fetch failed: {filename}")
-        print(str(e))
-
+        print("FAILED FILE:", filename)
+        print("ERROR:", str(e))
         return None

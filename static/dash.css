@@ -201,7 +201,7 @@ line-height:1.25;
   min-width: 280px;
   padding: 24px 28px;
   border-radius: 16px;
-  background: var(--light-bg);
+  background: var(--card-bg);
   color: var(--table-text);
   text-align: center;
   font-size: 18px;
@@ -342,14 +342,7 @@ align-items:center;
 gap:8px;
 }
 
-
 /* ================= MAIN BODY ================= */
-
-body{
-margin:0;
-font-family:'Segoe UI', sans-serif;
-background:var(--light-bg);
-}
 
 .logo{
 display:block;
@@ -961,39 +954,32 @@ background:var(--card-bg);
 .txn-summary-title{
 position:sticky;
 top:0;
-z-index:3;
+z-index:4;
 background:var(--table-header);
-padding:10px;
+padding:10px 12px;
 font-weight:var(--bold-font-wt-l1);
-border-top:none;
-border-bottom:none;
 }
 
 /* scroll body */
+.txn-summary-scroll {
+  max-height: 140px;
+  overflow-y: auto;
+}
+
 .txn-summary-table{
 width:100%;
 border-collapse:collapse;
+table-layout: fixed;
 }
 
 .txn-summary-table tbody{
-display:block;
-max-height:140px;
-overflow:auto;
 background: var(--light-bg);
-}
-
-/* header sticky */
-.txn-summary-table thead,
-.txn-summary-table tbody tr{
-display:table;
-width:100%;
-table-layout:fixed;
 }
 
 .txn-summary-table thead th{
 position:sticky;
-top:36px;
-z-index:2;
+top:0;
+z-index:3;
 color:var(--table-header);
 background:var(--red-lot-l1);
 }
@@ -1622,6 +1608,30 @@ padding-left:64px;
 }
 
 /* =========================================
+LOADING ANIMATION
+========================================= */
+
+.page-loader {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 12, 18, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+
+.page-loader.hidden {
+  display: none;
+}
+
+.loading-text {
+  font-size: 16px;
+  color: #cbd5e1;
+  font-weight: 500;
+}
+
+/* =========================================
 DARK MODE
 ========================================= */
 
@@ -1731,7 +1741,7 @@ font-weight:var(--bold-font-wt-l1);
 }
 
 .admin-loading-card{
-  background: var(--dark-bg);
+  background: var(--dark-card-bg);
   color: var(--dark-text);
 }
 

@@ -21,7 +21,7 @@ body{visibility:hidden}
 <div class="login" id="loginPage">
 <div class="login-card">
 <h2 id="loginTitle">Loading...</h2>
-<input id="email" placeholder="Login-Id"/>
+<input id="login_id" placeholder="Login-Id"/>
 <input id="password" type="password" placeholder="Password"/>
 <button id="loginBtn" class="btn primary" onclick="login()" disabled>Login</button>
 <div class="error" id="loginError">Invalid credentials</div>
@@ -81,9 +81,9 @@ body{visibility:hidden}
 
 <div class="tab-panel" id="tab-holdings">
     <div class="card">
-        <h3>PAN Summary</h3>
+        <h3>Performance - Client Wise</h3>
         <div class="download-icons">
-            <span class="expand-all" title="Expand All" onclick="toggleExpandAll()">⤢</span>
+            <span class="expand-all" title="Expand All" onclick="toggleExpandAll('panTable')">⤢</span>
             <img src="static/icons/pdf.png"
                 id="panPDF"
                 class="download-icon"
@@ -117,9 +117,9 @@ body{visibility:hidden}
 
 <div class="tab-panel" id="tab-performance">
     <div class="card">
-        <h3>Fund Performance (Strategy Wise)</h3>
+        <h3>Performance - Strategy Wise</h3>
         <div class="download-icons">
-            <span class="expand-all" title="Expand All" onclick="toggleExpandAll()">⤢</span>
+            <span class="expand-all" title="Expand All" onclick="toggleExpandAll('perfContainer')">⤢</span>
             <img src="static/icons/pdf.png"
                 id="prefPDF"
                 class="download-icon"
@@ -142,7 +142,7 @@ body{visibility:hidden}
         <div class="profit-header">
             <h3>Profit Booking</h3>
                 <div class="download-icons">
-                    <span class="expand-all" title="Expand All" onclick="toggleExpandAll()">⤢</span>
+                    <span class="expand-all" title="Expand All" onclick="toggleExpandAll('profitContainer')">⤢</span>
                     <img src="static/icons/pdf.png"
                         id="profitPDF"
                         class="download-icon"
@@ -167,7 +167,7 @@ body{visibility:hidden}
             Holdings <span>| Redemption Planner</span>
         </h3>
         <div class="download-icons">
-            <span class="expand-all" title="Expand All" onclick="toggleExpandAll()">⤢</span>
+            <span class="expand-all" title="Expand All" onclick="toggleExpandAll('transactionContainer')">⤢</span>
             <img src="static/icons/pdf.png"
                 id="txnPDF"
                 class="download-icon"
@@ -184,6 +184,7 @@ body{visibility:hidden}
     </div>
 </div>
 </div>
+
 <script>
 window.txnCache = window.txnCache || {};
 window.currentTxnKey = window.currentTxnKey || null;
@@ -277,27 +278,113 @@ return out;
 return obj;
 }
 
+function toggleExpandAll(containerId) {
+
+  const container = document.getElementById(containerId);
+
+  if (!container) return;
+
+  const expanding =
+    !container.classList.contains("expand-all-active");
+
+  container.classList.toggle(
+    "expand-all-active"
+  );
+
+  container.querySelectorAll(".ui-toggle").forEach(toggle => {
+
+    const tr = toggle.closest("tr");
+    if (!tr) return;
+
+    const isOpen = tr.classList.contains("open");
+
+    // expand
+    if (expanding && !isOpen) {
+      toggle.click();
+    }
+
+    // collapse
+    if (!expanding && isOpen) {
+      toggle.click();
+    }
+
+  });
+
+}
+
 async function loadUserIndex(){
 
-  if (USER_INDEX && Object.keys(PAN_MAP).length) return;
+  console.log("loadUserIndex() STARTED");
 
-  const res = await fetch("/api/user-index?v=" + Date.now());
+  console.log("Initial USER_INDEX:", USER_INDEX);
+  console.log("Initial PAN_MAP:", PAN_MAP);
+
+  if (USER_INDEX && Object.keys(PAN_MAP).length) {
+    console.log("Using cached USER_INDEX + PAN_MAP");
+    return;
+  }
+
+  console.log("Fetching /api/user-index...");
+
+  const res = await fetch("/api/user-index");
+
+  console.log("Fetch response:", res);
+  console.log("Fetch status:", res.status);
+
   const payload = await res.json();
+
+  console.log("Payload received:", payload);
+  console.log("Users count:", (payload.users || []).length);
 
   USER_INDEX = payload;
   PAN_MAP = {};
 
+  console.log("PAN_MAP reset:", PAN_MAP);
+
   (payload.users || []).forEach(user => {
+
+    console.log("Processing user:", user.login);
+
     const type = (user.type || "").toLowerCase();
 
-    if (type === "admin" || type === "family") return;
+    console.log("User type:", type);
+
+    if (type === "admin" || type === "family") {
+      console.log("Skipping user:", user.login);
+      return;
+    }
+
+    console.log("User pans:", user.pans);
 
     (user.pans || []).forEach(pan => {
-      if (pan) PAN_MAP[pan] = user.login;
+
+      console.log("Raw PAN:", pan);
+
+      if (pan) {
+
+        const normalizedPan = String(pan)
+          .trim()
+          .toUpperCase();
+
+        console.log("Normalized PAN:", normalizedPan);
+
+        PAN_MAP[normalizedPan] = user.login;
+
+        console.log(
+          "Mapped:",
+          normalizedPan,
+          "→",
+          user.login
+        );
+      }
     });
   });
-}
 
+  console.log("FINAL PAN_MAP:", PAN_MAP);
+  console.log("FINAL PAN_MAP KEYS:", Object.keys(PAN_MAP));
+
+  console.log("loadUserIndex() COMPLETED");
+}
 /* ================= ASYNC FUNCTIONS ================= */
 
 async function loadDashLayout(){
@@ -419,33 +506,6 @@ function hideTooltip(){
     }
 }
 
-function toggleExpandAll(){
-
-const expanding = !document.body.classList.contains("expand-all-active");
-document.body.classList.toggle("expand-all-active");
-
-/* click all toggles */
-document.querySelectorAll(".ui-toggle").forEach(toggle=>{
-
-const tr = toggle.closest("tr");
-if(!tr) return;
-
-const isOpen = tr.classList.contains("open");
-
-/* expand */
-if(expanding && !isOpen){
-toggle.click();
-}
-
-/* collapse */
-if(!expanding && isOpen){
-toggle.click();
-}
-
-});
-
-}
-
 /* RESTORE SESSION */
 async function restoreSession() {
   const savedUser = localStorage.getItem("loggedUser");
@@ -461,9 +521,9 @@ async function restoreSession() {
     await loadUserIndex();
 
     const rec = await getUserIndexRecord(savedUser);
-    const fileName = rec?.file || `${savedUser}.json.gz`;
+    const fileName = rec?.file || `${savedUser}.json`;
 
-    const res = await fetch(`/api/portfolio/${fileName}?v=${Date.now()}`);
+    const res = await fetch(`/api/portfolio/${fileName}`);
     if (!res.ok) throw new Error(`Restore failed for ${savedUser}`);
 
     const text = await res.text();
@@ -659,6 +719,7 @@ format: "A4"
 
 // ---------- EXTRACT TABLE ----------
 const table = document.querySelector("#panTable");
+if (!table) return;
 
 const headers = [];
 table.querySelectorAll("thead th").forEach(th=>{
@@ -688,7 +749,10 @@ document.getElementById("clientNameHeader")?.innerText || "";
 const logo = new Image();
 logo.src = "static/dashLogos/echo_wb_flat_logo.png";
 
-await new Promise(resolve => logo.onload = resolve);
+await new Promise((resolve, reject) => {
+  logo.onload = resolve;
+  logo.onerror = resolve; // fallback so PDF still generates
+});
 
 const logoWidth = 110;
 const logoHeight = (logo.height / logo.width) * logoWidth;
@@ -880,7 +944,7 @@ pageHeight - 14
 
 
 // ---------- SAVE ----------
-doc.save("PAN_Summary.pdf");
+doc.save(`PAN_Summary_${new Date().toISOString().slice(0,10)}.pdf`);
 
 }
 
@@ -925,7 +989,10 @@ document.getElementById("clientNameHeader")?.innerText || "";
 const logo = new Image();
 logo.src="static/dashLogos/echo_wb_flat_logo.png";
 
-await new Promise(resolve=>logo.onload=resolve);
+await new Promise((resolve) => {
+  logo.onload = resolve;
+  logo.onerror = resolve;
+});
 
 const logoWidth=110;
 const logoHeight=(logo.height/logo.width)*logoWidth;
@@ -935,6 +1002,10 @@ const logoY=18;
 
 doc.addImage(logo,"PNG",logoX,logoY,logoWidth,logoHeight);
 
+if (!table) {
+  alert("Performance table not found");
+  return;
+}
 
 // ---------- RIGHT HEADER ----------
 const pageWidth=doc.internal.pageSize.width;
@@ -1073,7 +1144,8 @@ pageHeight-14
 
 });
 
-doc.save("Performance.pdf");
+// ---------- SAVE ----------
+doc.save(`Performance_${new Date().toISOString().slice(0,10)}.pdf`);
 
 }
 
@@ -1118,7 +1190,10 @@ document.getElementById("clientNameHeader")?.innerText || "";
 const logo = new Image();
 logo.src = "static/dashLogos/echo_wb_flat_logo.png";
 
-await new Promise(resolve => logo.onload = resolve);
+await new Promise((resolve, reject) => {
+  logo.onload = resolve;
+  logo.onerror = resolve; // fallback so PDF still generates
+});
 
 const logoWidth = 110;
 const logoHeight = (logo.height/logo.width)*logoWidth;
@@ -1288,10 +1363,9 @@ pageHeight - 14
 
 
 // ---------- SAVE ----------
-doc.save("Profit_Booking.pdf");
+doc.save(`Profitbook_${new Date().toISOString().slice(0,10)}.pdf`);
 
 }
-
 
 function getTxnExportData() {
   const tables = document.querySelectorAll("#transactionContainer table");
@@ -1366,11 +1440,61 @@ async function downloadTxnPDF() {
   const { headers, body } = getTxnExportData();
 
   // ... your logo/header code ...
+  const client =
+document.getElementById("clientNameHeader")?.innerText || "";
+
+// ---------- LOGO ----------
+const logo = new Image();
+logo.src = "static/dashLogos/echo_wb_flat_logo.png";
+
+await new Promise((resolve) => {
+  logo.onload = resolve;
+  logo.onerror = resolve;
+});
+
+const logoWidth = 110;
+const logoHeight = (logo.height / logo.width) * logoWidth;
+
+const logoX = 40;
+const logoY = 18;
+
+doc.addImage(
+  logo,
+  "PNG",
+  logoX,
+  logoY,
+  logoWidth,
+  logoHeight
+);
+
+// ---------- RIGHT HEADER ----------
+const pageWidth = doc.internal.pageSize.width;
+const clientY = logoY + logoHeight - 2;
+
+doc.setFontSize(12);
+doc.setFont(undefined, "bold");
+
+doc.text(
+  client,
+  pageWidth - 40,
+  clientY,
+  { align: "right" }
+);
+
+doc.setFontSize(18);
+
+doc.text(
+  "Current Holdings",
+  pageWidth - 40,
+  clientY - 16,
+  { align: "right" }
+);
+
 
   doc.autoTable({
     head: [headers],
     body,
-    startY: 16,
+    startY: logoY + logoHeight + 18,
     styles: { fontSize: 8, cellPadding: 4, overflow: "linebreak" },
     headStyles: { fillColor: [20, 35, 55], textColor: 255, fontStyle: "bold" },
     margin: { bottom: 50 },
@@ -1405,10 +1529,28 @@ async function downloadTxnPDF() {
       if (!isNaN(num) && num < 0) {
         data.cell.styles.textColor = [200, 0, 0];
       }
-    }
+    },
+    didDrawPage: function () {
+
+    drawPdfFooter(doc);
+
+    const pageWidth =
+      doc.internal.pageSize.width;
+
+    const pageHeight =
+      doc.internal.pageSize.height;
+
+    doc.setFontSize(8);
+
+    doc.text(
+      "Page " + doc.internal.getNumberOfPages(),
+      pageWidth - 60,
+      pageHeight - 14
+    );
+  }
   });
 
-  doc.save("Transactions.pdf");
+  doc.save(`Holdings_${new Date().toISOString().slice(0,10)}.pdf`);
 }
 
 
@@ -1439,8 +1581,71 @@ function downloadTxnExcel() {
   styleExcelSheet(ws, headers, [2, 3, 4, 5, 6, 7]);
 
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Transactions");
-  XLSX.writeFile(wb, "Transactions.xlsx");
+  XLSX.utils.book_append_sheet(wb, ws, "Holdings");
+  XLSX.writeFile(wb,`Holdings_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+function downloadPanExcel(){
+
+const table = document.querySelector("#panTable");
+
+// ---------- HEADERS ----------
+const headers=[];
+table.querySelectorAll("thead th").forEach(th=>{
+headers.push(th.innerText.trim());
+});
+
+// ---------- BODY ----------
+const body=[];
+table.querySelectorAll("tbody tr").forEach(tr=>{
+
+if(tr.style.display==="none") return;
+
+const row=[];
+tr.querySelectorAll("td").forEach(td=>{
+row.push(td.innerText.trim());
+});
+
+body.push(row);
+
+});
+
+// ---------- SHEET ----------
+const ws_data=[headers,...body];
+const ws=XLSX.utils.aoa_to_sheet(ws_data);
+
+// freeze
+ws["!freeze"]={xSplit:1,ySplit:1};
+
+// filter
+ws['!autofilter']={
+ref:XLSX.utils.encode_range({
+s:{r:0,c:0},
+e:{r:body.length,c:headers.length-1}
+})
+};
+
+// widths
+ws['!cols']=[
+{wch:38},
+{wch:10},
+{wch:14},
+{wch:14},
+{wch:12},
+{wch:10},
+{wch:12},
+{wch:12}
+];
+
+// ---------- STYLE ----------
+styleExcelSheet(ws, headers, [1,2,3,4,5,6,7]);
+
+// workbook
+const wb=XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb,ws,"Clanview");
+
+XLSX.writeFile(wb,`Clanview_${new Date().toISOString().slice(0,10)}.xlsx`);
+
 }
 
 async function downloadPrefExcel(){
@@ -1488,7 +1693,8 @@ styleExcelSheet(ws, headers, [2,3,4,5,6,7]);
 
 const wb = XLSX.utils.book_new();
 XLSX.utils.book_append_sheet(wb, ws, "Performance");
-XLSX.writeFile(wb, "Performance.xlsx");
+
+XLSX.writeFile(wb,`Performance_${new Date().toISOString().slice(0,10)}.xlsx`);
 
 }
 
@@ -1554,7 +1760,7 @@ const wb = XLSX.utils.book_new();
 XLSX.utils.book_append_sheet(wb, ws, "Profit Booking");
 
 // ---------- SAVE ----------
-XLSX.writeFile(wb,"Profit_Booking.xlsx");
+XLSX.writeFile(wb,`Profitbook_${new Date().toISOString().slice(0,10)}.xlsx`);
 
 }
 
@@ -1725,44 +1931,57 @@ function styleExcelSheet(ws, headers, rightCols) {
   }
 }
 
-async function login(){
-    const email =
-        document.getElementById("email").value.trim();
+async function login() {
+    const loginId =
+        document.getElementById("login_id").value.trim();
     const password =
         document.getElementById("password").value.trim();
-    try{
-        const res = await fetch(`/api/portfolio/${email}.json?v=` + Date.now());
-        if(!res.ok){
+
+    try {
+        const res = await fetch(`/api/portfolio/${loginId}.json?v=` + Date.now());
+        console.log("STATUS:", res.status);
+        console.log("URL:", `/api/portfolio/${loginId}.json`);
+
+        if (!res.ok) {
             alert("Invalid login");
             return;
         }
+
         const compressed = await res.json();
         const user = expandKeys(compressed);
-        if(user.password !== password){
+
+        console.log("USER OBJECT:", user);
+        console.log("ENTERED PASSWORD:", password);
+        console.log("STORED PASSWORD:", user.password);
+
+        if (user.password !== password) {
             alert("Invalid login");
             return;
         }
+
         /* IMPORTANT: rebuild old structure */
         rawData = {};
-        rawData[email] = user;
-        startSession(email);
-    }catch(e){
+        rawData[loginId] = user;
+
+        startSession(loginId);
+
+    } catch (e) {
         console.error(e);
         alert("Login failed");
     }
 }
 
-async function startSession(email){
-  localStorage.setItem("loggedUser", email);
-  SESSION_USER = email;
-  VIEW_USER = email;
-  currentUser = email;
+async function startSession(login){
+  localStorage.setItem("loggedUser", login);
+  SESSION_USER = login;
+  VIEW_USER = login;
+  currentUser = login;
 
-  const user = rawData[email];
+  const user = rawData[login];
   const userType = (user?.user_type || "").toLowerCase();
 
   isAdmin = (userType === "admin");
-  adminSessionUser = isAdmin ? email : null;
+  adminSessionUser = isAdmin ? login : null;
 
   document.getElementById("logoutBtn").style.display = "inline-flex";
   document.getElementById("loginPage").style.display = "none";
@@ -1790,7 +2009,7 @@ async function startSession(email){
   document.getElementById("tab-overview").classList.add("active");
   document.getElementById("tab-overview").style.display = "block";
 
-  await loadUser(email);
+  await loadUser(login);
   applyPanModeTabs();
 }
 
@@ -1824,7 +2043,7 @@ async function loadClientFile(login) {
 async function loadUserForAdminOnly(login, fileName){
   if (rawData[login]) return rawData[login];
 
-  const res = await fetch(`/api/portfolio/${fileName}?v=${Date.now()}`);
+  const res = await fetch(`/api/portfolio/${fileName}`);
   if (!res.ok) throw new Error(`User not found: ${login}`);
 
   const user = expandKeys(await res.json());
@@ -1954,7 +2173,7 @@ async function renderAdminClients(){
             </thead>
             <tbody>
                 ${clients.map(c => `
-                <tr class="admin-client-row" data-email="${c.login}">
+                <tr class="admin-client-row" data-login="${c.login}">
                     <td>${c.name || "-"}</td>
                     <td>${(c.pans || []).join(", ") || "-"}</td>
                     <td>${c.mfu_can || "-"}</td>
@@ -1983,19 +2202,19 @@ async function renderAdminClients(){
 
   document.querySelectorAll(".admin-client-row").forEach(row => {
     row.addEventListener("click", async () => {
-      await openAdminClient(row.dataset.email);
+      await openAdminClient(row.dataset.login);
     });
   });
 }
 
-async function openAdminClient(email) {
+async function openAdminClient(login) {
   if (!adminSessionUser) adminSessionUser = currentUser;
 
-  const rec = await getUserIndexRecord(email);
+  const rec = await getUserIndexRecord(login);
   const pans = Array.isArray(rec?.pans) ? rec.pans.filter(Boolean) : [];
 
   isAdmin = false;
-  currentUser = email;
+  currentUser = login;
   document.getElementById("adminTabs").style.display = "none";
   document.getElementById("userTabs").style.display = "flex";
   document.getElementById("backToFamily").style.display = "inline-flex";
@@ -2012,7 +2231,7 @@ async function openAdminClient(email) {
     document.querySelector('[data-tab="transactions"]').style.display = "none";
   }
 
-  await loadUser(email);
+  await loadUser(login);
 
   document.querySelectorAll("#userTabs .tab").forEach(t => t.classList.remove("active"));
   document.querySelectorAll('[id^="tab-"]').forEach(p => {
@@ -2041,7 +2260,7 @@ function logout(){
   document.getElementById("app").style.display = "none";
   document.getElementById("loginPage").style.display = "flex";
 
-  document.getElementById("email").value = "";
+  document.getElementById("login_id").value = "";
   document.getElementById("password").value = "";
 
   document.getElementById("logoutBtn").style.display = "none";
@@ -2092,22 +2311,22 @@ function formatPct(n){
 async function getUserFileName(login){
   const idx = await fetchUserIndex();
   const rec = (idx.users || []).find(u => u.login === login);
-  return rec?.file || `${login}.json.gz`;
+  return rec?.file || `${login}.json`;
 }
 
-async function loadUser(email){
-  if(!rawData[email]){
+async function loadUser(login){
+  if(!rawData[login]){
     try{
-      const res = await fetch(`/api/portfolio/${email}.json?v=` + Date.now());
+      const res = await fetch(`/api/portfolio/${login}.json?v=` + Date.now());
 
       if(!res.ok){
-        console.error("User not found:", email);
+        console.error("User not found:", login);
         return;
       }
 
       const compressed = await res.json();
       const user = expandKeys(compressed);
-      rawData[email] = user;
+      rawData[login] = user;
 
     }catch(e){
       console.error("loadUser fetch failed", e);
@@ -2115,15 +2334,15 @@ async function loadUser(email){
     }
   }
 
-  VIEW_USER = email;
-  currentUser = email;
+  VIEW_USER = login;
+  currentUser = login;
   isAdmin = false;
 
-  const user = rawData[email];
+  const user = rawData[login];
   const d = user?.data;
 
   if(!d){
-    console.error("No dashboard data for", email, user);
+    console.error("No dashboard data for", login, user);
     return;
   }
 
@@ -2157,10 +2376,10 @@ async function loadUser(email){
     document.querySelector('[data-tab="transactions"]').style.display = "none";
   }
 
-  document.getElementById("clientNameHeader").textContent = d.label || user.name || email;
+  document.getElementById("clientNameHeader").textContent = d.label || user.name || login;
 
   const clientName = document.getElementById("clientName");
-  if(clientName) clientName.textContent = d.label || user.name || email;
+  if(clientName) clientName.textContent = d.label || user.name || login;
 
   document.getElementById("kpi_value").textContent = formatCurrency(d.kpi?.portfolio_value || 0);
   document.getElementById("kpi_invested").textContent = formatCurrency(d.kpi?.invested || 0);
@@ -2200,9 +2419,20 @@ document.querySelector('[data-tab="transactions"]').style.display="none";
 }
 
 async function openClientDashboard(pan) {
+
+  pan = String(pan)
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "");
+
   await loadUserIndex();
 
-  const login = PAN_MAP[pan];
+  console.log("Normalized PAN:", pan);
+  console.log("PAN_MAP:", PAN_MAP);
+
+  const normalizedPan = String(pan).trim().toUpperCase();
+  const login = PAN_MAP[normalizedPan];
+
   if (!login) {
     console.error("PAN not mapped:", pan);
     alert(`No individual login mapped for PAN: ${pan}`);
@@ -2217,7 +2447,7 @@ async function openClientDashboard(pan) {
   const rec = await getUserIndexRecord(login);
   const fileName = rec?.file || `${login}.json`;
 
-  const res = await fetch(`/api/portfolio/${fileName}?v=${Date.now()}`);
+  const res = await fetch(`/api/portfolio/${fileName}`);
 
   if (!res.ok) {
     throw new Error(`User not found: ${login}`);
@@ -2590,7 +2820,9 @@ function renderPan(arr){
 
     tr.querySelector(".panLink").onclick = (e) => {
       e.stopPropagation();
-      openClientDashboard(p.pan);
+      openClientDashboard(
+        String(p.pan).trim().toUpperCase().replace(/\s+/g, "")
+      );
     };
 
     bindToggle(tr.querySelector(".ui-toggle"), panKey, tbody);
@@ -3531,7 +3763,7 @@ container.innerHTML = `
 <div class="txn-summary-title">
 Selected Lots for Redemption (${rows.length})
 </div>
-
+<div class="txn-summary-scroll">
 <table class="txn-summary-table">
 <thead>
 <tr>
@@ -3844,5 +4076,6 @@ document.addEventListener("click", e => {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
 </body>
 </html>

@@ -1,11 +1,17 @@
 import os
+import tempfile
 import json
 import traceback
 from datetime import date, timedelta
-
+from flask import send_file
+from io import BytesIO
+from io import StringIO
+from reportlab.pdfgen import canvas
 import pandas as pd
 import plotly
-
+import uuid
+import threading
+import time
 from flask import (
     Flask,
     send_from_directory,
@@ -14,10 +20,12 @@ from flask import (
     render_template,
     redirect,
     session,
-    url_for
+    url_for,
 )
-
 from supabase import create_client, Client
+
+TEMP_DIR = "temp_retirement"
+os.makedirs(TEMP_DIR, exist_ok=True)
 
 from goal_logic import goalCalci
 import investment_logic
@@ -42,19 +50,13 @@ from supabase_storage import fetch_json
 # ENVIRONMENT VARIABLES
 # =====================================================
 
-SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
 if not SUPABASE_URL or not SUPABASE_KEY:
-    raise ValueError("SUPABASE_URL and SUPABASE_KEY must be set")
+    raise Exception("Missing Supabase environment variables")
 
-def get_supabase_client():
-    return create_client(
-        os.environ["SUPABASE_URL"],
-        os.environ["SUPABASE_KEY"]
-    )
-
-supabase = get_supabase_client()
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # =====================================================
 # FLASK APP
@@ -77,6 +79,27 @@ if not app.secret_key:
 
 VALUATION_DATE = date.today() - timedelta(days=1)
 
+# =====================================================
+# CLEANUP JOB
+# =====================================================
+
+def cleanup_temp_files():
+    while True:
+        try:
+            now = time.time()
+
+            for file in os.listdir(TEMP_DIR):
+                file_path = os.path.join(TEMP_DIR, file)
+
+                if os.path.isfile(file_path):
+                    # delete files older than 1 hour
+                    if now - os.path.getmtime(file_path) > 3600:
+                        os.remove(file_path)
+
+        except Exception as e:
+            print("Cleanup error:", e)
+
+        time.sleep(600)  # run every 10 minutes
 
 # =====================================================
 # WEBSITE REROUTING
@@ -176,18 +199,6 @@ def portfolio_file(filename):
         return jsonify({
             "error": str(e)
         }), 500
-# =====================================================
-# SERVE GENERATED OUTPUT FILES
-# =====================================================
-
-@app.route("/output/<path:filename>")
-def output_files(filename):
-
-    return send_from_directory(
-        os.path.abspath(OUTPUT_DIR),
-        filename
-    )
-
 
 # =====================================================
 # TRANSACTION VIEW (FIFO OPEN LOTS)
@@ -370,18 +381,14 @@ def investment():
             sip_increment
         )
 
+        result_id = str(uuid.uuid4())
+
+        session["investment_result_id"] = result_id
+        session["investment_data"] = growth_data.to_json()
+
         graph_json = json.dumps(
             fig.to_dict(),
             cls=plotly.utils.PlotlyJSONEncoder
-        )
-
-        investmentgrowth_excel_path = (
-            "static/investment_results.xlsx"
-        )
-
-        growth_data.to_excel(
-            investmentgrowth_excel_path,
-            index=False
         )
 
         return render_template(
@@ -389,7 +396,6 @@ def investment():
             results=True,
             investmentgrowth_message=investmentgrowth_message,
             graph_json=graph_json,
-            investmentgrowth_excel_file=investmentgrowth_excel_path,
             form_data=form_data,
             scroll_to_results=True
         )
@@ -402,6 +408,29 @@ def investment():
         form_data=default_data
     )
 
+@app.route("/download/investment-excel")
+def download_investment_excel():
+
+    data_json = session.get("investment_data")
+
+    if not data_json:
+        return "No data found. Please recalculate.", 400
+
+    df = pd.read_json(StringIO(data_json))  # ✅ FIX for deprecation
+
+    output = BytesIO()
+
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
+        df.to_excel(writer, index=False, sheet_name="Investment Growth")
+
+    output.seek(0)
+
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name="Investment_Growth.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
 # =====================================================
 # RETIREMENT CALCULATOR
@@ -506,6 +535,14 @@ def retirement():
             currentSavings_Retire
         )
 
+        result_id = str(uuid.uuid4())
+
+        inv_path = os.path.join(TEMP_DIR, f"{result_id}_investment.json")
+        ann_path = os.path.join(TEMP_DIR, f"{result_id}_annuity.json")
+
+        investmentSchedule.to_json(inv_path)
+        annuitySchedule.to_json(ann_path)
+
         invest_graph_json = json.dumps(
             fig1.to_dict(),
             cls=plotly.utils.PlotlyJSONEncoder
@@ -516,24 +553,6 @@ def retirement():
             cls=plotly.utils.PlotlyJSONEncoder
         )
 
-        investmentSchedule_excel_path = (
-            "static/investmentSchedule_results.xlsx"
-        )
-
-        annuitySchedule_excel_path = (
-            "static/annuitySchedule_results.xlsx"
-        )
-
-        investmentSchedule.to_excel(
-            investmentSchedule_excel_path,
-            index=False
-        )
-
-        annuitySchedule.to_excel(
-            annuitySchedule_excel_path,
-            index=False
-        )
-
         return render_template(
             "retirement.html",
             results=True,
@@ -542,9 +561,8 @@ def retirement():
             annuity_graph_json=annuity_graph_json,
             requirement_message=requirement_message,
             retirement_message=retirement_message,
-            investmentSchedule_excel_file=investmentSchedule_excel_path,
-            annuitySchedule_excel_file=annuitySchedule_excel_path,
-            scroll_to_results=True
+            scroll_to_results=True,
+            result_id=result_id
         )
 
     return render_template(
@@ -552,10 +570,63 @@ def retirement():
         form_data=default_data
     )
 
+@app.route("/download/retirement-investment-excel")
+def download_retirement_investment_excel():
 
-# =====================================================
-# GOAL PLANNING CALCULATOR
-# =====================================================
+    result_id = request.args.get("id")
+
+    if not result_id:
+        return "Missing result id", 400
+
+    file_path = os.path.join(TEMP_DIR, f"{result_id}_investment.json")
+
+    if not os.path.exists(file_path):
+        return "Session expired or file missing", 400
+
+    df = pd.read_json(file_path)
+
+    output = BytesIO()
+
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
+        df.to_excel(writer, index=False, sheet_name="Investment Schedule")
+
+    output.seek(0)
+
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name="Investment_Schedule.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+@app.route("/download/retirement-annuity-excel")
+def download_retirement_annuity_excel():
+
+    result_id = request.args.get("id")
+
+    if not result_id:
+        return "Missing result id", 400
+
+    file_path = os.path.join(TEMP_DIR, f"{result_id}_annuity.json")
+
+    if not os.path.exists(file_path):
+        return "Session expired or file missing", 400
+
+    df = pd.read_json(file_path)
+
+    output = BytesIO()
+
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
+        df.to_excel(writer, index=False, sheet_name="Annuity Schedule")
+
+    output.seek(0)
+
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name="Annuity_Schedule.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
 @app.route("/goal", methods=["GET", "POST"])
 def goal():
@@ -573,30 +644,12 @@ def goal():
 
         form_data = request.form.to_dict()
 
-        curCost_goal = int(
-            request.form.get("curCost_goal", 10000)
-        )
-
-        investTenure = int(
-            request.form.get("investTenure", 1)
-        )
-
-        currentSavings_goal = float(
-            request.form.get("currentSavings_goal", 1000)
-        )
-
-        expInflation = float(
-            request.form.get("expInflation", 5)
-        )
-
-        invApproach = request.form.get(
-            "invApproach",
-            "Moderate"
-        )
-
-        percentage_SIPinc = float(
-            request.form.get("percentage_SIPinc", 5)
-        )
+        curCost_goal = int(request.form.get("curCost_goal", 10000))
+        investTenure = int(request.form.get("investTenure", 1))
+        currentSavings_goal = float(request.form.get("currentSavings_goal", 1000))
+        expInflation = float(request.form.get("expInflation", 5))
+        invApproach = request.form.get("invApproach", "Moderate")
+        percentage_SIPinc = float(request.form.get("percentage_SIPinc", 5))
 
         mapping = {
             "Conservative": 7,
@@ -606,10 +659,7 @@ def goal():
             "Aggressive": 15
         }
 
-        invApproach = mapping.get(
-            invApproach,
-            11
-        )
+        invApproach = mapping.get(invApproach, 11)
 
         (
             goalSchedule,
@@ -625,18 +675,12 @@ def goal():
             percentage_SIPinc,
         )
 
+        # STORE (session-safe version)
+        session["goalSchedule_data"] = goalSchedule.to_json(orient="split")
+
         goal_graph_json = json.dumps(
             fig1.to_dict(),
             cls=plotly.utils.PlotlyJSONEncoder
-        )
-
-        goalSchedule_excel_path = (
-            "static/goalSchedule_results.xlsx"
-        )
-
-        goalSchedule.to_excel(
-            goalSchedule_excel_path,
-            index=False
         )
 
         return render_template(
@@ -646,7 +690,6 @@ def goal():
             goal_graph_json=goal_graph_json,
             requirement_message=requirement_message,
             goal_message=goal_message,
-            goalSchedule_excel_file=goalSchedule_excel_path,
             scroll_to_results=True
         )
 
@@ -655,40 +698,75 @@ def goal():
         form_data=default_data
     )
 
+@app.route("/download/goal-excel")
+def download_goal_excel():
+
+    data_json = session.get("goalSchedule_data")
+
+    if not data_json:
+        return "No data found. Please recalculate.", 400
+
+    df = pd.read_json(StringIO(data_json), orient="split")
+
+    output = BytesIO()
+
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
+        df.to_excel(writer, index=False, sheet_name="Goal Schedule")
+
+    output.seek(0)
+
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name="Goal_Schedule.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
 # =====================================================
 # RUN APP FOR LOCAL
 # =====================================================
 
-# if __name__ == "__main__":
+if __name__ == "__main__":
 
-#     port = int(os.environ.get("PORT", 5000))
+    cleanup_thread = threading.Thread(
+        target=cleanup_temp_files,
+        daemon=True
+    )
+    cleanup_thread.start()
 
-#     app.run(
-#         host="0.0.0.0",
-#         port=port,
-#         debug=False
-#     )
+    port = int(os.environ.get("PORT", 5000))
+
+    app.run(
+        host="0.0.0.0",
+        port=port,
+        debug=False
+    )
 
 # =====================================================
 # RUN APP FOR CLOUDRUN
 # =====================================================
 
-def create_app():
+# def create_app():
 
-    app = Flask(__name__)
+#     app = Flask(__name__)
 
-    app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev")
+#     app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev")
 
-    return app
+#     return app
 
-app = create_app()
+# app = create_app()
 
-supabase = create_client(
-    os.environ["SUPABASE_URL"],
-    os.environ["SUPABASE_KEY"]
-)
+# supabase = create_client(
+#     os.environ["SUPABASE_URL"],
+#     os.environ["SUPABASE_KEY"]
+# )
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))
-    app.run(host="0.0.0.0", port=port)
+# if __name__ == "__main__":
+    # cleanup_thread = threading.Thread(
+    #         target=cleanup_temp_files,
+    #         daemon=True
+    #     )
+    #     cleanup_thread.start()
+
+#     port = int(os.environ.get("PORT", 8080))
+#     app.run(host="0.0.0.0", port=port)

@@ -1233,7 +1233,7 @@ def generate_portfolio_json(results, user_configs, user_output_dir="output/users
     index = []
 
     for cfg in user_configs:
-        login = cfg["email"]
+        login = cfg["login_id"]
         print(f"Building JSON for {login}")
 
         data = build_user_json(

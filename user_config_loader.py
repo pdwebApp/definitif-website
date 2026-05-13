@@ -53,7 +53,7 @@ def load_user_configs():
             pans = [pans]
 
         users.append({
-            "email": row["email"],
+            "login_id": row["login_id"],
             "password": row["password"],
             "name": row["name"],
             "user_type": row["user_type"],

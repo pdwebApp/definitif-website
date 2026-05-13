@@ -2,8 +2,3 @@ pandas
 requests
 numpy
 supabase
-flask
-scipy
-sqlalchemy
-psycopg2-binary
-gunicorn
