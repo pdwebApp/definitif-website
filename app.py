@@ -18,7 +18,6 @@ from flask import (
     session,
     send_file,
 )
-from reportlab.pdfgen import canvas  # keep only if used elsewhere
 from supabase import create_client
 
 from goal_logic import goalCalci
@@ -32,7 +31,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMP_DIR = os.path.join(BASE_DIR, "temp_retirement")
 os.makedirs(TEMP_DIR, exist_ok=True)
 
-cleanup_thread_started = False
+_cleanup_thread_started = False
 
 
 def get_supabase():
@@ -60,9 +59,9 @@ def cleanup_temp_files():
 
 
 def start_cleanup_thread():
-    global cleanup_thread_started
+    global _cleanup_thread_started
 
-    if cleanup_thread_started:
+    if _cleanup_thread_started:
         return
 
     cleanup_thread = threading.Thread(
@@ -70,7 +69,7 @@ def start_cleanup_thread():
         daemon=True
     )
     cleanup_thread.start()
-    cleanup_thread_started = True
+    _cleanup_thread_started = True
 
 
 def create_app():
@@ -82,6 +81,10 @@ def create_app():
 
     app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev-only-fallback")
     app.config["VALUATION_DATE"] = date.today() - timedelta(days=1)
+
+    print("Starting app...", flush=True)
+    print("SUPABASE_URL present:", bool(os.getenv("SUPABASE_URL")), flush=True)
+    print("SUPABASE_KEY present:", bool(os.getenv("SUPABASE_KEY")), flush=True)
 
     supabase = get_supabase()
     start_cleanup_thread()
@@ -530,4 +533,3 @@ app = create_app()
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port, debug=False)
-

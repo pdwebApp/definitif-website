@@ -344,6 +344,12 @@ gap:8px;
 
 /* ================= MAIN BODY ================= */
 
+body{
+margin:0;
+font-family:'Segoe UI', sans-serif;
+background:var(--light-bg);
+}
+
 .logo{
 display:block;
 height:42px;
@@ -668,6 +674,7 @@ display:none;
 body.loaded #appLoader{
 display:none;
 }
+
 
 /* =========================================
 LOGIN
