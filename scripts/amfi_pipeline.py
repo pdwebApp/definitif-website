@@ -10,7 +10,7 @@ import os
 # Supabase Connection
 # -------------------------------
 url = os.environ.get("SUPABASE_URL")
-key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
+key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
 
 supabase = create_client(url, key)
 
