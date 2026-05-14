@@ -7,9 +7,6 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-
-
-
 def load_user_configs():
 
     all_rows = []

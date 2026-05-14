@@ -500,7 +500,7 @@ header.scrolled {
   padding: 25px;
   border-radius: 14px;
   border-top: 4px solid var(--card-border-top);
-  box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+ 
   transition: all 0.35s ease;
   position: relative;
 }
@@ -768,7 +768,6 @@ h3 {
 }
 
 .message-container {
-  background: #f4f4f4;
   font-family: Verdana, sans-serif;
   width: 100%;
   max-width: 100%;
@@ -852,6 +851,7 @@ h3 {
   display: flex;
   justify-content: center;
   gap: 20px;
+  padding-bottom: 20px;
 
 }
 
@@ -1422,7 +1422,7 @@ footer {
     --dark-color: #e8e8e8;
     --light-bg: #121212;
     --header-bg: #fefefe00;
-    --footer-bg: #262525;
+    --footer-bg: #181818;
     --card-border-top:#076e5d;
     --light-banner-text:#ffffff;
   }
@@ -1504,7 +1504,7 @@ footer {
   padding: 40px;
   border-radius: 14px;
   border-top: 4px solid var(--card-border-top);
-  box-shadow: 0 12px 30px rgba(59, 59, 59, 0.427);
+
   transition: all 0.35s ease;
   position: relative;
 }
@@ -1639,12 +1639,12 @@ body {
   }
 
   .banner-insights {
-    background-image: linear-gradient(rgba(0,0,0,0.0), rgba(0,0,0,0.5)),
+    background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.5)),
                       var(--banner-insights-img);
   }
 
   .banner-about {
-    background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.0)),
+    background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.5)),
                       var(--banner-about-img);
   }
 
