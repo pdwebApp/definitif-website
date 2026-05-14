@@ -12,6 +12,12 @@ import os
 url = os.environ.get("SUPABASE_URL")
 key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
 
+if not url:
+    raise ValueError("SUPABASE_URL is missing")
+
+if not key:
+    raise ValueError("SUPABASE_SERVICE_ROLE_KEY is missing")
+
 supabase = create_client(url, key)
 
 # -------------------------------
