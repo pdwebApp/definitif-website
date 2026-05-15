@@ -1,9 +1,10 @@
 name: Portfolio Dashboard Refresh
 
 on:
-  schedule:
-    - cron: '0 6 * * *'
-  workflow_dispatch:
+  workflow_run:
+    workflows: ["AMFI NAV Pipeline"]
+    types:
+      - completed
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true

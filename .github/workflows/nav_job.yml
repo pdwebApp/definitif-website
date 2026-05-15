@@ -2,7 +2,7 @@ name: AMFI NAV Pipeline
 
 on:
   schedule:
-    - cron: '30 5 * * *'
+    - cron: '30 3 * * *'
   workflow_dispatch:
 
 jobs:
