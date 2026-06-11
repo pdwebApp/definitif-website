@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import traceback
 import uuid
@@ -6,7 +7,7 @@ import threading
 import time
 from datetime import date, timedelta
 from io import BytesIO, StringIO
-
+import subprocess
 import pandas as pd
 import plotly
 from flask import (
@@ -25,7 +26,11 @@ import investment_logic
 from retirement_logic import retirementCalci
 from transaction_view import build_transaction_view
 from supabase_storage import fetch_json
+import uuid
+import threading
 
+CLIENT_REPORT_JOBS = {}
+CLIENT_REPORT_JOBS_LOCK = threading.Lock()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMP_DIR = os.path.join(BASE_DIR, "temp_retirement")
@@ -70,6 +75,69 @@ def start_cleanup_thread():
     )
     cleanup_thread.start()
     _cleanup_thread_started = True
+
+def _run_client_report_job_async(job_id, payload):
+    script_path = os.path.join(BASE_DIR, "send_client_reports_batch.py")
+
+    with CLIENT_REPORT_JOBS_LOCK:
+        CLIENT_REPORT_JOBS[job_id]["status"] = "running"
+
+    try:
+        process = subprocess.run(
+            [sys.executable, script_path],
+            input=json.dumps(payload),
+            text=True,
+            capture_output=True,
+            cwd=BASE_DIR,
+            timeout=1800,
+        )
+
+        stdout = (process.stdout or "").strip()
+        stderr = (process.stderr or "").strip()
+
+        if process.returncode != 0:
+            with CLIENT_REPORT_JOBS_LOCK:
+                CLIENT_REPORT_JOBS[job_id].update({
+                    "status": "error",
+                    "result": {
+                        "error": "Client report batch failed",
+                        "details": stderr or stdout or f"Exit code {process.returncode}"
+                    }
+                })
+            return
+
+        try:
+            result = json.loads(stdout)
+        except json.JSONDecodeError:
+            with CLIENT_REPORT_JOBS_LOCK:
+                CLIENT_REPORT_JOBS[job_id].update({
+                    "status": "error",
+                    "result": {
+                        "error": "Batch script returned invalid JSON",
+                        "details": stdout or stderr
+                    }
+                })
+            return
+
+        with CLIENT_REPORT_JOBS_LOCK:
+            CLIENT_REPORT_JOBS[job_id].update({
+                "status": "done",
+                "result": result
+            })
+
+    except subprocess.TimeoutExpired:
+        with CLIENT_REPORT_JOBS_LOCK:
+            CLIENT_REPORT_JOBS[job_id].update({
+                "status": "error",
+                "result": {"error": "Client report batch timed out"}
+            })
+
+    except Exception as e:
+        with CLIENT_REPORT_JOBS_LOCK:
+            CLIENT_REPORT_JOBS[job_id].update({
+                "status": "error",
+                "result": {"error": str(e)}
+            })
 
 
 def create_app():
@@ -524,6 +592,67 @@ def create_app():
             mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
+    @app.route("/api/client-reports/send", methods=["POST"])
+    def send_client_reports():
+        try:
+            payload = request.get_json(silent=True) or {}
+
+            client_logins = payload.get("clientLogins")
+            recipient_mode = payload.get("recipientMode")
+            manual_emails = payload.get("manualEmails", [])
+
+            if not isinstance(client_logins, list) or not client_logins:
+                return jsonify({"error": "clientLogins is required"}), 400
+
+            if recipient_mode not in {"default", "manual"}:
+                return jsonify({"error": "recipientMode must be 'default' or 'manual'"}), 400
+
+            if recipient_mode == "manual":
+                if not isinstance(manual_emails, list) or not manual_emails:
+                    return jsonify({"error": "manualEmails is required for manual mode"}), 400
+
+            job_id = str(uuid.uuid4())
+
+            with CLIENT_REPORT_JOBS_LOCK:
+                CLIENT_REPORT_JOBS[job_id] = {
+                    "status": "queued",
+                    "result": None
+                }
+
+            thread = threading.Thread(
+                target=_run_client_report_job_async,
+                args=(job_id, payload),
+                daemon=True,
+            )
+            thread.start()
+
+            return jsonify({
+                "success": True,
+                "jobId": job_id,
+                "status": "queued",
+                "message": "Client report job started"
+            }), 202
+
+        except Exception as e:
+            print("CLIENT REPORT SEND ERROR", flush=True)
+            print(traceback.format_exc(), flush=True)
+            return jsonify({"error": str(e)}), 500
+
+    @app.route("/api/client-reports/status/<job_id>", methods=["GET"])
+    def client_report_status(job_id):
+        with CLIENT_REPORT_JOBS_LOCK:
+            job = CLIENT_REPORT_JOBS.get(job_id)
+
+        if not job:
+            return jsonify({"error": "Job not found"}), 404
+
+        return jsonify({
+            "success": True,
+            "jobId": job_id,
+            "status": job["status"],
+            "result": job["result"]
+        })
+
     return app
 
 
@@ -532,4 +661,4 @@ app = create_app()
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
-    app.run(host="0.0.0.0", port=port, debug=False)
+    app.run(host="0.0.0.0", port=port)

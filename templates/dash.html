@@ -140,7 +140,7 @@ body{visibility:hidden}
 <div class="tab-panel" id="tab-profit">
     <div class="card">
         <div class="profit-header">
-            <h3>Profit Booking</h3>
+            <h3>Profitbook - FY Wise</h3>
                 <div class="download-icons">
                     <span class="expand-all" title="Expand All" onclick="toggleExpandAll('profitContainer')">⤢</span>
                     <img src="static/icons/pdf.png"
@@ -1020,7 +1020,7 @@ doc.setFontSize(18);
 doc.setFont(undefined,"bold");
 
 doc.text(
-"Fund Performance (Strategy Wise)",
+"Performance - Strategy Wise",
 pageWidth-40,
 clientY-16,
 {align:"right"}
@@ -1227,7 +1227,7 @@ doc.setFontSize(18);
 doc.setFont(undefined,"bold");
 
 doc.text(
-"Profit Booking",
+"Profitbook - FY Wise",
 pageWidth - 40,
 clientY - 16,
 { align: "right" }
@@ -1757,7 +1757,7 @@ styleExcelSheet(ws, headers, [4,5,6,7,8]);
 
 // ---------- WORKBOOK ----------
 const wb = XLSX.utils.book_new();
-XLSX.utils.book_append_sheet(wb, ws, "Profit Booking");
+XLSX.utils.book_append_sheet(wb, ws, "Profitbook - FY Wise");
 
 // ---------- SAVE ----------
 XLSX.writeFile(wb,`Profitbook_${new Date().toISOString().slice(0,10)}.xlsx`);
@@ -2054,14 +2054,18 @@ async function loadUserForAdminOnly(login, fileName){
 async function loadAllClientSummaries(){
   if (ADMIN_CLIENTS.length) return ADMIN_CLIENTS;
 
+
   const idx = await fetchUserIndex();
+
 
   const eligible = (idx.users || []).filter(u => {
     const t = (u.type || "").toLowerCase();
     return t !== "family" && t !== "admin";
   });
 
+
   const rows = [];
+
 
   for (const u of eligible) {
     try {
@@ -2069,16 +2073,20 @@ async function loadAllClientSummaries(){
       const kpi = user?.data?.kpi || {};
       const panSummary = user?.data?.panSummary || [];
 
+
       let portfolioValue = Number(kpi.portfolio_value || 0);
       let invested = Number(kpi.invested || 0);
+
 
       if (!portfolioValue && panSummary.length) {
         portfolioValue = panSummary.reduce((s, p) => s + Number(p.current_value || 0), 0);
       }
 
+
       if (!invested && panSummary.length) {
         invested = panSummary.reduce((s, p) => s + Number(p.invested || 0), 0);
       }
+
 
       rows.push({
         login: u.login,
@@ -2096,10 +2104,12 @@ async function loadAllClientSummaries(){
     }
   }
 
+
   rows.sort((a, b) => a.name.localeCompare(b.name));
   ADMIN_CLIENTS = rows;
   return rows;
 }
+
 
 async function loadAdminDashboard(){
 
@@ -2140,28 +2150,67 @@ async function loadAdminDashboard(){
   await renderAdminClients();
 }
 
-async function renderAdminClients(){
-
+async function renderAdminClients() {
   const panel = document.getElementById("admin-clients");
   const clients = await loadAllClientSummaries();
 
   panel.innerHTML = `
     <div class="card">
+      <h3>Client Search</h3>
 
-        <h3>Client Search</h3>
+      <div class="admin-clients-wrap">
+        <div class="admin-bulk-toolbar">
+          <div class="admin-bulk-left">
+            <input
+              type="text"
+              id="adminClientSearch"
+              placeholder="Search client name or PAN"
+              class="admin-client-search"
+              data-testid="admin-client-search"
+            />
+            <span id="selectedClientCount" class="selected-count">0 selected</span>
+          </div>
 
-        <div class="admin-clients-wrap">
-        <input
-            type="text"
-            id="adminClientSearch"
-            placeholder="Search client name or PAN"
-            class="admin-client-search"
-        />
+          <div class="admin-bulk-right">
+            <div class="action-group">
+              <select id="recipientMode" data-testid="recipient-mode">
+                <option value="default">Send to Email Connect</option>
+                <option value="manual">Send to Manual Email</option>
+              </select>
+
+            <input
+              type="text"
+              id="manualEmailInput"
+              placeholder="Enter manual email(s), comma separated"
+              class="admin-manual-email-input"
+              style="display:none;"
+              data-testid="manual-email-input"
+            />
+
+            <button
+              id="sendSelectedReportsBtn"
+              class="btn primary"
+              data-testid="send-selected-reports-btn"
+              disabled
+            >
+              Send Reports
+            </button>
+          </div>
+          </div>
+        </div>
 
         <div class="table-scroll admin-table-wrap">
-            <table id="adminClientsTable">
+          <table id="adminClientsTable" data-testid="admin-clients-table">
             <thead>
-                <tr>
+              <tr>
+                <th>
+                  <input
+                    type="checkbox"
+                    id="selectAllClients"
+                    data-testid="select-all-clients"
+                    aria-label="Select all clients"
+                  />
+                </th>
                 <th>Client</th>
                 <th>PAN</th>
                 <th>MFU CAN</th>
@@ -2169,42 +2218,268 @@ async function renderAdminClients(){
                 <th>Email Connect</th>
                 <th>DOB</th>
                 <th>Value</th>
-                </tr>
+              </tr>
             </thead>
             <tbody>
-                ${clients.map(c => `
-                <tr class="admin-client-row" data-login="${c.login}">
-                    <td>${c.name || "-"}</td>
-                    <td>${(c.pans || []).join(", ") || "-"}</td>
-                    <td>${c.mfu_can || "-"}</td>
-                    <td>${c.mobile || "-"}</td>
-                    <td>${c.email_connect || "-"}</td>
-                    <td>${c.dob || "-"}</td>
-                    <td>${formatNumber(c.portfolio_value || 0)}</td>
+              ${clients.map(c => `
+                <tr
+                  class="admin-client-row"
+                  data-login="${c.login}"
+                  data-name="${(c.name || "").replace(/"/g, "&quot;")}"
+                  data-email-connect="${(c.email_connect || "").replace(/"/g, "&quot;")}"
+                  data-testid="client-row-${c.login}"
+                >
+                  <td>
+                    <input
+                      type="checkbox"
+                      class="client-select-checkbox"
+                      data-login="${c.login}"
+                      data-testid="client-checkbox-${c.login}"
+                      aria-label="Select ${c.name || c.login}"
+                    />
+                  </td>
+                  <td>${c.name || "-"}</td>
+                  <td>${(c.pans || []).join(", ") || "-"}</td>
+                  <td>${c.mfu_can || "-"}</td>
+                  <td>${c.mobile || "-"}</td>
+                  <td>${c.email_connect || "-"}</td>
+                  <td>${c.dob || "-"}</td>
+                  <td>${formatNumber(c.portfolio_value || 0)}</td>
                 </tr>
-                `).join("")}
+              `).join("")}
             </tbody>
-            </table>
-        </div>
+          </table>
         </div>
 
+        <div id="bulkSendStatus" class="bulk-send-status"></div>
+      </div>
     </div>
-    `;
+  `;
 
-  document.getElementById("adminClientSearch")
-    .addEventListener("input", e => {
-      const q = e.target.value.toLowerCase();
+  const searchInput = document.getElementById("adminClientSearch");
+  const selectAll = document.getElementById("selectAllClients");
+  const recipientMode = document.getElementById("recipientMode");
+  const manualEmailInput = document.getElementById("manualEmailInput");
+  const sendBtn = document.getElementById("sendSelectedReportsBtn");
+  const selectedCount = document.getElementById("selectedClientCount");
+  const statusBox = document.getElementById("bulkSendStatus");
 
-      document.querySelectorAll(".admin-client-row").forEach(row => {
-        row.style.display = row.innerText.toLowerCase().includes(q) ? "" : "none";
-      });
+  function getVisibleRows() {
+    return Array.from(document.querySelectorAll(".admin-client-row"))
+      .filter(row => row.style.display !== "none");
+  }
+
+  function getSelectedRows() {
+    return Array.from(document.querySelectorAll(".client-select-checkbox:checked"))
+      .map(cb => cb.closest(".admin-client-row"))
+      .filter(Boolean);
+  }
+
+  function updateBulkUI() {
+    const visibleCheckboxes = getVisibleRows()
+      .map(row => row.querySelector(".client-select-checkbox"))
+      .filter(Boolean);
+
+    const checkedVisible = visibleCheckboxes.filter(cb => cb.checked);
+
+    selectAll.checked =
+      visibleCheckboxes.length > 0 &&
+      checkedVisible.length === visibleCheckboxes.length;
+
+    selectAll.indeterminate =
+      checkedVisible.length > 0 &&
+      checkedVisible.length < visibleCheckboxes.length;
+
+    const selectedRows = getSelectedRows();
+    selectedCount.textContent = `${selectedRows.length} selected`;
+    sendBtn.disabled = selectedRows.length === 0;
+  }
+
+  searchInput.addEventListener("input", e => {
+    const q = e.target.value.toLowerCase().trim();
+
+    document.querySelectorAll(".admin-client-row").forEach(row => {
+      row.style.display = row.innerText.toLowerCase().includes(q) ? "" : "none";
     });
 
+    updateBulkUI();
+  });
+
+  selectAll.addEventListener("change", () => {
+    const shouldCheck = selectAll.checked;
+
+    getVisibleRows().forEach(row => {
+      const cb = row.querySelector(".client-select-checkbox");
+      if (cb) cb.checked = shouldCheck;
+    });
+
+    updateBulkUI();
+  });
+
+  document.querySelectorAll(".client-select-checkbox").forEach(cb => {
+    cb.addEventListener("change", e => {
+      e.stopPropagation();
+      updateBulkUI();
+    });
+
+    cb.addEventListener("click", e => {
+      e.stopPropagation();
+    });
+  });
+
   document.querySelectorAll(".admin-client-row").forEach(row => {
-    row.addEventListener("click", async () => {
+    row.addEventListener("click", async e => {
+      if (
+        e.target.closest(".client-select-checkbox") ||
+        e.target.closest("button") ||
+        e.target.closest("select") ||
+        e.target.closest("input")
+      ) {
+        return;
+      }
+
       await openAdminClient(row.dataset.login);
     });
   });
+
+  recipientMode.addEventListener("change", () => {
+    manualEmailInput.style.display =
+      recipientMode.value === "manual" ? "" : "none";
+  });
+
+  sendBtn.addEventListener("click", async () => {
+  const selectedRows = getSelectedRows();
+
+  if (!selectedRows.length) {
+    alert("Please select at least one client.");
+    return;
+  }
+
+  const manualEmails = recipientMode.value === "manual"
+    ? manualEmailInput.value.split(",").map(v => v.trim()).filter(Boolean)
+    : [];
+
+  if (recipientMode.value === "manual" && manualEmails.length === 0) {
+    alert("Please enter at least one manual email.");
+    return;
+  }
+
+  const payload = {
+    clientLogins: selectedRows.map(row => row.dataset.login),
+    recipientMode: recipientMode.value,
+    manualEmails
+  };
+
+  sendBtn.disabled = true;
+  statusBox.textContent = "Starting report job...";
+
+  try {
+    const startRes = await fetch("/api/client-reports/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const startText = await startRes.text();
+    let startData = null;
+
+    try {
+      startData = startText ? JSON.parse(startText) : null;
+    } catch (parseErr) {
+      console.error("Non-JSON start response:", startText);
+    }
+
+    if (!startRes.ok) {
+      throw new Error(
+        startData?.error ||
+        startData?.message ||
+        `Request failed (${startRes.status})`
+      );
+    }
+
+    const jobId = startData?.jobId;
+    if (!jobId) {
+      throw new Error("Missing jobId from server");
+    }
+
+    statusBox.textContent = `Report job started. Job ID: ${jobId}`;
+
+    let finalResult = null;
+    const pollIntervalMs = 2500;
+    const maxPolls = 720;
+
+    for (let attempt = 1; attempt <= maxPolls; attempt++) {
+      await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
+
+      const pollRes = await fetch(`/api/client-reports/status/${encodeURIComponent(jobId)}`);
+      const pollText = await pollRes.text();
+
+      let pollData = null;
+      try {
+        pollData = pollText ? JSON.parse(pollText) : null;
+      } catch (parseErr) {
+        console.error("Non-JSON poll response:", pollText);
+      }
+
+      if (!pollRes.ok) {
+        throw new Error(
+          pollData?.error ||
+          pollData?.message ||
+          `Status check failed (${pollRes.status})`
+        );
+      }
+
+      const status = pollData?.status;
+
+      if (status === "queued" || status === "running") {
+        statusBox.textContent = `Report job ${status}...`;
+        continue;
+      }
+
+      if (status === "error") {
+        throw new Error(
+          pollData?.result?.error ||
+          pollData?.result?.details ||
+          "Report job failed"
+        );
+      }
+
+      if (status === "done") {
+        finalResult = pollData?.result || null;
+        break;
+      }
+
+      throw new Error(`Unexpected job status: ${status || "unknown"}`);
+    }
+
+    if (!finalResult) {
+      throw new Error("Timed out while waiting for report job completion");
+    }
+
+    const lines = [finalResult?.message || "Reports processed successfully."];
+
+    if (Array.isArray(finalResult?.results)) {
+      finalResult.results.forEach(item => {
+        lines.push(
+          `${item.clientName || item.login}: ` +
+          `performance=${item.performancePdf ? "yes" : "no"}, ` +
+          `profitbook=${item.profitbookPdf ? "yes" : "no"}, ` +
+          `email=${item.emailSent ? "sent" : "not sent"}`
+        );
+      });
+    }
+
+    statusBox.textContent = lines.join("\n");
+  } catch (err) {
+    console.error(err);
+    statusBox.textContent = `Send failed: ${err.message}`;
+  } finally {
+    sendBtn.disabled = false;
+    updateBulkUI();
+  }
+});
+
+  updateBulkUI();
 }
 
 async function openAdminClient(login) {

@@ -258,6 +258,10 @@ line-height:1.25;
   table-layout: auto;
 }
 
+.bulk-send-status {
+  white-space: pre-line;
+}
+
 /* ================= GLOBAL TOGGLE ================= */
 
 .ui-toggle{
@@ -564,6 +568,33 @@ letter-spacing:.2px;
 color:#111827;
 }
 
+.admin-bulk-right {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 12px;
+  background: #1e2a38; /* dark blue background */
+  padding: 12px 16px;
+  border-radius: 8px;
+}
+
+.action-group select,
+.admin-manual-email-input {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 13px;
+  background: #fff;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.action-group select:focus,
+.admin-manual-email-input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(0, 150, 136, 0.2);
+  outline: none;
+}
+
 /* =========================================
 BUTTONS
 ========================================= */
@@ -584,6 +615,11 @@ color:white;
 
 .btn.primary:hover{
 background:var(--accent-color);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* back icon button */
