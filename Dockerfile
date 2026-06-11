@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM mcr.microsoft.com/playwright/python:v1.54.0
 
 WORKDIR /app
 
@@ -8,8 +8,7 @@ ENV PORT=8080
 COPY requirements.txt ./
 
 RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt \
-    && playwright install chromium
+    && pip install --no-cache-dir -r requirements.txt
 
 COPY . ./
 

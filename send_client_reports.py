@@ -593,7 +593,13 @@ def main():
         )
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=PLAYWRIGHT_HEADLESS)
+        browser = p.chromium.launch(
+            headless=PLAYWRIGHT_HEADLESS,
+            args=[
+                "--no-sandbox",
+                "--disable-dev-shm-usage",
+            ]
+        )
         context = browser.new_context(
             storage_state=str(AUTH_STATE_FILE),
             accept_downloads=True,
