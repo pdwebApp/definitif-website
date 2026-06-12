@@ -563,12 +563,16 @@ def run_client_report_job(
 
     log(f"Generating reports for {client_name}")
 
-    reports = generate_client_reports(
-        page=page,
-        search_text=search_text,
-        client_name=client_name,
-        output_dir=str(Path(ARTIFACTS_DIR) / "email_reports" / client_login),
-    )
+    try:
+        reports = generate_client_reports(
+            page=page,
+            search_text=search_text,
+            client_name=client_name,
+            output_dir=str(Path(ARTIFACTS_DIR) / "email_reports" / client_login),
+        )
+    except Exception as e:
+        log(f"generate_client_reports FAILED: {repr(e)}")
+        raise
 
     log(
         f"Reports generated. "
@@ -592,12 +596,16 @@ def run_client_report_job(
     if recipients and attachments:
         log("Starting email send")
 
-        send_email_with_attachments(
-            recipient_email=recipients,
-            subject=f"Portfolio Statements as on {today_formatted} - {client_name}",
-            html_body=build_email_html(client_name, today_formatted),
-            attachment_paths=attachments,
-        )
+        try:
+            send_email_with_attachments(
+                recipient_email=recipients,
+                subject=f"Portfolio Statements as on {today_formatted} - {client_name}",
+                html_body=build_email_html(client_name, today_formatted),
+                attachment_paths=attachments,
+            )
+        except Exception as e:
+            log(f"EMAIL FAILED: {repr(e)}")
+            raise
 
         log("Email send completed")
 

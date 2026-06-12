@@ -5,8 +5,6 @@ from playwright.sync_api import sync_playwright
 from config import AUTH_STATE_FILE, PLAYWRIGHT_HEADLESS
 from send_client_reports import run_client_report_job
 from supabase_storage import fetch_json
-from datetime import datetime
-
 from datetime import datetime, timezone
 
 def log(msg):
@@ -128,30 +126,18 @@ def main():
 
         log("browser launched")
 
-        log(
-                f"AUTH_STATE_FILE={AUTH_STATE_FILE}",
-                file=sys.stderr,
-                flush=True
-            )
-        
-        log(
-            Path(AUTH_STATE_FILE).read_text()[:200],
-            file=sys.stderr,
-            flush=True
-        )
+        log(f"AUTH_STATE_FILE={AUTH_STATE_FILE}")
 
-        log(
-                f"AUTH_STATE_EXISTS={Path(AUTH_STATE_FILE).exists()}",
-                file=sys.stderr,
-                flush=True
-            )
+        auth_exists = Path(AUTH_STATE_FILE).exists()
+        log(f"AUTH_STATE_EXISTS={auth_exists}")
+
+        if auth_exists:
+            log(f"AUTH_STATE_SIZE={Path(AUTH_STATE_FILE).stat().st_size}")
+
+        log("creating browser context")
 
         context = browser.new_context(
-
-
             storage_state=str(AUTH_STATE_FILE),
-
-
             accept_downloads=True,
         )
 
