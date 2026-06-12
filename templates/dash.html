@@ -386,7 +386,6 @@ async function loadTransactionView() {
     const rows = await res.json();
     renderTransactionView(rows || []);
   } catch (e) {
-    console.error(e);
     container.innerHTML = `
       <div class="admin-loading-state txn-loading-state">
         <div class="admin-loading-card">Unable to load transactions.</div>
@@ -506,11 +505,14 @@ async function restoreSession() {
       applyPanModeTabs();
     }
   } catch (err) {
-    console.error("restoreSession failed", err);
 
+    logger.error('Session restore failed', { 
+      user: savedUser,  // Only log what you need, sanitized
+      error: err.message
+    });
     document.getElementById("loginPage").style.display = "flex";
     document.getElementById("app").style.display = "none";
-    console.error("restoreSession failed", savedUser, savedPan, err);
+
   }
 }
 
@@ -1921,7 +1923,6 @@ async function login() {
         startSession(loginId);
 
     } catch (e) {
-        console.error(e);
         alert("Login failed");
     }
 }
@@ -2055,7 +2056,7 @@ async function loadAllClientSummaries(){
         invested: invested
       });
     } catch (e) {
-      console.error("Admin client load failed:", u.login, e);
+      logger.error("Admin client load failed:", { user: u.login, error: e.message });
     }
   }
 
@@ -2341,7 +2342,7 @@ async function renderAdminClients() {
     try {
       startData = startText ? JSON.parse(startText) : null;
     } catch (parseErr) {
-      console.error("Non-JSON start response:", startText);
+      startData = null; // Silently handle
     }
 
     if (!startRes.ok) {
@@ -2373,7 +2374,7 @@ async function renderAdminClients() {
       try {
         pollData = pollText ? JSON.parse(pollText) : null;
       } catch (parseErr) {
-        console.error("Non-JSON poll response:", pollText);
+        pollData = null; // Silently handle
       }
 
       if (!pollRes.ok) {
@@ -2426,7 +2427,6 @@ async function renderAdminClients() {
 
     statusBox.textContent = lines.join("\n");
   } catch (err) {
-    console.error(err);
     statusBox.textContent = `Send failed: ${err.message}`;
   } finally {
     sendBtn.disabled = false;
@@ -2550,7 +2550,7 @@ async function loadUser(login){
       const res = await fetch(`/api/portfolio/${login}.json?v=` + Date.now());
 
       if(!res.ok){
-        console.error("User not found:", login);
+        logger.warn('User not found', { login }); // Sentry/Winston — not console
         return;
       }
 
@@ -2559,7 +2559,7 @@ async function loadUser(login){
       rawData[login] = user;
 
     }catch(e){
-      console.error("loadUser fetch failed", e);
+      logger.error("loadUser fetch failed", { login, error: e.message });
       return;
     }
   }
@@ -2572,7 +2572,7 @@ async function loadUser(login){
   const d = user?.data;
 
   if(!d){
-    console.error("No dashboard data for", login, user);
+    logger.error('No dashboard data', { login, userId: user.id });
     return;
   }
 
@@ -2661,7 +2661,7 @@ async function openClientDashboard(pan) {
   const login = PAN_MAP[normalizedPan];
 
   if (!login) {
-    console.error("PAN not mapped:", pan);
+    logger.warn('PAN not mapped', { pan });
     alert(`No individual login mapped for PAN: ${pan}`);
     return;
   }

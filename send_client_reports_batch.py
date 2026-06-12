@@ -5,7 +5,16 @@ from playwright.sync_api import sync_playwright
 from config import AUTH_STATE_FILE, PLAYWRIGHT_HEADLESS
 from send_client_reports import run_client_report_job
 from supabase_storage import fetch_json
+from datetime import datetime
 
+from datetime import datetime, timezone
+
+def log(msg):
+    print(
+        f"[{datetime.now(timezone.utc).isoformat()}] {msg}",
+        file=sys.stderr,
+        flush=True
+    )
 
 def load_clients_map():
     data = fetch_json("users_index.json")
@@ -104,18 +113,58 @@ def main():
 
     results = []
 
-    print("batch: launching playwright", file=sys.stderr, flush=True)
+    log("launching playwright")
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=PLAYWRIGHT_HEADLESS)
+        log("launching browser")
+        browser = p.chromium.launch(
+            headless=True,
+            args=[
+                "--no-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-gpu",
+                "--disable-setuid-sandbox"
+            ]
+        )
+
+        log("browser launched")
+
+        log(
+                f"AUTH_STATE_FILE={AUTH_STATE_FILE}",
+                file=sys.stderr,
+                flush=True
+            )
+        
+        log(
+            Path(AUTH_STATE_FILE).read_text()[:200],
+            file=sys.stderr,
+            flush=True
+        )
+
+        log(
+                f"AUTH_STATE_EXISTS={Path(AUTH_STATE_FILE).exists()}",
+                file=sys.stderr,
+                flush=True
+            )
+
         context = browser.new_context(
+
+
             storage_state=str(AUTH_STATE_FILE),
+
+
             accept_downloads=True,
         )
+
+        log("context created")
+
         page = context.new_page()
+
+        log("page created")
+
         page.set_default_timeout(240_000)
 
         for login in client_logins:
-            print(f"batch: processing {login}", file=sys.stderr, flush=True)
+            log(f"processing {login}")
 
             client = clients_map.get(login)
 
@@ -155,6 +204,8 @@ def main():
         browser.close()
 
     emailed_count = sum(1 for r in results if r.get("emailSent"))
+    log(f"Processed {len(results)} client(s), emailed {emailed_count}.")
+
     print(json.dumps({
         "success": True,
         "message": f"Processed {len(results)} client(s), emailed {emailed_count}.",

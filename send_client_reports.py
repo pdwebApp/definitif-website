@@ -545,6 +545,12 @@ def send_email_with_attachments(
         server.login(GMAIL_SENDER, GMAIL_APP_PASSWORD)
         server.sendmail(GMAIL_SENDER, recipients, msg.as_string())
 
+def log(msg):
+    print(
+        f"[{datetime.datetime.now(datetime.timezone.utc).isoformat()}] {msg}",
+        file=sys.stderr,
+        flush=True
+    )
 
 def run_client_report_job(
     page: Page,
@@ -553,7 +559,10 @@ def run_client_report_job(
     search_text: str,
     recipients: list[str],
 ):
-    print(f"run_client_report_job: start {client_login}", file=sys.stderr, flush=True)
+    log(f"START client={client_login}")
+
+    log(f"Generating reports for {client_name}")
+
     reports = generate_client_reports(
         page=page,
         search_text=search_text,
@@ -561,19 +570,42 @@ def run_client_report_job(
         output_dir=str(Path(ARTIFACTS_DIR) / "email_reports" / client_login),
     )
 
+    log(
+        f"Reports generated. "
+        f"performance={reports['performance_pdf']} "
+        f"profitbook={reports['profitbook_pdf']}"
+    )
+
     attachments = [
         p for p in [reports["performance_pdf"], reports["profitbook_pdf"]] if p
     ]
 
+    log(f"Attachments found: {len(attachments)}")
+
     email_sent = False
+
+    if recipients:
+        log(f"Recipients: {recipients}")
+    else:
+        log("No recipients")
+
     if recipients and attachments:
+        log("Starting email send")
+
         send_email_with_attachments(
             recipient_email=recipients,
             subject=f"Portfolio Statements as on {today_formatted} - {client_name}",
             html_body=build_email_html(client_name, today_formatted),
             attachment_paths=attachments,
         )
+
+        log("Email send completed")
+
         email_sent = True
+    else:
+        log("Skipping email send")
+
+    log(f"END client={client_login}")
 
     return {
         "login": client_login,
