@@ -10,7 +10,7 @@ from supabase import create_client
 # =====================================================
 
 SUPABASE_URL = os.environ["SUPABASE_URL"]
-SUPABASE_KEY = os.environ["SUPABASE_KEY"]
+SUPABASE_SERVICE_ROLE_KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
 
 BUCKET_NAME = "portfolio-data"
 
@@ -31,7 +31,7 @@ OUTPUT_DIR = os.path.join(
 
 supabase = create_client(
     SUPABASE_URL,
-    SUPABASE_KEY
+    SUPABASE_SERVICE_ROLE_KEY
 )
 
 # =====================================================

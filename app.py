@@ -28,6 +28,7 @@ from transaction_view import build_transaction_view
 from supabase_storage import fetch_json
 import uuid
 import threading
+import supabase
 
 CLIENT_REPORT_JOBS = {}
 CLIENT_REPORT_JOBS_LOCK = threading.Lock()
@@ -41,13 +42,12 @@ _cleanup_thread_started = False
 
 def get_supabase():
     supabase_url = os.getenv("SUPABASE_URL")
-    supabase_key = os.getenv("SUPABASE_KEY")
+    supabase_service_role_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
-    if not supabase_url or not supabase_key:
-        raise RuntimeError("Missing SUPABASE_URL or SUPABASE_KEY environment variables")
+    if not supabase_url or not supabase_service_role_key:
+        raise RuntimeError("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables")
 
-    return create_client(supabase_url, supabase_key)
-
+    return create_client(supabase_url, supabase_service_role_key)
 
 def cleanup_temp_files():
     while True:
@@ -77,12 +77,17 @@ def start_cleanup_thread():
     _cleanup_thread_started = True
 
 def _run_client_report_job_async(job_id, payload):
+    supabase = get_supabase()
     script_path = os.path.join(BASE_DIR, "send_client_reports_batch.py")
 
-    with CLIENT_REPORT_JOBS_LOCK:
-        CLIENT_REPORT_JOBS[job_id]["status"] = "running"
-
     try:
+        # Mark running
+        supabase.table("client_report_jobs").update({
+            "status": "running"
+        }).eq("job_id", job_id).execute()
+
+        print(f"Updated job {job_id} to running", flush=True)
+
         process = subprocess.run(
             [sys.executable, script_path],
             input=json.dumps(payload),
@@ -96,48 +101,48 @@ def _run_client_report_job_async(job_id, payload):
         stderr = (process.stderr or "").strip()
 
         if process.returncode != 0:
-            with CLIENT_REPORT_JOBS_LOCK:
-                CLIENT_REPORT_JOBS[job_id].update({
-                    "status": "error",
-                    "result": {
-                        "error": "Client report batch failed",
-                        "details": stderr or stdout or f"Exit code {process.returncode}"
-                    }
-                })
+            supabase.table("client_report_jobs").update({
+                "status": "error",
+                "result": {
+                    "error": "Client report batch failed",
+                    "details": stderr or stdout or f"Exit code {process.returncode}"
+                }
+            }).eq("job_id", job_id).execute()
             return
 
         try:
             result = json.loads(stdout)
+
         except json.JSONDecodeError:
-            with CLIENT_REPORT_JOBS_LOCK:
-                CLIENT_REPORT_JOBS[job_id].update({
-                    "status": "error",
-                    "result": {
-                        "error": "Batch script returned invalid JSON",
-                        "details": stdout or stderr
-                    }
-                })
+            supabase.table("client_report_jobs").update({
+                "status": "error",
+                "result": {
+                    "error": "Batch script returned invalid JSON",
+                    "details": stdout or stderr
+                }
+            }).eq("job_id", job_id).execute()
             return
 
-        with CLIENT_REPORT_JOBS_LOCK:
-            CLIENT_REPORT_JOBS[job_id].update({
-                "status": "done",
-                "result": result
-            })
+        supabase.table("client_report_jobs").update({
+            "status": "done",
+            "result": result
+        }).eq("job_id", job_id).execute()
 
     except subprocess.TimeoutExpired:
-        with CLIENT_REPORT_JOBS_LOCK:
-            CLIENT_REPORT_JOBS[job_id].update({
-                "status": "error",
-                "result": {"error": "Client report batch timed out"}
-            })
+        supabase.table("client_report_jobs").update({
+            "status": "error",
+            "result": {
+                "error": "Client report batch timed out"
+            }
+        }).eq("job_id", job_id).execute()
 
     except Exception as e:
-        with CLIENT_REPORT_JOBS_LOCK:
-            CLIENT_REPORT_JOBS[job_id].update({
-                "status": "error",
-                "result": {"error": str(e)}
-            })
+        supabase.table("client_report_jobs").update({
+            "status": "error",
+            "result": {
+                "error": str(e)
+            }
+        }).eq("job_id", job_id).execute()
 
 
 def create_app():
@@ -152,7 +157,7 @@ def create_app():
 
     print("Starting app...", flush=True)
     print("SUPABASE_URL present:", bool(os.getenv("SUPABASE_URL")), flush=True)
-    print("SUPABASE_KEY present:", bool(os.getenv("SUPABASE_KEY")), flush=True)
+    print("SUPABASE_SERVICE_ROLE_KEY present:", bool(os.getenv("SUPABASE_SERVICE_ROLE_KEY")), flush=True)
 
     supabase = get_supabase()
     start_cleanup_thread()
@@ -613,11 +618,12 @@ def create_app():
 
             job_id = str(uuid.uuid4())
 
-            with CLIENT_REPORT_JOBS_LOCK:
-                CLIENT_REPORT_JOBS[job_id] = {
-                    "status": "queued",
-                    "result": None
-                }
+            # Save job in Supabase
+            supabase.table("client_report_jobs").insert({
+                "job_id": job_id,
+                "status": "queued",
+                "result": None
+            }).execute()
 
             thread = threading.Thread(
                 target=_run_client_report_job_async,
@@ -636,24 +642,51 @@ def create_app():
         except Exception as e:
             print("CLIENT REPORT SEND ERROR", flush=True)
             print(traceback.format_exc(), flush=True)
-            return jsonify({"error": str(e)}), 500
+
+            return jsonify({
+                "success": False,
+                "error": str(e)
+            }), 500
 
     @app.route("/api/client-reports/status/<job_id>", methods=["GET"])
     def client_report_status(job_id):
-        with CLIENT_REPORT_JOBS_LOCK:
-            job = CLIENT_REPORT_JOBS.get(job_id)
+        try:
+            response = (
+                supabase
+                .table("client_report_jobs")
+                .select("*")
+                .eq("job_id", job_id)
+                .execute()
+            )
 
-        if not job:
-            return jsonify({"error": "Job not found"}), 404
+            print(response.data, flush=True)
 
-        return jsonify({
-            "success": True,
-            "jobId": job_id,
-            "status": job["status"],
-            "result": job["result"]
-        })
+            if not response.data:
+                return jsonify({
+                    "success": False,
+                    "error": "Job not found"
+                }), 404
+
+            job = response.data[0]
+
+            return jsonify({
+                "success": True,
+                "jobId": job["job_id"],
+                "status": job["status"],
+                "result": job.get("result")
+            })
+
+        except Exception as e:
+            print("CLIENT REPORT STATUS ERROR", flush=True)
+            print(traceback.format_exc(), flush=True)
+
+            return jsonify({
+                "success": False,
+                "error": str(e)
+            }), 500
 
     return app
+
 
 
 app = create_app()

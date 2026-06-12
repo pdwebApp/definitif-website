@@ -314,51 +314,26 @@ function toggleExpandAll(containerId) {
 
 async function loadUserIndex(){
 
-  console.log("loadUserIndex() STARTED");
-
-  console.log("Initial USER_INDEX:", USER_INDEX);
-  console.log("Initial PAN_MAP:", PAN_MAP);
-
   if (USER_INDEX && Object.keys(PAN_MAP).length) {
-    console.log("Using cached USER_INDEX + PAN_MAP");
     return;
   }
 
-  console.log("Fetching /api/user-index...");
-
   const res = await fetch("/api/user-index");
 
-  console.log("Fetch response:", res);
-  console.log("Fetch status:", res.status);
-
   const payload = await res.json();
-
-  console.log("Payload received:", payload);
-  console.log("Users count:", (payload.users || []).length);
 
   USER_INDEX = payload;
   PAN_MAP = {};
 
-  console.log("PAN_MAP reset:", PAN_MAP);
-
   (payload.users || []).forEach(user => {
-
-    console.log("Processing user:", user.login);
 
     const type = (user.type || "").toLowerCase();
 
-    console.log("User type:", type);
-
     if (type === "admin" || type === "family") {
-      console.log("Skipping user:", user.login);
       return;
     }
 
-    console.log("User pans:", user.pans);
-
     (user.pans || []).forEach(pan => {
-
-      console.log("Raw PAN:", pan);
 
       if (pan) {
 
@@ -366,24 +341,11 @@ async function loadUserIndex(){
           .trim()
           .toUpperCase();
 
-        console.log("Normalized PAN:", normalizedPan);
-
         PAN_MAP[normalizedPan] = user.login;
-
-        console.log(
-          "Mapped:",
-          normalizedPan,
-          "→",
-          user.login
-        );
       }
     });
   });
 
-  console.log("FINAL PAN_MAP:", PAN_MAP);
-  console.log("FINAL PAN_MAP KEYS:", Object.keys(PAN_MAP));
-
-  console.log("loadUserIndex() COMPLETED");
 }
 /* ================= ASYNC FUNCTIONS ================= */
 
@@ -1426,7 +1388,6 @@ function getTxnExportData() {
         outRow = row.slice(0, 9);
         while (outRow.length < 9) outRow.push("");
       }
-      console.log("TXN EXPORT ROW", row, outRow);
       body.push(outRow);
     });
   });
@@ -1939,8 +1900,6 @@ async function login() {
 
     try {
         const res = await fetch(`/api/portfolio/${loginId}.json?v=` + Date.now());
-        console.log("STATUS:", res.status);
-        console.log("URL:", `/api/portfolio/${loginId}.json`);
 
         if (!res.ok) {
             alert("Invalid login");
@@ -1949,10 +1908,6 @@ async function login() {
 
         const compressed = await res.json();
         const user = expandKeys(compressed);
-
-        console.log("USER OBJECT:", user);
-        console.log("ENTERED PASSWORD:", password);
-        console.log("STORED PASSWORD:", user.password);
 
         if (user.password !== password) {
             alert("Invalid login");
@@ -2701,9 +2656,6 @@ async function openClientDashboard(pan) {
     .replace(/\s+/g, "");
 
   await loadUserIndex();
-
-  console.log("Normalized PAN:", pan);
-  console.log("PAN_MAP:", PAN_MAP);
 
   const normalizedPan = String(pan).trim().toUpperCase();
   const login = PAN_MAP[normalizedPan];
@@ -3975,8 +3927,6 @@ const map = {};
 
 document.querySelectorAll(".txn-check:checked")
 .forEach(cb=>{
-
-console.log("CHECKED:", cb.dataset);
 
 const fund  = cb.dataset.fund;
 const folio = cb.dataset.folio;

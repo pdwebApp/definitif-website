@@ -141,7 +141,7 @@ def fetch_data_supabase_py(supabase_url: str, supabase_key: str, page_size: int 
 def load_data_from_supabase():
     db_url = os.environ.get("SUPABASE_DB_URL")
     supabase_url = os.environ.get("SUPABASE_URL")
-    supabase_key = os.environ.get("SUPABASE_KEY")
+    supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
 
     if db_url:
         return fetch_data_sqlalchemy(db_url)
@@ -150,7 +150,7 @@ def load_data_from_supabase():
         return fetch_data_supabase_py(supabase_url, supabase_key)
 
     raise ValueError(
-        "Missing Supabase credentials. Set SUPABASE_DB_URL or SUPABASE_URL and SUPABASE_KEY."
+        "Missing Supabase credentials. Set SUPABASE_DB_URL or SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY."
     )
 
 def get_financial_year(d):
