@@ -240,57 +240,59 @@ header.scrolled {
 
 /* light-mode banners */
 .banner-home {
-  background-image: linear-gradient(rgba(255, 255, 255, 0.7), rgba(255,255,255,0.5)),
+  background-image: linear-gradient(rgba(255, 255, 255, 0.7), rgba(255,255,255,0.2)),
                     var(--banner-home-img);
 }
 
 .banner-homeportfolio {
-  background-image: linear-gradient(rgba(255, 255, 255, 0.7), rgba(255,255,255,0.5)),
+  background-image: linear-gradient(rgba(255, 255, 255, 0.2), rgba(255,255,255,0.7)),
                     var(--banner-homeportfolio-img);
 }
 
 .banner-calculators {
-  background-image: linear-gradient(rgba(73, 138, 153, 0.7), rgba(255,255,255,0.6)),
+  background-image: linear-gradient(rgba(73, 138, 153, 0.9), rgba(255,255,255,0.7)),
                     var(--banner-calculators-img);
 }
 
-.banner-goalcalc {
-  background-image: linear-gradient(rgba(73, 138, 153, 0.5), rgba(255,255,255,0.7)),
-                    var(--banner-goalcalc-img);
-}
-
 .banner-investcalc {
-  background-image: linear-gradient(rgba(73, 138, 153, 0.5), rgba(255,255,255,0.7)),
+  background-image: linear-gradient(rgba(73, 138, 153, 0.9), rgba(255,255,255,0.7)),
                     var(--banner-investcalc-img);
 }
 
+.banner-goalcalc {
+  background-image: linear-gradient(rgba(73, 138, 153, 0.9), rgba(255,255,255,0.7)),
+                    var(--banner-goalcalc-img);
+}
+
+
+
 .banner-retirecalc {
-  background-image: linear-gradient(rgba(73, 138, 153, 0.5), rgba(255,255,255,0.7)),
+  background-image: linear-gradient(rgba(73, 138, 153, 0.9), rgba(255,255,255,0.7)),
                     var(--banner-retirecalc-img);
 }
 
 .banner-products {
-  background-image: linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.5)),
+  background-image: linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.6)),
                     var(--banner-products-img);
 }
 
 .banner-insights {
-  background-image: linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.5)),
+  background-image: linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.7)),
                     var(--banner-insights-img);
 }
 
 .banner-about {
-  background-image: linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.5)),
+  background-image: linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.9)),
                     var(--banner-about-img);
 }
 
 .banner-login {
-  background-image: linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.5)),
+  background-image: linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,0.5)),
                     var(--banner-login-img);
 }
 
 .banner-loginmessage {
-  background-image: linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.5)),
+  background-image: linear-gradient(rgba(255,255,255,0.2), rgba(255,255,255,0.7)),
                     var(--banner-loginmessage-img);
 }
 
@@ -1604,57 +1606,57 @@ body {
 @media (prefers-color-scheme: dark) {
 
   .banner-home {
-    background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.5)),
+    background-image: linear-gradient(rgba(0,0,0,0.9), rgba(0,0,0,0.3)),
                       var(--banner-home-img);
   }
 
   .banner-homeportfolio {
-    background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.5)),
+    background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.9)),
                       var(--banner-homeportfolio-img);
   }
 
   .banner-calculators {
-    background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.5)),
+    background-image: linear-gradient(rgba(0,0,0,0.9), rgba(0,0,0,0.7)),
                       var(--banner-calculators-img);
   }
 
   .banner-goalcalc {
-    background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.5)),
+    background-image: linear-gradient(rgba(0,0,0,0.9), rgba(0,0,0,0.6)),
                       var(--banner-goalcalc-img);
   }
 
   .banner-investcalc {
-    background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.5)),
+    background-image: linear-gradient(rgba(0,0,0,0.9), rgba(0,0,0,0.6)),
                       var(--banner-investcalc-img);
   }
 
   .banner-retirecalc {
-    background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.5)),
+    background-image: linear-gradient(rgba(0,0,0,0.9), rgba(0,0,0,0.6)),
                       var(--banner-retirecalc-img);
   }
 
   .banner-products {
-    background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.5)),
+    background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)),
                       var(--banner-products-img);
   }
 
   .banner-insights {
-    background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.5)),
+    background-image: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.4)),
                       var(--banner-insights-img);
   }
 
   .banner-about {
-    background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.5)),
+    background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)),
                       var(--banner-about-img);
   }
 
   .banner-login {
-  background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.5)),
+  background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)),
                     var(--banner-login-img);
 }
 
 .banner-loginmessage {
-  background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.5)),
+  background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)),
                     var(--banner-loginmessage-img);
 }
 
