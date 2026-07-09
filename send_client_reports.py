@@ -712,7 +712,7 @@ def main():
             wait_until="networkidle",
             timeout=240000,
         )
-        # page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("networkidle")
         page.wait_for_timeout(3000)
 
         log(f"Current URL: {page.url}")
