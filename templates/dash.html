@@ -1943,9 +1943,9 @@ async function startSession(login){
   document.getElementById("loginPage").style.display = "none";
   document.getElementById("app").style.display = "block";
 
-  if(isAdmin){
-    await loadAdminDashboard();
-    return;
+  if (isAdmin) {
+      await loadAdminDashboard();
+      return;
   }
 
   document.getElementById("adminTabs").style.display = "none";
@@ -1968,6 +1968,31 @@ async function startSession(login){
   await loadUser(login);
   applyPanModeTabs();
 }
+
+async function startReportSession(login) {
+
+    localStorage.setItem("loggedUser", login);
+
+    SESSION_USER = login;
+    VIEW_USER = login;
+    currentUser = login;
+
+    adminSessionUser = login;
+    isAdmin = true;
+
+    document.getElementById("logoutBtn").style.display = "inline-flex";
+    document.getElementById("loginPage").style.display = "none";
+    document.getElementById("app").style.display = "block";
+
+    // Show user dashboard directly
+    document.getElementById("adminTabs").style.display = "none";
+    document.getElementById("admin-overview").style.display = "none";
+    document.getElementById("admin-clients").style.display = "none";
+
+    document.getElementById("userTabs").style.display = "flex";
+}
+
+window.startReportSession = startReportSession;
 
 async function fetchUserIndex() {
   if (USER_INDEX) return USER_INDEX;
@@ -1996,74 +2021,97 @@ async function loadClientFile(login) {
   return user;
 }
 
-async function loadUserForAdminOnly(login, fileName){
-  if (rawData[login]) return rawData[login];
+function waitFor(condition, timeout = 10000, interval = 100) {
+    return new Promise((resolve, reject) => {
+        const start = Date.now();
 
-  const res = await fetch(`/api/portfolio/${fileName}`);
-  if (!res.ok) throw new Error(`User not found: ${login}`);
+        const timer = setInterval(() => {
+            if (condition()) {
+                clearInterval(timer);
+                resolve();
+            } else if (Date.now() - start > timeout) {
+                clearInterval(timer);
+                reject(new Error("waitFor timeout"));
+            }
+        }, interval);
+    });
+}
 
-  const user = expandKeys(await res.json());
-  rawData[login] = user;
-  return user;
+window.waitFor = waitFor;
+
+async function openClientDirect(login){
+
+    console.log("Loading client:", login);
+
+
+    if (!isAdmin) {
+        console.log("Starting report session...");
+        await startReportSession(SESSION_USER);
+    }
+
+    console.log("Looking up client...");
+
+    const rec = await getUserIndexRecord(login);
+
+    if (!rec)
+        throw new Error("Client not found");
+
+    console.log("Downloading portfolio:", rec.file);
+
+    await loadUserForAdminOnly(rec.login, rec.file);
+
+    console.log("Rendering dashboard...");
+
+    renderLoadedUser(login);
+
+    console.log({
+        renderComplete: window.clientRenderComplete,
+        perfRows: document.querySelectorAll("#perfContainer tbody tr").length,
+        profitRows: document.querySelectorAll("#profitContainer tbody tr").length
+    });
+
+    console.log("Waiting for renderComplete...");
+
+    await waitFor(() => window.clientRenderComplete);
+
+    console.log("renderComplete received");
+
+    console.log("Waiting for performance rows...");
+
+    await waitFor(() =>
+        document.querySelectorAll("#perfContainer tbody tr").length > 0
+    );
+
+    console.log("Performance rows ready:",
+        document.querySelectorAll("#perfContainer tbody tr").length);
+
+    console.log("Client ready.");
+}
+
+window.openClientDirect = openClientDirect;
+
+async function loadUserForAdminOnly(login,fileName){
+
+    const res = await fetch(`/api/portfolio/${fileName}?v=${Date.now()}`);
+
+    if(!res.ok)
+        throw new Error("User not found");
+
+    rawData[login] = expandKeys(await res.json());
+
+    return rawData[login];
 }
 
 async function loadAllClientSummaries(){
-  if (ADMIN_CLIENTS.length) return ADMIN_CLIENTS;
 
+    if(ADMIN_CLIENTS.length)
+        return ADMIN_CLIENTS;
 
-  const idx = await fetchUserIndex();
+    const res = await fetch("/api/admin/clients");
 
-
-  const eligible = (idx.users || []).filter(u => {
-    const t = (u.type || "").toLowerCase();
-    return t !== "family" && t !== "admin";
-  });
-
-
-  const rows = [];
-
-
-  for (const u of eligible) {
-    try {
-      const user = await loadUserForAdminOnly(u.login, u.file);
-      const kpi = user?.data?.kpi || {};
-      const panSummary = user?.data?.panSummary || [];
-
-
-      let portfolioValue = Number(kpi.portfolio_value || 0);
-      let invested = Number(kpi.invested || 0);
-
-
-      if (!portfolioValue && panSummary.length) {
-        portfolioValue = panSummary.reduce((s, p) => s + Number(p.current_value || 0), 0);
-      }
-
-
-      if (!invested && panSummary.length) {
-        invested = panSummary.reduce((s, p) => s + Number(p.invested || 0), 0);
-      }
-
-
-      rows.push({
-        login: u.login,
-        name: user?.name || u.name || u.login,
-        pans: Array.isArray(u.pans) ? u.pans.filter(Boolean) : [],
-        mfu_can: u.mfu_can || "",
-        mobile: u.mobile || "",
-        email_connect: u.email_connect || "",
-        dob: u.dob || "",
-        portfolio_value: portfolioValue,
-        invested: invested
-      });
-    } catch (e) {
-      logger.error("Admin client load failed:", { user: u.login, error: e.message });
-    }
-  }
-
-
-  rows.sort((a, b) => a.name.localeCompare(b.name));
-  ADMIN_CLIENTS = rows;
-  return rows;
+    ADMIN_CLIENTS = await res.json();
+    console.log(ADMIN_CLIENTS);
+    return ADMIN_CLIENTS;
 }
 
 
@@ -2180,22 +2228,22 @@ async function renderAdminClients() {
               ${clients.map(c => `
                 <tr
                   class="admin-client-row"
-                  data-login="${c.login}"
+                  data-login="${c.login_id}"
                   data-name="${(c.name || "").replace(/"/g, "&quot;")}"
                   data-email-connect="${(c.email_connect || "").replace(/"/g, "&quot;")}"
-                  data-testid="client-row-${c.login}"
+                  data-testid="client-row-${c.login_id}"
                 >
                   <td>
                     <input
                       type="checkbox"
                       class="client-select-checkbox"
-                      data-login="${c.login}"
-                      data-testid="client-checkbox-${c.login}"
-                      aria-label="Select ${c.name || c.login}"
+                      data-login="${c.login_id}"
+                      data-testid="client-checkbox-${c.login_id}"
+                      aria-label="Select ${c.name || c.login_id}"
                     />
                   </td>
                   <td>${c.name || "-"}</td>
-                  <td>${(c.pans || []).join(", ") || "-"}</td>
+                  <td>${c.pan || "-"}</td>
                   <td>${c.mfu_can || "-"}</td>
                   <td>${c.mobile || "-"}</td>
                   <td>${c.email_connect || "-"}</td>
@@ -2564,73 +2612,164 @@ async function loadUser(login){
     }
   }
 
-  VIEW_USER = login;
-  currentUser = login;
-  isAdmin = false;
+  renderLoadedUser(login);
 
-  const user = rawData[login];
-  const d = user?.data;
+}
 
-  if(!d){
-    logger.error('No dashboard data', { login, userId: user.id });
-    return;
-  }
+function renderLoadedUser(login){
+    VIEW_USER = login;
+    currentUser = login;
+    isAdmin = false;
 
-  activeData = d;
+    const user = rawData[login];
+    const d = user?.data;
 
-  document.querySelectorAll('[id^="tab-"]').forEach(p => {
-    p.classList.remove("active");
-    p.style.display = "none";
-  });
+    if(!d){
+      logger.error('No dashboard data', { login, userId: user.id });
+      return;
+    }
 
-  document.querySelectorAll("#userTabs .tab").forEach(t => t.classList.remove("active"));
-  document.querySelector('[data-tab="overview"]').classList.add("active");
-  document.getElementById("tab-overview").classList.add("active");
-  document.getElementById("tab-overview").style.display = "block";
+    activeData = d;
 
-  const isIndividualLogin = Array.isArray(d.panSummary) && d.panSummary.length === 1;
+    document.querySelectorAll('[id^="tab-"]').forEach(p => {
+      p.classList.remove("active");
+      p.style.display = "none";
+    });
 
-  if (isIndividualLogin) {
-    singlePanMode = true;
-    activePan = d.panSummary[0]?.pan || null;
+    document.querySelectorAll("#userTabs .tab").forEach(t => t.classList.remove("active"));
+    document.querySelector('[data-tab="overview"]').classList.add("active");
+    document.getElementById("tab-overview").classList.add("active");
+    document.getElementById("tab-overview").style.display = "block";
 
-    document.querySelector('[data-tab="holdings"]').style.display = "none";
-    document.getElementById("tab-holdings").style.display = "none";
-    document.querySelector('[data-tab="transactions"]').style.display = "";
-  } else {
-    singlePanMode = false;
-    activePan = null;
+    const isIndividualLogin = Array.isArray(d.panSummary) && d.panSummary.length === 1;
 
-    document.querySelector('[data-tab="holdings"]').style.display = "";
-    document.getElementById("tab-holdings").style.display = "none";
-    document.querySelector('[data-tab="transactions"]').style.display = "none";
-  }
+    if (isIndividualLogin) {
+      singlePanMode = true;
+      activePan = d.panSummary[0]?.pan || null;
 
-  document.getElementById("clientNameHeader").textContent = d.label || user.name || login;
+      document.querySelector('[data-tab="holdings"]').style.display = "none";
+      document.getElementById("tab-holdings").style.display = "none";
+      document.querySelector('[data-tab="transactions"]').style.display = "";
+    } else {
+      singlePanMode = false;
+      activePan = null;
 
-  const clientName = document.getElementById("clientName");
-  if(clientName) clientName.textContent = d.label || user.name || login;
+      document.querySelector('[data-tab="holdings"]').style.display = "";
+      document.getElementById("tab-holdings").style.display = "none";
+      document.querySelector('[data-tab="transactions"]').style.display = "none";
+    }
 
-  document.getElementById("kpi_value").textContent = formatCurrency(d.kpi?.portfolio_value || 0);
-  document.getElementById("kpi_invested").textContent = formatCurrency(d.kpi?.invested || 0);
-  document.getElementById("kpi_gain").textContent = formatCurrency(d.kpi?.unrealised_gl || 0);
-  document.getElementById("kpi_relgain").textContent = formatCurrency(d.kpi?.realised_gl || 0);
-  document.getElementById("kpi_return").textContent = formatPct(d.kpi?.abs_return_pct || 0);
-  document.getElementById("kpi_xirr_current").textContent = formatPct(d.kpi?.xirr_existing || 0);
-  document.getElementById("kpi_xirr_entire").textContent = formatPct(d.kpi?.xirr_entire || 0);
+    document.getElementById("clientNameHeader").textContent = d.label || user.name || login;
 
-  renderAsset(d.assetAlloc || []);
-  renderStrategy(d.strategyAlloc || []);
-  renderPan(d.panSummary || []);
-  renderPerfGrouped(d.perfIsin || []);
-  renderProfit(d.profitBookFund || []);
+    const clientName = document.getElementById("clientName");
+    if(clientName) clientName.textContent = d.label || user.name || login;
 
-  const backBtn = document.getElementById("backToFamily");
-  if (adminSessionUser || FAMILYUSER) {
-    backBtn.style.display = "inline-flex";
-  } else {
-    backBtn.style.display = "none";
-  }
+    document.getElementById("kpi_value").textContent = formatCurrency(d.kpi?.portfolio_value || 0);
+    document.getElementById("kpi_invested").textContent = formatCurrency(d.kpi?.invested || 0);
+    document.getElementById("kpi_gain").textContent = formatCurrency(d.kpi?.unrealised_gl || 0);
+    document.getElementById("kpi_relgain").textContent = formatCurrency(d.kpi?.realised_gl || 0);
+    document.getElementById("kpi_return").textContent = formatPct(d.kpi?.abs_return_pct || 0);
+    document.getElementById("kpi_xirr_current").textContent = formatPct(d.kpi?.xirr_existing || 0);
+    document.getElementById("kpi_xirr_entire").textContent = formatPct(d.kpi?.xirr_entire || 0);
+
+    window.clientRenderComplete = false;
+
+    try {
+
+        renderAsset(d.assetAlloc || []);
+        console.log("✓ renderAsset");
+
+        renderStrategy(d.strategyAlloc || []);
+        console.log("✓ renderStrategy");
+
+        renderPan(d.panSummary || []);
+        console.log("✓ renderPan");
+
+        renderPerfGrouped(d.perfIsin || []);
+        console.log("✓ renderPerfGrouped");
+
+        renderProfit(d.profitBookFund || []);
+        console.log("✓ renderProfit");
+
+        console.log("Finished rendering", {
+            client: document.getElementById("clientNameHeader")?.textContent,
+            perfRows: document.querySelectorAll("#perfContainer tbody tr").length,
+            profitRows: document.querySelectorAll("#profitContainer tbody tr").length
+        });
+
+    } catch (e) {
+
+        console.error("renderLoadedUser FAILED", e);
+        throw e;
+
+    } finally {
+
+        // Always release Playwright
+        window.clientRenderComplete = true;
+
+    }
+
+    const backBtn = document.getElementById("backToFamily");
+    if (backBtn) {
+      backBtn.style.display =
+        (adminSessionUser || FAMILYUSER)
+          ? "inline-flex"
+          : "none";
+    }
+}
+
+window.renderLoadedUser = renderLoadedUser;
+
+async function openClientForAutomation(login){
+
+    // Load the portfolio JSON
+    const user = await loadClientFile(login);
+
+    // Rebuild existing structure
+    rawData = {};
+    rawData[login] = user;
+
+    SESSION_USER = login;
+    VIEW_USER = login;
+    currentUser = login;
+
+    document.getElementById("loginPage").style.display = "none";
+    document.getElementById("app").style.display = "block";
+
+    document.getElementById("adminTabs").style.display = "none";
+    document.getElementById("admin-overview").style.display = "none";
+    document.getElementById("admin-clients").style.display = "none";
+
+    document.getElementById("userTabs").style.display = "flex";
+
+    document
+        .querySelectorAll("#userTabs .tab")
+        .forEach(t => t.classList.remove("active"));
+
+    document
+        .querySelector('[data-tab="overview"]')
+        .classList.add("active");
+
+    document
+        .querySelectorAll('[id^="tab-"]')
+        .forEach(p=>{
+            p.classList.remove("active");
+            p.style.display="none";
+        });
+
+    document
+        .getElementById("tab-overview")
+        .classList.add("active");
+
+    document
+        .getElementById("tab-overview")
+        .style.display="block";
+
+    await loadUser(login);
+
+    applyPanModeTabs();
+
+    return true;
 }
 
 function hidePanSummary(){
@@ -4036,30 +4175,52 @@ return `
 
 }
 
-async function renderAdminOverview(){
+async function renderAdminOverview() {
 
-  const clients = await loadAllClientSummaries();
-
-  const totalClients = clients.length;
-  const totalValue = clients.reduce((s, c) => s + Number(c.portfolio_value || 0), 0);
-  const totalInvested = clients.reduce((s, c) => s + Number(c.invested || 0), 0);
+  const res = await fetch("/api/admin/dashboard");
+  const d = await res.json();
 
   document.getElementById("admin-overview").innerHTML = `
     <div class="admin-overview-grid">
 
       <div class="card admin-kpi-card">
         <div class="kpi-title">Total Clients</div>
-        <div class="kpi-value">${formatNumber(totalClients)}</div>
+        <div class="kpi-value">${formatNumber(d.total_clients || 0)}</div>
+      </div>
+
+      <div class="card admin-kpi-card">
+        <div class="kpi-title">Family Logins</div>
+        <div class="kpi-value">${formatNumber(d.family_logins || 0)}</div>
+      </div>
+
+      <div class="card admin-kpi-card">
+        <div class="kpi-title">Individual Clients</div>
+        <div class="kpi-value">${formatNumber(d.individual_clients || 0)}</div>
       </div>
 
       <div class="card admin-kpi-card">
         <div class="kpi-title">Total AUM</div>
-        <div class="kpi-value">${formatNumber(totalValue)}</div>
+        <div class="kpi-value">${formatNumber(d.total_aum || 0)}</div>
       </div>
 
       <div class="card admin-kpi-card">
         <div class="kpi-title">Total Invested</div>
-        <div class="kpi-value">${formatNumber(totalInvested)}</div>
+        <div class="kpi-value">${formatNumber(d.total_invested || 0)}</div>
+      </div>
+
+      <div class="card admin-kpi-card">
+        <div class="kpi-title">Unrealised Gain</div>
+        <div class="kpi-value">${formatNumber(d.total_unrealised || 0)}</div>
+      </div>
+
+      <div class="card admin-kpi-card">
+        <div class="kpi-title">Realised Gain</div>
+        <div class="kpi-value">${formatNumber(d.total_realised || 0)}</div>
+      </div>
+
+      <div class="card admin-kpi-card">
+        <div class="kpi-title">Valuation Date</div>
+        <div class="kpi-value">${d.valuation_date || "-"}</div>
       </div>
 
     </div>

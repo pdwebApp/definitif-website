@@ -2,8 +2,11 @@ import json
 import sys
 from pathlib import Path
 from playwright.sync_api import sync_playwright
-from config import AUTH_STATE_FILE, PLAYWRIGHT_HEADLESS
-from send_client_reports import run_client_report_job
+from config import AUTH_STATE_FILE, PLAYWRIGHT_HEADLESS, LOGIN_URL
+from send_client_reports import (
+    run_client_report_job,
+    open_client_direct,
+)
 from supabase_storage import fetch_json
 from datetime import datetime, timezone
 
@@ -141,13 +144,19 @@ def main():
             accept_downloads=True,
         )
 
-        log("context created")
-
         page = context.new_page()
 
         log("page created")
 
         page.set_default_timeout(240_000)
+
+        REPORT_URL = f"{LOGIN_URL}?report=1"
+
+        page.goto(
+            REPORT_URL,
+            wait_until="domcontentloaded",
+            timeout=240000,
+        )
 
         for login in client_logins:
             log(f"processing {login}")
@@ -172,7 +181,6 @@ def main():
                     page=page,
                     client_login=client["login"],
                     client_name=client.get("name") or client["login"],
-                    search_text=client.get("name") or client["login"],
                     recipients=recipients,
                 )
                 result["success"] = True

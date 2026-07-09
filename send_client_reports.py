@@ -1,5 +1,5 @@
-import base64
 import sys
+import base64
 import mimetypes
 import smtplib
 from email.message import EmailMessage
@@ -38,46 +38,59 @@ def format_date_with_suffix(date_obj):
 today = datetime.date.today()
 today_formatted = format_date_with_suffix(today)
 
-def go_to_clients_tab(page: Page):
-    print("go_to_clients_tab: goto login url", file=sys.stderr, flush=True)
-
-    page.goto(
-        LOGIN_URL,
-        wait_until="domcontentloaded",
-        timeout=240_000,
-    )
-
-    print("go_to_clients_tab: waiting for clients tab", file=sys.stderr, flush=True)
-
-    clients_tab = page.locator(
-        '#adminTabs .tab[data-admin="clients"]'
-    )
-
-    clients_tab.wait_for(
-        state="visible",
-        timeout=240_000,
-    )
-
-    print("go_to_clients_tab: click clients tab", file=sys.stderr, flush=True)
-
-    clients_tab.click()
-
-    print("go_to_clients_tab: waiting for admin clients container", file=sys.stderr, flush=True)
-
-    page.locator("#admin-clients").wait_for(
-        state="visible",
-        timeout=240_000,
-    )
-
-    print("go_to_clients_tab: waiting for search box", file=sys.stderr, flush=True)
-
-    page.locator("#adminClientSearch").wait_for(
-        state="visible",
-        timeout=240_000,
-    )
-
+def reset_dashboard(page: Page):
+    page.reload(wait_until="load", timeout=30000)
+    page.goto(LOGIN_URL, wait_until="load", timeout=30000)
+    page.wait_for_load_state("networkidle")
     page.wait_for_timeout(1000)
 
+def open_client_direct(page: Page, login: str):
+    page.on("console", lambda msg: log(f"[BROWSER] {msg.type}: {msg.text}"))
+    result = page.evaluate(
+        """async (login) => {
+            try {
+                await openClientDirect(login);
+                return {
+                    success: true,
+                    client: document.getElementById("clientNameHeader")?.textContent,
+                    perfRows: document.querySelectorAll("#perfContainer tbody tr").length,
+                    profitRows: document.querySelectorAll("#profitContainer tbody tr").length
+                };
+            } catch(e) {
+                return {
+                    success:false,
+                    error:e.message,
+                    stack:e.stack
+                };
+            }
+        }""",
+        login
+    )
+
+    log(result)
+
+    if not result["success"]:
+        raise RuntimeError(result["error"])
+    page.on("pageerror", lambda exc: log(f"[PAGE ERROR] {exc}"))
+    page.wait_for_function(
+        "() => window.clientRenderComplete === true",
+        timeout=240000,
+    )
+
+    state = page.evaluate("""
+    () => ({
+        ready: window.clientRenderComplete,
+        overview: document.querySelector("#tab-overview")?.classList.contains("active"),
+        perfRows: document.querySelectorAll("#perfContainer tbody tr").length,
+        profitRows: document.querySelectorAll("#profitContainer tbody tr").length,
+        perfTable: !!document.querySelector("#perfContainer table"),
+        profitTable: !!document.querySelector("#profitContainer table"),
+        activeTab: document.querySelector("#userTabs .tab.active")?.dataset.tab,
+        client: document.getElementById("clientNameHeader")?.textContent
+    })
+    """)
+
+    log(state)
 
 def capture_pdf_via_js_function(page: Page, function_name: str, output_path: str):
     output = Path(output_path)
@@ -130,7 +143,12 @@ def capture_pdf_via_js_function(page: Page, function_name: str, output_path: str
                     throw new Error(`${fnName} is not available on window`);
                 }
 
+                console.log("Calling", fnName);
+                console.log(typeof fn);
+
                 await fn();
+
+                console.log("Returned from", fnName);
 
                 for (let i = 0; i < 75; i++) {
                     if (capturedBase64) {
@@ -151,63 +169,48 @@ def capture_pdf_via_js_function(page: Page, function_name: str, output_path: str
     output.write_bytes(base64.b64decode(pdf_base64))
     return str(output)
 
-def open_client_from_search(page: Page, search_text: str, client_name: str):
-    search_box = page.locator("#adminClientSearch")
-    search_box.wait_for(state="visible", timeout=240_000)
-    search_box.fill("")
-    search_box.fill(search_text)
-
-    client_row = page.locator(".admin-client-row", has_text=client_name).first
-    client_row.wait_for(state="visible", timeout=240_000)
-    client_row.click()
-
-    page.locator('#userTabs .tab[data-tab="overview"]').wait_for(state="visible", timeout=240_000)
-
 def expand_all_if_present(page: Page, panel_selector: str):
     expand_button = page.locator(f"{panel_selector} .expand-all").first
 
-    if expand_button.count() == 0:
+    try:
+        expand_button.wait_for(state="attached", timeout=5000)
+    except Exception:
         print(f"expand_all_if_present: no expand-all button for {panel_selector}", file=sys.stderr, flush=True)
         return False
 
     try:
-        expand_button.wait_for(state="visible", timeout=5000)
         expand_button.scroll_into_view_if_needed()
-
-        print(f"expand_all_if_present: trying normal click for {panel_selector}", file=sys.stderr, flush=True)
         expand_button.click(timeout=5000)
-        page.wait_for_timeout(1500)
-        return True
-
-    except Exception as e:
-        print(
-            f"expand_all_if_present: normal click failed for {panel_selector}: {repr(e)}",
-            file=sys.stderr,
-            flush=True,
-        )
+    except Exception:
+        try:
+            expand_button.evaluate("(el) => el.click()")
+        except Exception as e:
+            print(f"expand_all_if_present failed for {panel_selector}: {repr(e)}", file=sys.stderr, flush=True)
+            return False
 
     try:
-        print(f"expand_all_if_present: trying JS click for {panel_selector}", file=sys.stderr, flush=True)
-        expand_button.evaluate("(el) => el.click()")
-        page.wait_for_timeout(1500)
-        return True
-
-    except Exception as e:
-        print(
-            f"expand_all_if_present: JS click failed for {panel_selector}: {repr(e)}",
-            file=sys.stderr,
-            flush=True,
+        page.wait_for_function(
+            """
+            (panelSelector) => {
+                const panel = document.querySelector(panelSelector);
+                if (!panel) return false;
+                return panel.querySelectorAll('tbody tr').length > 0;
+            }
+            """,
+            arg=panel_selector,
+            timeout=10000,
         )
-        return False
+    except Exception:
+        pass
 
-def generate_client_reports(page: Page, search_text: str, client_name: str, output_dir: str):
+    return True
+    
+def generate_client_reports(page: Page, client_login: str, client_name: str, output_dir: str):
     import time
-
-    print(
-        f"generate_client_reports: start for {client_name}",
-        file=sys.stderr,
-        flush=True,
-    )
+    log(">>>>>>>> ENTER generate_client_reports()")
+    log("=" * 80)
+    log("GENERATE REPORTS STARTED")
+    log(client_name)
 
     out_dir = Path(output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -225,41 +228,54 @@ def generate_client_reports(page: Page, search_text: str, client_name: str, outp
     # ---------------------------------------------------------
     try:
         t = time.time()
-
-        go_to_clients_tab(page)
-
-        print(
-            f"TIMING: go_to_clients_tab took {time.time() - t:.2f}s",
-            file=sys.stderr,
-            flush=True,
-        )
-
-        t = time.time()
-
-        open_client_from_search(
+        log("About to call open_client_direct()")
+        open_client_direct(
             page,
-            search_text=search_text,
-            client_name=client_name,
+            client_login,
         )
 
-        print(
-            f"TIMING: open_client_from_search took {time.time() - t:.2f}s",
-            file=sys.stderr,
-            flush=True,
+        log("Returned from open_client_direct()")
+        log("Waiting for perf rows")
+        page.wait_for_function(
+            """
+            () => {
+                const t = document.querySelector("#perfContainer table tbody");
+                return t && t.children.length > 0;
+            }
+            """,
+            timeout=30000,
         )
+        log("Perf rows found")
+        log("CLIENT LOADED")
+
+        state =  page.evaluate("""
+            () => ({
+                perfRows: document.querySelectorAll("#perfContainer tbody tr").length,
+                profitRows: document.querySelectorAll("#profitContainer tbody tr").length,
+            })
+            """)
+        log(state)
+
+        log(f"TIMING: open_client_direct took {time.time()-t:.2f}s")
 
     except Exception as e:
-        print(
-            f"Failed opening client {client_name}: {repr(e)}",
-            file=sys.stderr,
-            flush=True,
-        )
-
-        return {
-            "performance_pdf": None,
-            "profitbook_pdf": None,
-        }
-
+        log(f"Failed opening client {client_name}: {repr(e)}")
+        try:
+            state = page.evaluate("""
+            () => ({
+                url: location.href,
+                renderComplete: window.clientRenderComplete,
+                activeTab: document.querySelector("#userTabs .tab.active")?.dataset.tab,
+                perfRows: document.querySelectorAll("#perfContainer tbody tr").length,
+                profitRows: document.querySelectorAll("#profitContainer tbody tr").length,
+                client: document.getElementById("clientNameHeader")?.textContent
+            })
+            """)
+            log(f"PAGE STATE: {state}")
+        except Exception as ex:
+            log(f"Unable to inspect page: {repr(ex)}")
+        raise
+        
     # ---------------------------------------------------------
     # PERFORMANCE PDF
     # ---------------------------------------------------------
@@ -275,6 +291,19 @@ def generate_client_reports(page: Page, search_text: str, client_name: str, outp
 
         performance_tab.click()
 
+        state = page.evaluate("""
+        () => ({
+            activeTab: document.querySelector("#userTabs .tab.active")?.dataset.tab,
+            performanceDisplay: getComputedStyle(document.querySelector("#tab-performance")).display,
+            performanceClass: document.querySelector("#tab-performance").className,
+            rows: document.querySelectorAll("#perfContainer tbody tr").length,
+            downloadFn: typeof window.downloadPrefPDF
+        })
+        """)
+
+        log("PERFORMANCE STATE")
+        log(state)
+
         performance_panel = page.locator("#tab-performance")
 
         performance_panel.wait_for(
@@ -283,6 +312,24 @@ def generate_client_reports(page: Page, search_text: str, client_name: str, outp
         )
 
         page.wait_for_timeout(1500)
+
+        expanders = page.evaluate("""
+        () => document.querySelectorAll(
+        '#tab-performance button, #tab-performance .expand, #tab-performance .toggle'
+        ).length
+        """)
+
+        log(f"Expand buttons: {expanders}")
+
+        state = page.evaluate("""
+        () => ({
+            activeTab: document.querySelector("#userTabs .tab.active")?.dataset.tab,
+            toggles: document.querySelectorAll("#tab-performance .ui-toggle").length,
+            rows: document.querySelectorAll("#perfContainer tbody tr").length
+        })
+        """)
+
+        log(state)
 
         expand_all_if_present(page, "#tab-performance")
 
@@ -298,11 +345,15 @@ def generate_client_reports(page: Page, search_text: str, client_name: str, outp
             }"""
         )
 
+        log(f"performance_available={performance_available}")
+
         if performance_available:
             try:
                 t = time.time()
 
                 page.wait_for_timeout(1500)
+
+                log("Calling downloadPrefPDF()")
 
                 capture_pdf_via_js_function(
                     page,
@@ -310,20 +361,14 @@ def generate_client_reports(page: Page, search_text: str, client_name: str, outp
                     performance_pdf,
                 )
 
-                print(
-                    f"TIMING: performance PDF took {time.time() - t:.2f}s",
-                    file=sys.stderr,
-                    flush=True,
-                )
+                log("Returned from downloadPrefPDF()")
+
+                log(f"TIMING: performance PDF took {time.time()-t:.2f}s")
 
                 generated_performance_pdf = performance_pdf
 
             except Exception as e:
-                print(
-                    f"Performance PDF skipped for {client_name}: {repr(e)}",
-                    file=sys.stderr,
-                    flush=True,
-                )
+                log(f"Performance PDF skipped for {client_name}: {repr(e)}")
         else:
             print(
                 f"Performance PDF skipped for {client_name}: no exportable table found.",
@@ -385,6 +430,8 @@ def generate_client_reports(page: Page, search_text: str, client_name: str, outp
             }"""
         )
 
+        log(f"profitbook_available={profitbook_available}")
+
         if profitbook_available:
             try:
                 t = time.time()
@@ -395,11 +442,7 @@ def generate_client_reports(page: Page, search_text: str, client_name: str, outp
                     profitbook_pdf,
                 )
 
-                print(
-                    f"TIMING: profitbook PDF took {time.time() - t:.2f}s",
-                    file=sys.stderr,
-                    flush=True,
-                )
+                log(f"TIMING: profitbook PDF took {time.time()-t:.2f}s")
 
                 generated_profitbook_pdf = profitbook_pdf
 
@@ -545,85 +588,87 @@ def send_email_with_attachments(
         server.login(GMAIL_SENDER, GMAIL_APP_PASSWORD)
         server.sendmail(GMAIL_SENDER, recipients, msg.as_string())
 
+import json
+
 def log(msg):
+    if isinstance(msg, (dict, list)):
+        msg = json.dumps(msg, indent=2, default=str)
+
     print(
         f"[{datetime.datetime.now(datetime.timezone.utc).isoformat()}] {msg}",
         file=sys.stderr,
-        flush=True
+        flush=True,
     )
 
 def run_client_report_job(
     page: Page,
     client_login: str,
     client_name: str,
-    search_text: str,
     recipients: list[str],
 ):
     log(f"START client={client_login}")
-
     log(f"Generating reports for {client_name}")
 
+    reports = None
     try:
         reports = generate_client_reports(
             page=page,
-            search_text=search_text,
+            client_login=client_login,
             client_name=client_name,
             output_dir=str(Path(ARTIFACTS_DIR) / "email_reports" / client_login),
         )
-    except Exception as e:
-        log(f"generate_client_reports FAILED: {repr(e)}")
-        raise
+        log(reports)
 
-    log(
-        f"Reports generated. "
-        f"performance={reports['performance_pdf']} "
-        f"profitbook={reports['profitbook_pdf']}"
-    )
+        log(
+            f"Reports generated. "
+            f"performance={reports['performance_pdf']} "
+            f"profitbook={reports['profitbook_pdf']}"
+        )
 
-    attachments = [
-        p for p in [reports["performance_pdf"], reports["profitbook_pdf"]] if p
-    ]
+        attachments = [
+            p for p in [reports["performance_pdf"], reports["profitbook_pdf"]] if p
+        ]
 
-    log(f"Attachments found: {len(attachments)}")
+        log(f"Attachments found: {len(attachments)}")
 
-    email_sent = False
+        email_sent = False
 
-    if recipients:
-        log(f"Recipients: {recipients}")
-    else:
-        log("No recipients")
+        if recipients:
+            log(f"Recipients: {recipients}")
+        else:
+            log("No recipients")
 
-    if recipients and attachments:
-        log("Starting email send")
-
-        try:
+        if recipients and attachments:
+            log("Starting email send")
             send_email_with_attachments(
                 recipient_email=recipients,
                 subject=f"Portfolio Statements as on {today_formatted} - {client_name}",
                 html_body=build_email_html(client_name, today_formatted),
                 attachment_paths=attachments,
             )
+            log("Email send completed")
+            email_sent = True
+        else:
+            log("Skipping email send")
+
+        log(f"END client={client_login}")
+
+        return {
+            "login": client_login,
+            "clientName": client_name,
+            "recipients": recipients,
+            "performancePdf": bool(reports["performance_pdf"]),
+            "profitbookPdf": bool(reports["profitbook_pdf"]),
+            "emailSent": email_sent,
+            "attachments": attachments,
+        }
+
+    finally:
+        try:
+            reset_dashboard(page)
+            log("Dashboard reset completed")
         except Exception as e:
-            log(f"EMAIL FAILED: {repr(e)}")
-            raise
-
-        log("Email send completed")
-
-        email_sent = True
-    else:
-        log("Skipping email send")
-
-    log(f"END client={client_login}")
-
-    return {
-        "login": client_login,
-        "clientName": client_name,
-        "recipients": recipients,
-        "performancePdf": bool(reports["performance_pdf"]),
-        "profitbookPdf": bool(reports["profitbook_pdf"]),
-        "emailSent": email_sent,
-        "attachments": attachments,
-    }
+            log(f"Dashboard reset failed: {repr(e)}")
 
 def main():
     if not Path(AUTH_STATE_FILE).exists():
@@ -647,15 +692,55 @@ def main():
         page = context.new_page()
         page.set_default_timeout(240_000)
 
+        page.on(
+            "console",
+            lambda msg: log(f"[BROWSER] {msg.type}: {msg.text}")
+        )
+
+        REPORT_URL = f"{LOGIN_URL}?report=1"
+        log(f"LOGIN_URL : {LOGIN_URL}")
+        log(f"REPORT_URL: {REPORT_URL}")
+
+        # page.goto(
+        #     REPORT_URL,
+        #     wait_until="domcontentloaded",
+        #     timeout=240000,
+        # )
+
+        page.goto(
+            REPORT_URL,
+            wait_until="networkidle",
+            timeout=240000,
+        )
+        # page.wait_for_load_state("networkidle")
+        page.wait_for_timeout(3000)
+
+        log(f"Current URL: {page.url}")
+
+        if "github.com/login" in page.url:
+            raise Exception("Playwright is not authenticated to GitHub Codespaces")
+
+        page.screenshot(path="dashboard.png", full_page=True)
+        log(page.evaluate("""
+        () => ({
+            openClientDirect: typeof openClientDirect,
+            startReportSession: typeof startReportSession,
+            loadUserForAdminOnly: typeof loadUserForAdminOnly,
+            renderLoadedUser: typeof renderLoadedUser,
+            waitFor: typeof waitFor,
+            isAdmin: typeof isAdmin
+        })
+        """))
+
+        log(page.url)
         result = run_client_report_job(
             page=page,
             client_login=TEST_CLIENT_LOGIN,
             client_name=TEST_CLIENT_NAME,
-            search_text=TEST_CLIENT_LOGIN,
             recipients=[TEST_CLIENT_EMAIL] if SEND_EMAIL else [],
         )
 
-        print("Generated result:", result)
+        log(f"Generated result: {result}")
 
         context.close()
         browser.close()

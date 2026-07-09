@@ -26,6 +26,7 @@ import investment_logic
 from retirement_logic import retirementCalci
 from transaction_view import build_transaction_view
 from supabase_storage import fetch_json
+from admin_api import admin_api
 import uuid
 import threading
 import supabase
@@ -151,7 +152,8 @@ def create_app():
         template_folder=os.path.join(BASE_DIR, "templates"),
         static_folder=os.path.join(BASE_DIR, "static")
     )
-
+    
+    app.register_blueprint(admin_api)
     app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev-only-fallback")
     app.config["VALUATION_DATE"] = date.today() - timedelta(days=1)
 
@@ -687,10 +689,7 @@ def create_app():
 
     return app
 
-
-
 app = create_app()
-
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))

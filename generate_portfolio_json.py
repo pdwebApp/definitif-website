@@ -125,10 +125,16 @@ def main():
 
         print("\nGenerating JSON files...")
 
-        generate_portfolio_json(
-            results,
-            USER_CONFIGS,
-            OUTPUT_DIR,
+        result = generate_portfolio_json(
+                                        results,
+                                        USER_CONFIGS,
+                                        OUTPUT_DIR,
+                                        )
+
+        from admin_sync import sync_admin_portal
+        sync_admin_portal(
+            result["admin_clients"],
+            result["dashboard_summary"]
         )
 
         # -------------------------------------------------
