@@ -24,7 +24,7 @@ def main():
         page.locator("#password").fill(ADMIN_PASSWORD)
         page.locator("#loginBtn").click()
 
-        page.locator('#adminTabs .tab[data-admin="clients"]').wait_for(
+        page.locator("#adminClientSearch").wait_for(
             state="visible",
             timeout=240_000
         )

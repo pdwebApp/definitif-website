@@ -143,7 +143,12 @@ def capture_pdf_via_js_function(page: Page, function_name: str, output_path: str
                     throw new Error(`${fnName} is not available on window`);
                 }
 
+                console.log("Calling", fnName);
+                console.log(typeof fn);
+
                 await fn();
+
+                console.log("Returned from", fnName);
 
                 for (let i = 0; i < 75; i++) {
                     if (capturedBase64) {
@@ -738,6 +743,7 @@ def main():
 
         context.close()
         browser.close()
+
 
 if __name__ == "__main__":
     main()

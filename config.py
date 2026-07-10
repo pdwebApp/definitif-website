@@ -7,6 +7,10 @@ def require_env(name: str) -> str:
         raise RuntimeError(f"Missing required environment variable: {name}")
     return value
 
+
+# BASE_URL = "http://127.0.0.1:8080"
+### RUN curl http://127.0.0.1:8080/dashboard in new bash ###
+### OR ###
 BASE_URL = "https://www.definitif.app"
 LOGIN_URL = f"{BASE_URL}/dashboard"
 

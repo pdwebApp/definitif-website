@@ -477,10 +477,14 @@ async function restoreSession() {
   const savedUser = localStorage.getItem("loggedUser");
   const savedPan = localStorage.getItem("activePan");
 
+  console.log("[restoreSession] savedUser:", savedUser);
+  console.log("[restoreSession] savedPan:", savedPan);
+
   const isBadValue = (v) =>
     v === null || v === undefined || v === "" || v === "null" || v === "undefined";
 
   if (isBadValue(savedUser)) {
+    console.warn("[restoreSession] invalid savedUser, clearing session state");
     localStorage.removeItem("loggedUser");
     localStorage.removeItem("activePan");
     const loginPage = getEl("loginPage");
@@ -491,36 +495,46 @@ async function restoreSession() {
   }
 
   try {
+    console.log("[restoreSession] before loadUserIndex()");
     await loadUserIndex();
+    console.log("[restoreSession] after loadUserIndex()");
 
     const rec = await getUserIndexRecord(savedUser);
+    console.log("[restoreSession] rec:", rec);
 
     const fileName = rec?.file?.trim();
+    console.log("[restoreSession] fileName from index:", fileName);
 
     if (isBadValue(fileName)) {
       throw new Error(`Missing portfolio file for ${savedUser}`);
     }
 
     const url = `/api/portfolio/${fileName}`;
+    console.log("[restoreSession] fetch url:", url);
 
     const res = await fetch(url);
+    console.log("[restoreSession] fetch status:", res.status, res.ok);
 
     if (!res.ok) {
       throw new Error(`Restore failed for ${savedUser}`);
     }
 
     const text = await res.text();
+    console.log("[restoreSession] response length:", text.length);
 
     const user = expandKeys(JSON.parse(text));
 
     rawData = rawData || {};
     rawData[savedUser] = user;
 
+    console.log("[restoreSession] before startSession()");
     await startSession(savedUser);
+    console.log("[restoreSession] after startSession()");
 
     if (!isBadValue(savedPan)) {
       activePan = savedPan;
       singlePanMode = true;
+      console.log("[restoreSession] opening savedPan:", savedPan);
       await openClientDashboard(savedPan);
     } else {
       activePan = null;
@@ -528,6 +542,7 @@ async function restoreSession() {
       applyPanModeTabs();
     }
   } catch (err) {
+    console.error("[restoreSession] failed:", err);
 
     if (loginPage) loginPage.style.display = "flex";
     const appEl = getEl("app");
@@ -1975,8 +1990,7 @@ async function startSession(login){
   document.getElementById("admin-overview").style.display = "none";
   document.getElementById("admin-clients").style.display = "none";
 
-  const userTabs = getEl("userTabs");
-    if (userTabs) userTabs.style.display = "flex";
+  document.getElementById("userTabs").style.display = "flex";
 
   document.querySelectorAll("#userTabs .tab").forEach(t => t.classList.remove("active"));
   document.querySelector('[data-tab="overview"]').classList.add("active");
@@ -2017,8 +2031,7 @@ async function startReportSession(login) {
     document.getElementById("admin-overview").style.display = "none";
     document.getElementById("admin-clients").style.display = "none";
 
-    const userTabs = getEl("userTabs");
-    if (userTabs) userTabs.style.display = "flex";
+    document.getElementById("userTabs").style.display = "flex";
 }
 
 window.startReportSession = startReportSession;
@@ -2073,25 +2086,51 @@ window.waitFor = waitFor;
 
 async function openClientDirect(login){
 
+    console.log("Loading client:", login);
+
+
     if (!isAdmin) {
+        console.log("Starting report session...");
         await startReportSession(SESSION_USER);
     }
+
+    console.log("Looking up client...");
 
     const rec = await getUserIndexRecord(login);
 
     if (!rec)
         throw new Error("Client not found");
 
+    console.log("Downloading portfolio:", rec.file);
+
     await loadUserForAdminOnly(rec.login, rec.file);
+
+    console.log("Rendering dashboard...");
 
     renderLoadedUser(login);
 
+    console.log({
+        renderComplete: window.clientRenderComplete,
+        perfRows: document.querySelectorAll("#perfContainer tbody tr").length,
+        profitRows: document.querySelectorAll("#profitContainer tbody tr").length
+    });
+
+    console.log("Waiting for renderComplete...");
+
     await waitFor(() => window.clientRenderComplete);
+
+    console.log("renderComplete received");
+
+    console.log("Waiting for performance rows...");
 
     await waitFor(() =>
         document.querySelectorAll("#perfContainer tbody tr").length > 0
     );
 
+    console.log("Performance rows ready:",
+        document.querySelectorAll("#perfContainer tbody tr").length);
+
+    console.log("Client ready.");
 }
 
 window.openClientDirect = openClientDirect;
@@ -2116,6 +2155,7 @@ async function loadAllClientSummaries(){
     const res = await fetch("/api/admin/clients");
 
     ADMIN_CLIENTS = await res.json();
+    console.log(ADMIN_CLIENTS);
     return ADMIN_CLIENTS;
 }
 
@@ -2124,8 +2164,7 @@ async function loadAdminDashboard(){
 
   isAdmin = true;
 
-  const userTabs = getEl("userTabs");
-    if (userTabs) userTabs.style.display = "none";
+  document.getElementById("userTabs").style.display = "none";
   const adminTabs = getEl("adminTabs");
     if (adminTabs) adminTabs.style.display = "flex";
   document.getElementById("backToFamily").style.display = "none";
@@ -2502,8 +2541,7 @@ async function openAdminClient(login) {
   currentUser = login;
   const adminTabs = getEl("adminTabs");
     if (adminTabs) adminTabs.style.display = "none";
-  const userTabs = getEl("userTabs");
-    if (userTabs) userTabs.style.display = "flex";
+  document.getElementById("userTabs").style.display = "flex";
   document.getElementById("backToFamily").style.display = "inline-flex";
 
   if (pans.length === 1) {
@@ -2567,8 +2605,7 @@ function logout(){
   document.getElementById("admin-overview").style.display = "none";
   document.getElementById("admin-clients").style.display = "none";
 
-  const userTabs = getEl("userTabs");
-    if (userTabs) userTabs.style.display = "flex";
+  document.getElementById("userTabs").style.display = "flex";
 
   document.querySelectorAll("#userTabs .tab").forEach(t => t.classList.remove("active"));
   document.querySelector('[data-tab="overview"]').classList.add("active");
@@ -2689,16 +2726,35 @@ function renderLoadedUser(login){
     window.clientRenderComplete = false;
 
     try {
+
         renderAsset(d.assetAlloc || []);
+        console.log("✓ renderAsset");
+
         renderStrategy(d.strategyAlloc || []);
+        console.log("✓ renderStrategy");
+
         renderPan(d.panSummary || []);
+        console.log("✓ renderPan");
+
         renderPerfGrouped(d.perfIsin || []);
+        console.log("✓ renderPerfGrouped");
+
         renderProfit(d.profitBookFund || []);
+        console.log("✓ renderProfit");
+
+        console.log("Finished rendering", {
+            client: document.getElementById("clientNameHeader")?.textContent,
+            perfRows: document.querySelectorAll("#perfContainer tbody tr").length,
+            profitRows: document.querySelectorAll("#profitContainer tbody tr").length
+        });
 
     } catch (e) {
+
+        console.error("renderLoadedUser FAILED", e);
         throw e;
 
     } finally {
+
         // Always release Playwright
         window.clientRenderComplete = true;
 
@@ -2738,8 +2794,7 @@ async function openClientForAutomation(login){
     document.getElementById("admin-overview").style.display = "none";
     document.getElementById("admin-clients").style.display = "none";
 
-    const userTabs = getEl("userTabs");
-    if (userTabs) userTabs.style.display = "flex";
+    document.getElementById("userTabs").style.display = "flex";
 
     document
         .querySelectorAll("#userTabs .tab")
@@ -3302,8 +3357,7 @@ async function backToFamily() {
     localStorage.removeItem("activePan");
 
     document.getElementById("backToFamily").style.display = "none";
-    const userTabs = getEl("userTabs");
-    if (userTabs) userTabs.style.display = "none";
+    document.getElementById("userTabs").style.display = "none";
     const adminTabs = getEl("adminTabs");
     if (adminTabs) adminTabs.style.display = "flex";
     document.getElementById("clientNameHeader").textContent = "Admin Dashboard";
