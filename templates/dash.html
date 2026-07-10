@@ -220,6 +220,12 @@ function bootstrapTxnView(){
   loadTransactionData(window.currentTxnKey);
 }
 
+function getEl(id) {
+  const el = document.getElementById(id);
+  if (!el) console.warn("[missing element]", id);
+  return el;
+}
+
 document.addEventListener("DOMContentLoaded", bootstrapTxnView);
 
 const palette = [  
@@ -319,28 +325,26 @@ async function loadUserIndex(){
   }
 
   const res = await fetch("/api/user-index");
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Failed to load user-index: HTTP ${res.status} ${res.statusText} ${text}`);
+  }
 
   const payload = await res.json();
-
   USER_INDEX = payload;
   PAN_MAP = {};
 
   (payload.users || []).forEach(user => {
-
     const type = (user.type || "").toLowerCase();
-
     if (type === "admin" || type === "family") {
       return;
     }
 
     (user.pans || []).forEach(pan => {
-
       if (pan) {
-
         const normalizedPan = String(pan)
           .trim()
           .toUpperCase();
-
         PAN_MAP[normalizedPan] = user.login;
       }
     });
@@ -467,14 +471,22 @@ function hideTooltip(){
     }
 }
 
+
 /* RESTORE SESSION */
 async function restoreSession() {
   const savedUser = localStorage.getItem("loggedUser");
   const savedPan = localStorage.getItem("activePan");
 
-  if (!savedUser) {
-    document.getElementById("loginPage").style.display = "flex";
-    document.getElementById("app").style.display = "none";
+  const isBadValue = (v) =>
+    v === null || v === undefined || v === "" || v === "null" || v === "undefined";
+
+  if (isBadValue(savedUser)) {
+    localStorage.removeItem("loggedUser");
+    localStorage.removeItem("activePan");
+    const loginPage = getEl("loginPage");
+    if (loginPage) loginPage.style.display = "flex";
+    const appEl = getEl("app");
+    if (appEl) appEl.style.display = "none";  
     return;
   }
 
@@ -482,12 +494,23 @@ async function restoreSession() {
     await loadUserIndex();
 
     const rec = await getUserIndexRecord(savedUser);
-    const fileName = rec?.file || `${savedUser}.json`;
 
-    const res = await fetch(`/api/portfolio/${fileName}`);
-    if (!res.ok) throw new Error(`Restore failed for ${savedUser}`);
+    const fileName = rec?.file?.trim();
+
+    if (isBadValue(fileName)) {
+      throw new Error(`Missing portfolio file for ${savedUser}`);
+    }
+
+    const url = `/api/portfolio/${fileName}`;
+
+    const res = await fetch(url);
+
+    if (!res.ok) {
+      throw new Error(`Restore failed for ${savedUser}`);
+    }
 
     const text = await res.text();
+
     const user = expandKeys(JSON.parse(text));
 
     rawData = rawData || {};
@@ -495,7 +518,7 @@ async function restoreSession() {
 
     await startSession(savedUser);
 
-    if (savedPan) {
+    if (!isBadValue(savedPan)) {
       activePan = savedPan;
       singlePanMode = true;
       await openClientDashboard(savedPan);
@@ -506,13 +529,9 @@ async function restoreSession() {
     }
   } catch (err) {
 
-    logger.error('Session restore failed', { 
-      user: savedUser,  // Only log what you need, sanitized
-      error: err.message
-    });
-    document.getElementById("loginPage").style.display = "flex";
-    document.getElementById("app").style.display = "none";
-
+    if (loginPage) loginPage.style.display = "flex";
+    const appEl = getEl("app");
+    if (appEl) appEl.style.display = "none";
   }
 }
 
@@ -1939,20 +1958,25 @@ async function startSession(login){
   isAdmin = (userType === "admin");
   adminSessionUser = isAdmin ? login : null;
 
-  document.getElementById("logoutBtn").style.display = "inline-flex";
-  document.getElementById("loginPage").style.display = "none";
-  document.getElementById("app").style.display = "block";
+  const logoutBtn = getEl("logoutBtn");
+  if (logoutBtn) logoutBtn.style.display = "inline-flex";
+  const loginPage = getEl("loginPage");
+  if (loginPage) loginPage.style.display = "none";
+  const appEl = getEl("app");
+  if (appEl) appEl.style.display = "block";
 
   if (isAdmin) {
       await loadAdminDashboard();
       return;
   }
 
-  document.getElementById("adminTabs").style.display = "none";
+  const adminTabs = getEl("adminTabs");
+  if (adminTabs) adminTabs.style.display = "none";
   document.getElementById("admin-overview").style.display = "none";
   document.getElementById("admin-clients").style.display = "none";
 
-  document.getElementById("userTabs").style.display = "flex";
+  const userTabs = getEl("userTabs");
+    if (userTabs) userTabs.style.display = "flex";
 
   document.querySelectorAll("#userTabs .tab").forEach(t => t.classList.remove("active"));
   document.querySelector('[data-tab="overview"]').classList.add("active");
@@ -1980,16 +2004,21 @@ async function startReportSession(login) {
     adminSessionUser = login;
     isAdmin = true;
 
-    document.getElementById("logoutBtn").style.display = "inline-flex";
-    document.getElementById("loginPage").style.display = "none";
-    document.getElementById("app").style.display = "block";
+    const logoutBtn = getEl("logoutBtn");
+    if (logoutBtn) logoutBtn.style.display = "inline-flex";
+    const loginPage = getEl("loginPage");
+    if (loginPage) loginPage.style.display = "none";
+    const appEl = getEl("app");
+    if (appEl) appEl.style.display = "block";
 
     // Show user dashboard directly
-    document.getElementById("adminTabs").style.display = "none";
+    const adminTabs = getEl("adminTabs");
+    if (adminTabs) adminTabs.style.display = "none";
     document.getElementById("admin-overview").style.display = "none";
     document.getElementById("admin-clients").style.display = "none";
 
-    document.getElementById("userTabs").style.display = "flex";
+    const userTabs = getEl("userTabs");
+    if (userTabs) userTabs.style.display = "flex";
 }
 
 window.startReportSession = startReportSession;
@@ -1998,7 +2027,10 @@ async function fetchUserIndex() {
   if (USER_INDEX) return USER_INDEX;
 
   const res = await fetch(`/api/user-index?v=${Date.now()}`);
-  if (!res.ok) throw new Error("Unable to load users index");
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Unable to load users index: HTTP ${res.status} ${res.statusText} ${text}`);
+  }
 
   USER_INDEX = await res.json();
   return USER_INDEX;
@@ -2041,51 +2073,25 @@ window.waitFor = waitFor;
 
 async function openClientDirect(login){
 
-    console.log("Loading client:", login);
-
-
     if (!isAdmin) {
-        console.log("Starting report session...");
         await startReportSession(SESSION_USER);
     }
-
-    console.log("Looking up client...");
 
     const rec = await getUserIndexRecord(login);
 
     if (!rec)
         throw new Error("Client not found");
 
-    console.log("Downloading portfolio:", rec.file);
-
     await loadUserForAdminOnly(rec.login, rec.file);
-
-    console.log("Rendering dashboard...");
 
     renderLoadedUser(login);
 
-    console.log({
-        renderComplete: window.clientRenderComplete,
-        perfRows: document.querySelectorAll("#perfContainer tbody tr").length,
-        profitRows: document.querySelectorAll("#profitContainer tbody tr").length
-    });
-
-    console.log("Waiting for renderComplete...");
-
     await waitFor(() => window.clientRenderComplete);
-
-    console.log("renderComplete received");
-
-    console.log("Waiting for performance rows...");
 
     await waitFor(() =>
         document.querySelectorAll("#perfContainer tbody tr").length > 0
     );
 
-    console.log("Performance rows ready:",
-        document.querySelectorAll("#perfContainer tbody tr").length);
-
-    console.log("Client ready.");
 }
 
 window.openClientDirect = openClientDirect;
@@ -2110,7 +2116,6 @@ async function loadAllClientSummaries(){
     const res = await fetch("/api/admin/clients");
 
     ADMIN_CLIENTS = await res.json();
-    console.log(ADMIN_CLIENTS);
     return ADMIN_CLIENTS;
 }
 
@@ -2119,8 +2124,10 @@ async function loadAdminDashboard(){
 
   isAdmin = true;
 
-  document.getElementById("userTabs").style.display = "none";
-  document.getElementById("adminTabs").style.display = "flex";
+  const userTabs = getEl("userTabs");
+    if (userTabs) userTabs.style.display = "none";
+  const adminTabs = getEl("adminTabs");
+    if (adminTabs) adminTabs.style.display = "flex";
   document.getElementById("backToFamily").style.display = "none";
   document.getElementById("clientNameHeader").textContent = "Admin Dashboard";
 
@@ -2493,8 +2500,10 @@ async function openAdminClient(login) {
 
   isAdmin = false;
   currentUser = login;
-  document.getElementById("adminTabs").style.display = "none";
-  document.getElementById("userTabs").style.display = "flex";
+  const adminTabs = getEl("adminTabs");
+    if (adminTabs) adminTabs.style.display = "none";
+  const userTabs = getEl("userTabs");
+    if (userTabs) userTabs.style.display = "flex";
   document.getElementById("backToFamily").style.display = "inline-flex";
 
   if (pans.length === 1) {
@@ -2535,13 +2544,16 @@ function logout(){
   isAdmin = false;
   adminSessionUser = null;
 
-  document.getElementById("app").style.display = "none";
-  document.getElementById("loginPage").style.display = "flex";
+  const appEl = getEl("app");
+  if (appEl) appEl.style.display = "none";
+  const loginPage = getEl("loginPage");
+    if (loginPage) loginPage.style.display = "flex";
 
   document.getElementById("login_id").value = "";
   document.getElementById("password").value = "";
 
-  document.getElementById("logoutBtn").style.display = "none";
+  const logoutBtn = getEl("logoutBtn");
+  if (logoutBtn) logoutBtn.style.display = "none";
   document.getElementById("backToFamily").style.display = "none";
 
   const header = document.getElementById("clientNameHeader");
@@ -2550,11 +2562,13 @@ function logout(){
   const clientName = document.getElementById("clientName");
   if(clientName) clientName.textContent = "";
 
-  document.getElementById("adminTabs").style.display = "none";
+  const adminTabs = getEl("adminTabs");
+    if (adminTabs) adminTabs.style.display = "none";
   document.getElementById("admin-overview").style.display = "none";
   document.getElementById("admin-clients").style.display = "none";
 
-  document.getElementById("userTabs").style.display = "flex";
+  const userTabs = getEl("userTabs");
+    if (userTabs) userTabs.style.display = "flex";
 
   document.querySelectorAll("#userTabs .tab").forEach(t => t.classList.remove("active"));
   document.querySelector('[data-tab="overview"]').classList.add("active");
@@ -2675,35 +2689,16 @@ function renderLoadedUser(login){
     window.clientRenderComplete = false;
 
     try {
-
         renderAsset(d.assetAlloc || []);
-        console.log("✓ renderAsset");
-
         renderStrategy(d.strategyAlloc || []);
-        console.log("✓ renderStrategy");
-
         renderPan(d.panSummary || []);
-        console.log("✓ renderPan");
-
         renderPerfGrouped(d.perfIsin || []);
-        console.log("✓ renderPerfGrouped");
-
         renderProfit(d.profitBookFund || []);
-        console.log("✓ renderProfit");
-
-        console.log("Finished rendering", {
-            client: document.getElementById("clientNameHeader")?.textContent,
-            perfRows: document.querySelectorAll("#perfContainer tbody tr").length,
-            profitRows: document.querySelectorAll("#profitContainer tbody tr").length
-        });
 
     } catch (e) {
-
-        console.error("renderLoadedUser FAILED", e);
         throw e;
 
     } finally {
-
         // Always release Playwright
         window.clientRenderComplete = true;
 
@@ -2733,14 +2728,18 @@ async function openClientForAutomation(login){
     VIEW_USER = login;
     currentUser = login;
 
-    document.getElementById("loginPage").style.display = "none";
-    document.getElementById("app").style.display = "block";
+    const loginPage = getEl("loginPage");
+    if (loginPage) loginPage.style.display = "none";
+    const appEl = getEl("app");
+    if (appEl) appEl.style.display = "block";
 
-    document.getElementById("adminTabs").style.display = "none";
+    const adminTabs = getEl("adminTabs");
+    if (adminTabs) adminTabs.style.display = "none";
     document.getElementById("admin-overview").style.display = "none";
     document.getElementById("admin-clients").style.display = "none";
 
-    document.getElementById("userTabs").style.display = "flex";
+    const userTabs = getEl("userTabs");
+    if (userTabs) userTabs.style.display = "flex";
 
     document
         .querySelectorAll("#userTabs .tab")
@@ -3303,8 +3302,10 @@ async function backToFamily() {
     localStorage.removeItem("activePan");
 
     document.getElementById("backToFamily").style.display = "none";
-    document.getElementById("userTabs").style.display = "none";
-    document.getElementById("adminTabs").style.display = "flex";
+    const userTabs = getEl("userTabs");
+    if (userTabs) userTabs.style.display = "none";
+    const adminTabs = getEl("adminTabs");
+    if (adminTabs) adminTabs.style.display = "flex";
     document.getElementById("clientNameHeader").textContent = "Admin Dashboard";
 
     document.querySelectorAll('[id^="tab-"]').forEach(p => {
