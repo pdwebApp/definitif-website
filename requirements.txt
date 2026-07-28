@@ -19,3 +19,8 @@ python-dateutil==2.9.0.post0
 numpy-financial==1.0.0
 
 playwright==1.54.0
+
+matplotlib==3.10.3
+pillow==11.2.1
+reportlab==4.2.2
+squarify==0.4.4

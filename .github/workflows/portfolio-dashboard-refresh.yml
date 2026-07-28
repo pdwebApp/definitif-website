@@ -6,12 +6,20 @@ on:
     types:
       - completed
 
+permissions:
+  contents: read
+  actions: read
+
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   refresh-dashboard:
     runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
 
     steps:
       - name: Checkout repository
@@ -20,7 +28,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: "3.10"
 
       - name: Install dependencies
         run: |
@@ -28,16 +36,22 @@ jobs:
           pip install -r requirements.txt
 
       - name: Generate portfolio JSON files
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
           python generate_portfolio_json.py
 
+      - name: Debug generated output
+        run: |
+          ls -la output/users || true
+          echo "----"
+          python - <<'PY'
+          import os
+          path = "output/users/users_index.json"
+          print("exists:", os.path.exists(path))
+          if os.path.exists(path):
+              with open(path, "r", encoding="utf-8") as f:
+                  print(f.read()[:1000])
+          PY
+
       - name: Upload JSONs to Supabase Storage
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           python scripts/upload_portfolios.py

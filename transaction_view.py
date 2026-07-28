@@ -90,7 +90,6 @@ def build_transaction_view(rta_df, nav_df, isin_mapper):
                     "folio_no": folio,
                     "transaction_type": row.get("transaction_type"),
                     "isin": isin,
-                    "fund": None,
                     "purchase_date": row["traddate"],
                     "units_remaining": units,
                     "original_units": units,

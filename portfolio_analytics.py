@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 import os
-import json
 import warnings
-from datetime import date, timedelta
+from datetime import date, timedelta, timezone
+from zoneinfo import ZoneInfo
 from collections import deque
 
 import numpy as np
@@ -79,15 +79,6 @@ def fetch_data_supabase_py(supabase_url: str, supabase_key: str, page_size: int 
         raise RuntimeError(f"Failed fetching {table_name}")
 
     rta_df = fetch_all("rta_transactions")
-    # get only required ISINs first
-    # isin_list = rta_df["isin"].dropna().unique().tolist()
-
-    # amfi_nav_df = (
-    #     client.table("amfi_nav")
-    #     .select("*")
-    #     .in_("isin", isin_list)
-    #     .execute()
-    # amfi_nav_df = pd.DataFrame(amfi_nav_df.data)
 
     amfi_nav_df = fetch_all("amfi_nav")
     isin_mapper_df = fetch_all("isin_mapper")
@@ -309,6 +300,13 @@ def build_portfolio_analytics(rta_df, amfi_nav_df, isin_mapper_df, valuation_dat
 
     if 'trxnstat' in rta_df.columns:
         rta_df = rta_df[rta_df['trxnstat'].isin(['Processed', 'Y', 'y'])].copy()
+
+    if 'transaction_type' in rta_df.columns:
+        rta_df = rta_df[~rta_df['transaction_type'].isin(['Pledging', 'Unpledging'])].copy()
+
+    if 'txn_code' in rta_df.columns:
+            rta_df = rta_df[~rta_df['txn_code'].isin(['L'])].copy()
+
 
     isin_meta = isin_mapper_df[
         ['isin', 'global_broad_category_group', 'morningstar_category',
@@ -1177,6 +1175,7 @@ def generate_portfolio_json(results, user_configs, user_output_dir="output/users
     import os
     import json
     import numpy as np
+    from datetime import datetime
 
     os.makedirs(user_output_dir, exist_ok=True)
 
@@ -1198,6 +1197,7 @@ def generate_portfolio_json(results, user_configs, user_output_dir="output/users
     def compress_keys(obj):
         if isinstance(obj, list):
             return [compress_keys(x) for x in obj]
+
         if not isinstance(obj, dict):
             return obj
 
@@ -1220,20 +1220,39 @@ def generate_portfolio_json(results, user_configs, user_output_dir="output/users
         }
 
         out = {}
+
         for k, v in obj.items():
             out[mapping.get(k, k)] = compress_keys(v)
+
         return out
 
     val_ts = results.get("val_ts")
+
     meta = {
         "requested_valuation_date": val_ts.strftime("%Y-%m-%d") if val_ts else None,
         "nav_fallback": "last_available_if_missing",
     }
 
-    index = []
+    users_index = []
+
+    admin_clients = []
+
+    dashboard_summary = {
+        "valuation_date": meta["requested_valuation_date"],
+        "total_clients": 0,
+        "family_logins": 0,
+        "individual_clients": 0,
+        "total_aum": 0,
+        "total_invested": 0,
+        "total_unrealised": 0,
+        "total_realised": 0,
+        "updated_at": datetime.now(ZoneInfo("Asia/Kolkata")).replace(tzinfo=None).isoformat(sep=" ")
+    }
 
     for cfg in user_configs:
+
         login = cfg["login_id"]
+
         print(f"Building JSON for {login}")
 
         data = build_user_json(
@@ -1253,12 +1272,20 @@ def generate_portfolio_json(results, user_configs, user_output_dir="output/users
         })
 
         file_name = f"{login}.json"
+
         file_path = os.path.join(user_output_dir, file_name)
 
         with open(file_path, "w", encoding="utf-8") as f:
-            json.dump(payload, f, separators=(",", ":"), allow_nan=False)
+            json.dump(
+                payload,
+                f,
+                separators=(",", ":"),
+                allow_nan=False
+            )
 
-        index.append(clean_nan({
+        print(f"written -> {file_path}")
+
+        users_index.append(clean_nan({
             "login": login,
             "name": cfg["name"],
             "type": cfg["user_type"],
@@ -1270,11 +1297,74 @@ def generate_portfolio_json(results, user_configs, user_output_dir="output/users
             "file": file_name,
         }))
 
-        print(f"written -> {file_path}")
+        kpi = data.get("kpi", {})
+
+        dashboard_summary["total_clients"] += 1
+
+        if len(cfg["pans"]) > 1:
+
+            dashboard_summary["family_logins"] += 1
+            continue
+
+        dashboard_summary["individual_clients"] += 1
+
+        pv = kpi.get("portfolio_value", 0) or 0
+        inv = kpi.get("invested", 0) or 0
+        ugl = kpi.get("unrealised_gl", 0) or 0
+        rgl = kpi.get("realised_gl", 0) or 0
+
+        dashboard_summary["total_aum"] += pv
+        dashboard_summary["total_invested"] += inv
+        dashboard_summary["total_unrealised"] += ugl
+        dashboard_summary["total_realised"] += rgl
+
+        admin_clients.append(clean_nan({
+            "login_id": login,
+            "name": cfg["name"],
+            "family_name": cfg.get("family_name"),
+            "user_type": cfg["user_type"],
+            "pan": cfg["pans"][0] if cfg["pans"] else None,
+            "mfu_can": cfg.get("mfu_can"),
+            "mobile": cfg.get("mobile"),
+            "email_connect": cfg.get("email_connect"),
+            "dob": cfg.get("dob"),
+            "portfolio_value": pv,
+            "invested_value": inv,
+            "unrealised_gl": ugl,
+            "realised_gl": rgl,
+            "abs_return": kpi.get("abs_return_pct"),
+            "annualised_return": kpi.get("xirr_entire"),
+            "valuation_date": meta["requested_valuation_date"],
+            "updated_at": datetime.now(ZoneInfo("Asia/Kolkata")).replace(tzinfo=None).isoformat(sep=" ")
+        }))
 
     index_path = os.path.join(user_output_dir, "users_index.json")
+
     with open(index_path, "w", encoding="utf-8") as f:
-        json.dump({"users": index}, f, separators=(",", ":"))
+        json.dump(
+            {"users": users_index},
+            f,
+            separators=(",", ":")
+        )
 
     print(f"index written -> {index_path}")
-    return user_output_dir
+
+    print()
+
+    print("=" * 60)
+    print("ADMIN SUMMARY")
+    print("=" * 60)
+
+    print(f"Total Logins      : {dashboard_summary['total_clients']}")
+    print(f"Family Logins     : {dashboard_summary['family_logins']}")
+    print(f"Individual Clients: {dashboard_summary['individual_clients']}")
+    print(f"Total AUM         : {dashboard_summary['total_aum']:,.2f}")
+    print(f"Total Invested    : {dashboard_summary['total_invested']:,.2f}")
+    print(f"Total Unrealised  : {dashboard_summary['total_unrealised']:,.2f}")
+    print(f"Total Realised    : {dashboard_summary['total_realised']:,.2f}")
+
+    return {
+        "output_dir": user_output_dir,
+        "admin_clients": admin_clients,
+        "dashboard_summary": dashboard_summary,
+    }

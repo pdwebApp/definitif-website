@@ -8,10 +8,10 @@ def require_env(name: str) -> str:
     return value
 
 
-# BASE_URL = "http://127.0.0.1:8080"
-### RUN curl http://127.0.0.1:8080/dashboard in new bash ###
+BASE_URL = "http://127.0.0.1:5000"
+### RUN curl http://127.0.0.1:5000/dashboard ###
 ### OR ###
-BASE_URL = "https://www.definitif.app"
+# BASE_URL = "https://www.definitif.app"
 LOGIN_URL = f"{BASE_URL}/dashboard"
 
 ADMIN_LOGIN_ID = require_env("ADMIN_LOGIN_ID")

@@ -125,16 +125,21 @@ def main():
 
         print("\nGenerating JSON files...")
 
-        result = generate_portfolio_json(
-                                        results,
-                                        USER_CONFIGS,
-                                        OUTPUT_DIR,
-                                        )
+        portal_result = generate_portfolio_json(
+                                                results,
+                                                USER_CONFIGS,
+                                                OUTPUT_DIR,
+                                            )
+
+        print("portal_result type:", type(portal_result))
+        print("portal_result value:", portal_result)
+
+        print("\nUploading Summary to Supabase...")
 
         from admin_sync import sync_admin_portal
         sync_admin_portal(
-            result["admin_clients"],
-            result["dashboard_summary"]
+            portal_result["admin_clients"],
+            portal_result["dashboard_summary"]
         )
 
         # -------------------------------------------------

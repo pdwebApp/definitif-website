@@ -1254,8 +1254,13 @@ text-align:left;
 text-align:left;
 }
 
+/* Fund header row */
+.txn-group-header td:nth-child(3){
+text-align:right;
+}
+
 /* transaction rows */
-.txn-row td:nth-child(2),
+.txn-row td:nth-child(1),
 .txn-row td:nth-child(3){
 text-align:left;
 }
@@ -1498,8 +1503,9 @@ box-shadow:0 4px 10px rgba(0,0,0,.25);
 
 .footer-social a:nth-child(1):hover{background:#DB4437;}
 .footer-social a:nth-child(2):hover{background:#25D366;}
-.footer-social a:nth-child(3):hover{background:#0077B5;}
-.footer-social a:nth-child(4):hover{background:#FBBC05;}
+.footer-social a:nth-child(3):hover{background:#ffffff;}
+.footer-social a:nth-child(4):hover{background:#0077B5;}
+.footer-social a:nth-child(5):hover{background:#FBBC05;}
 
 .footer-social a:hover{
 transform:translateY(-4px);

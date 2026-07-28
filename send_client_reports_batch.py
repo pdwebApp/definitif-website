@@ -1,14 +1,11 @@
 import json
 import sys
 from pathlib import Path
-from playwright.sync_api import sync_playwright
-from config import AUTH_STATE_FILE, PLAYWRIGHT_HEADLESS, LOGIN_URL
-from send_client_reports import (
-    run_client_report_job,
-    open_client_direct,
-)
-from supabase_storage import fetch_json
 from datetime import datetime, timezone
+
+from config import AUTH_STATE_FILE
+from send_client_reports import run_client_report_job
+from supabase_storage import fetch_json
 
 def log(msg):
     print(
@@ -61,6 +58,7 @@ def load_clients_map():
                 or ""
             ),
         }
+
     print(f"load_clients_map: built keys={list(clients_map.keys())[:20]}", file=sys.stderr, flush=True)
     return clients_map
 
@@ -102,100 +100,44 @@ def main():
             }))
             sys.exit(1)
 
-    if not Path(AUTH_STATE_FILE).exists():
-        print(json.dumps({
-            "success": False,
-            "message": f"Missing auth state file: {AUTH_STATE_FILE}"
-        }))
-        sys.exit(1)
-
     clients_map = load_clients_map()
     print("batch: loaded clients map", file=sys.stderr, flush=True)
 
     results = []
 
-    log("launching playwright")
-    with sync_playwright() as p:
-        log("launching browser")
-        browser = p.chromium.launch(
-            headless=True,
-            args=[
-                "--no-sandbox",
-                "--disable-dev-shm-usage",
-                "--disable-gpu",
-                "--disable-setuid-sandbox"
-            ]
+    for login in client_logins:
+        log(f"processing {login}")
+
+        client = clients_map.get(login)
+        if not client:
+            results.append({
+                "login": login,
+                "success": False,
+                "message": "Client not found"
+            })
+            continue
+
+        recipients = (
+            [client.get("email_connect")] if recipient_mode == "default" else manual_emails
         )
+        recipients = [str(x).strip() for x in recipients if str(x).strip()]
 
-        log("browser launched")
-
-        log(f"AUTH_STATE_FILE={AUTH_STATE_FILE}")
-
-        auth_exists = Path(AUTH_STATE_FILE).exists()
-        log(f"AUTH_STATE_EXISTS={auth_exists}")
-
-        if auth_exists:
-            log(f"AUTH_STATE_SIZE={Path(AUTH_STATE_FILE).stat().st_size}")
-
-        log("creating browser context")
-
-        context = browser.new_context(
-            storage_state=str(AUTH_STATE_FILE),
-            accept_downloads=True,
-        )
-
-        page = context.new_page()
-
-        log("page created")
-
-        page.set_default_timeout(240_000)
-
-        REPORT_URL = f"{LOGIN_URL}?report=1"
-
-        page.goto(
-            REPORT_URL,
-            wait_until="domcontentloaded",
-            timeout=240000,
-        )
-
-        for login in client_logins:
-            log(f"processing {login}")
-
-            client = clients_map.get(login)
-
-            if not client:
-                results.append({
-                    "login": login,
-                    "success": False,
-                    "message": "Client not found"
-                })
-                continue
-
-            recipients = (
-                [client.get("email_connect")] if recipient_mode == "default" else manual_emails
+        try:
+            result = run_client_report_job(
+                client_login=client["login"],
+                client_name=client.get("name") or client["login"],
+                recipients=recipients,
             )
-            recipients = [str(x).strip() for x in recipients if str(x).strip()]
-
-            try:
-                result = run_client_report_job(
-                    page=page,
-                    client_login=client["login"],
-                    client_name=client.get("name") or client["login"],
-                    recipients=recipients,
-                )
-                result["success"] = True
-                result["message"] = "Processed successfully"
-                results.append(result)
-            except Exception as e:
-                results.append({
-                    "login": login,
-                    "clientName": client.get("name") or login,
-                    "success": False,
-                    "message": repr(e)
-                })
-
-        context.close()
-        browser.close()
+            result["success"] = True
+            result["message"] = "Processed successfully"
+            results.append(result)
+        except Exception as e:
+            results.append({
+                "login": login,
+                "clientName": client.get("name") or login,
+                "success": False,
+                "message": repr(e)
+            })
 
     emailed_count = sum(1 for r in results if r.get("emailSent"))
     log(f"Processed {len(results)} client(s), emailed {emailed_count}.")
