@@ -1308,10 +1308,11 @@ def generate_portfolio_json(results, user_configs, user_output_dir="output/users
 
             dashboard_summary["individual_clients"] += 1
 
-            pv = kpi.get("portfolio_value", 0) or 0
-            inv = kpi.get("invested", 0) or 0
-            ugl = kpi.get("unrealised_gl", 0) or 0
-            rgl = kpi.get("realised_gl", 0) or 0
+            pv = int(kpi.get("portfolio_value", 0) or 0)
+            inv = int(kpi.get("invested", 0) or 0)
+            ugl = int(kpi.get("unrealised_gl", 0) or 0)
+            rgl = int(kpi.get("realised_gl", 0) or 0)
+
 
             dashboard_summary["total_aum"] += pv
             dashboard_summary["total_invested"] += inv
