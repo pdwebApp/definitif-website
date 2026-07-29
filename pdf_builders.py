@@ -1157,13 +1157,13 @@ class SummaryReportBuilder:
         canvas.restoreState()
 
     def _portfolio_page_body(self, canvas, doc):
-        self._draw_common_body_chrome(canvas, doc, header_title="Portfolio Preview")
+        self._draw_common_body_chrome(canvas, doc, header_title="Portfolio")
 
     def _performance_page_body(self, canvas, doc):
-        self._draw_common_body_chrome(canvas, doc, header_title="Performance Preview")
+        self._draw_common_body_chrome(canvas, doc, header_title="Performance")
 
     def _profitbook_page_body(self, canvas, doc):
-        self._draw_common_body_chrome(canvas, doc, header_title="Profitbook Preview")
+        self._draw_common_body_chrome(canvas, doc, header_title="Profitbook")
 
     def _draw_common_body_chrome(self, canvas, doc, header_title: str):
         canvas.saveState()

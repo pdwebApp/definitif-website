@@ -1235,6 +1235,20 @@ def generate_portfolio_json(results, user_configs, user_output_dir="output/users
 
         return {mapping.get(k, k): compress_keys(v) for k, v in obj.items()}
 
+    def get_client_type(cfg):
+        user_type = str(cfg.get("user_type", "")).strip().lower()
+        login = str(cfg.get("login_id", "")).strip().lower()
+        name = str(cfg.get("name", "")).strip().lower()
+        family_name = str(cfg.get("family_name", "")).strip().lower()
+
+        if "dummy" in user_type or "dummy" in login or "dummy" in name or "dummy" in family_name:
+            return "dummy"
+        if "family" in user_type:
+            return "family"
+        if "firm" in user_type:
+            return "firm"
+        return "individual"
+
     val_ts = results.get("val_ts")
 
     meta = {
@@ -1244,19 +1258,21 @@ def generate_portfolio_json(results, user_configs, user_output_dir="output/users
 
     users_index = []
     admin_clients = []
+    failed_users = []
+
     dashboard_summary = {
         "valuation_date": meta["requested_valuation_date"],
         "total_clients": 0,
-        "family_logins": 0,
         "individual_clients": 0,
+        "corporate_clients": 0,
+        "family_logins": 0,
+        "dummy_logins": 0,
         "total_aum": 0,
         "total_invested": 0,
         "total_unrealised": 0,
         "total_realised": 0,
         "updated_at": datetime.now(ZoneInfo("Asia/Kolkata")).replace(tzinfo=None).isoformat(sep=" ")
     }
-
-    failed_users = []
 
     for cfg in user_configs:
         login = cfg.get("login_id", "UNKNOWN_LOGIN")
@@ -1265,6 +1281,8 @@ def generate_portfolio_json(results, user_configs, user_output_dir="output/users
 
         try:
             print(f"Building JSON for {login}")
+
+            client_type = get_client_type(cfg)
 
             data = build_user_json(
                 results=results,
@@ -1277,6 +1295,7 @@ def generate_portfolio_json(results, user_configs, user_output_dir="output/users
                 "password": cfg["password"],
                 "user_type": cfg["user_type"],
                 "name": cfg["name"],
+                "client_type": client_type,
                 "pans": cfg["pans"],
                 "data": compress_keys(data),
                 "_meta": meta,
@@ -1291,6 +1310,7 @@ def generate_portfolio_json(results, user_configs, user_output_dir="output/users
                 "login": login,
                 "name": cfg["name"],
                 "type": cfg["user_type"],
+                "client_type": client_type,
                 "pans": cfg["pans"],
                 "mfu_can": cfg.get("mfu_can"),
                 "mobile": cfg.get("mobile"),
@@ -1300,31 +1320,10 @@ def generate_portfolio_json(results, user_configs, user_output_dir="output/users
             }))
 
             kpi = data.get("kpi", {})
-            dashboard_summary["total_clients"] += 1
-
-            if len(cfg["pans"]) > 1:
-                dashboard_summary["family_logins"] += 1
-                continue
-
-            dashboard_summary["individual_clients"] += 1
-
-<<<<<<< Updated upstream
             pv = int(kpi.get("portfolio_value", 0) or 0)
             inv = int(kpi.get("invested", 0) or 0)
             ugl = int(kpi.get("unrealised_gl", 0) or 0)
             rgl = int(kpi.get("realised_gl", 0) or 0)
-
-=======
-            pv = kpi.get("portfolio_value", 0) or 0
-            inv = kpi.get("invested", 0) or 0
-            ugl = kpi.get("unrealised_gl", 0) or 0
-            rgl = kpi.get("realised_gl", 0) or 0
->>>>>>> Stashed changes
-
-            dashboard_summary["total_aum"] += pv
-            dashboard_summary["total_invested"] += inv
-            dashboard_summary["total_unrealised"] += ugl
-            dashboard_summary["total_realised"] += rgl
 
             admin_clients.append(clean_nan({
                 "login_id": login,
@@ -1346,6 +1345,23 @@ def generate_portfolio_json(results, user_configs, user_output_dir="output/users
                 "updated_at": datetime.now(ZoneInfo("Asia/Kolkata")).replace(tzinfo=None).isoformat(sep=" ")
             }))
 
+            if client_type == "individual":
+                dashboard_summary["individual_clients"] += 1
+                dashboard_summary["total_clients"] += 1
+            elif client_type == "firm":
+                dashboard_summary["corporate_clients"] += 1
+                dashboard_summary["total_clients"] += 1
+            elif client_type == "family":
+                dashboard_summary["family_logins"] += 1
+            elif client_type == "dummy":
+                dashboard_summary["dummy_logins"] += 1
+
+            if client_type not in {"family", "dummy"}:
+                dashboard_summary["total_aum"] += pv
+                dashboard_summary["total_invested"] += inv
+                dashboard_summary["total_unrealised"] += ugl
+                dashboard_summary["total_realised"] += rgl
+
         except Exception as exc:
             failed_users.append({"login": login, "file": file_name, "error": str(exc)})
             log_error(login, file_name, exc)
@@ -1361,13 +1377,15 @@ def generate_portfolio_json(results, user_configs, user_output_dir="output/users
     print("=" * 60)
     print("ADMIN SUMMARY")
     print("=" * 60)
-    print(f"Total Logins      : {dashboard_summary['total_clients']}")
+    print(f"Total Clients      : {dashboard_summary['total_clients']}")
+    print(f"Individual Clients : {dashboard_summary['individual_clients']}")
+    print(f"Corporate Clients  : {dashboard_summary['corporate_clients']}")
     print(f"Family Logins     : {dashboard_summary['family_logins']}")
-    print(f"Individual Clients: {dashboard_summary['individual_clients']}")
-    print(f"Total AUM         : {dashboard_summary['total_aum']:,.2f}")
-    print(f"Total Invested    : {dashboard_summary['total_invested']:,.2f}")
-    print(f"Total Unrealised  : {dashboard_summary['total_unrealised']:,.2f}")
-    print(f"Total Realised    : {dashboard_summary['total_realised']:,.2f}")
+    print(f"Dummy Logins      : {dashboard_summary['dummy_logins']}")
+    print(f"Total AUM          : {dashboard_summary['total_aum']:,.2f}")
+    print(f"Total Invested     : {dashboard_summary['total_invested']:,.2f}")
+    print(f"Total Unrealised   : {dashboard_summary['total_unrealised']:,.2f}")
+    print(f"Total Realised     : {dashboard_summary['total_realised']:,.2f}")
 
     if failed_users:
         print("\nFAILED USERS:")

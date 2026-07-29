@@ -4148,8 +4148,23 @@ async function renderAdminOverview() {
       </div>
 
       <div class="card admin-kpi-card">
+        <div class="kpi-title">Individual Clients</div>
+        <div class="kpi-value">${formatNumber(d.individual_clients || 0)}</div>
+      </div>
+
+      <div class="card admin-kpi-card">
+        <div class="kpi-title">Corporate Clients</div>
+        <div class="kpi-value">${formatNumber(d.corporate_clients || 0)}</div>
+      </div>
+
+      <div class="card admin-kpi-card">
         <div class="kpi-title">Family Logins</div>
         <div class="kpi-value">${formatNumber(d.family_logins || 0)}</div>
+      </div>
+      
+      <div class="card admin-kpi-card">
+        <div class="kpi-title">Dummy Logins</div>
+        <div class="kpi-value">${formatNumber(d.dummy_logins || 0)}</div>
       </div>
 
       <div class="card admin-kpi-card">
