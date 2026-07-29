@@ -4,22 +4,20 @@ import os
 
 admin_api = Blueprint("admin_api", __name__)
 
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+def get_supabase():
+    url = os.getenv("SUPABASE_URL")
+    key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
-supabase = create_client(
-    SUPABASE_URL,
-    SUPABASE_SERVICE_ROLE_KEY
-)
+    if not url:
+        raise RuntimeError("SUPABASE_URL is missing")
+    if not key:
+        raise RuntimeError("SUPABASE_SERVICE_ROLE_KEY is missing")
 
-
-# ==========================================================
-# ADMIN DASHBOARD
-# ==========================================================
+    return create_client(url, key)
 
 @admin_api.route("/api/admin/dashboard")
 def get_admin_dashboard():
-
+    supabase = get_supabase()
     response = (
         supabase
         .table("admin_dashboard")
@@ -34,27 +32,22 @@ def get_admin_dashboard():
 
     return jsonify(response.data[0])
 
-
-# ==========================================================
-# ADMIN CLIENTS
-# ==========================================================
-
 @admin_api.route("/api/admin/clients")
 def get_admin_clients():
-
+    supabase = get_supabase()
     response = (
         supabase
         .table("admin_clients")
         .select("""
-                login_id,
-                name,
-                pan,
-                mfu_can,
-                mobile,
-                email_connect,
-                dob,
-                portfolio_value
-                """)
+            login_id,
+            name,
+            pan,
+            mfu_can,
+            mobile,
+            email_connect,
+            dob,
+            portfolio_value
+        """)
         .order("portfolio_value", desc=True)
         .execute()
     )

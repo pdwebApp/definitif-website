@@ -19,11 +19,13 @@ jobs:
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -34,6 +36,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+
+      - name: Show executed code
+        run: |
+          nl -ba generate_portfolio_json.py | sed -n '120,145p'
 
       - name: Generate portfolio JSON files
         run: |
@@ -51,6 +57,31 @@ jobs:
               with open(path, "r", encoding="utf-8") as f:
                   print(f.read()[:1000])
           PY
+
+      - name: Debug environment
+        run: |
+          echo "Python version: $(python --version)"
+          echo "WORKSPACE: $GITHUB_WORKSPACE"
+          echo "CWD: $(pwd)"
+
+          echo "SUPABASE_URL set? ${SUPABASE_URL:+yes}"
+          echo "SUPABASE_DB_URL set? ${SUPABASE_DB_URL:+yes}"
+          echo "SUPABASE_SERVICE_ROLE_KEY set? ${SUPABASE_SERVICE_ROLE_KEY:+yes}"
+          echo "GITHUB_REF: $GITHUB_REF"
+          echo "GITHUB_SHA: $GITHUB_SHA"
+
+      - name: Print environment
+        run: env | sort
+
+      - name: Show required vars
+        run: |
+          for v in SUPABASE_URL SUPABASE_DB_URL SUPABASE_SERVICE_ROLE_KEY; do
+            if [ -n "${!v}" ]; then
+              echo "$v is set"
+            else
+              echo "$v is missing"
+            fi
+          done
 
       - name: Upload JSONs to Supabase Storage
         run: |

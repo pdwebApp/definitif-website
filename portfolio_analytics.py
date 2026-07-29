@@ -1175,9 +1175,24 @@ def generate_portfolio_json(results, user_configs, user_output_dir="output/users
     import os
     import json
     import numpy as np
+    import traceback
     from datetime import datetime
+    from zoneinfo import ZoneInfo
 
     os.makedirs(user_output_dir, exist_ok=True)
+    error_log_path = os.path.join(user_output_dir, "generate_portfolio_errors.log")
+
+    def log_error(login, file_name, exc):
+        msg = (
+            f"\n{'='*80}\n"
+            f"FAILED USER: {login}\n"
+            f"FILE: {file_name}\n"
+            f"ERROR: {exc}\n"
+            f"{traceback.format_exc()}\n"
+        )
+        print(msg)
+        with open(error_log_path, "a", encoding="utf-8") as f:
+            f.write(msg)
 
     def clean_nan(obj):
         if isinstance(obj, dict):
@@ -1197,7 +1212,6 @@ def generate_portfolio_json(results, user_configs, user_output_dir="output/users
     def compress_keys(obj):
         if isinstance(obj, list):
             return [compress_keys(x) for x in obj]
-
         if not isinstance(obj, dict):
             return obj
 
@@ -1219,12 +1233,7 @@ def generate_portfolio_json(results, user_configs, user_output_dir="output/users
             "global_broad_category_group": "g",
         }
 
-        out = {}
-
-        for k, v in obj.items():
-            out[mapping.get(k, k)] = compress_keys(v)
-
-        return out
+        return {mapping.get(k, k): compress_keys(v) for k, v in obj.items()}
 
     val_ts = results.get("val_ts")
 
@@ -1234,9 +1243,7 @@ def generate_portfolio_json(results, user_configs, user_output_dir="output/users
     }
 
     users_index = []
-
     admin_clients = []
-
     dashboard_summary = {
         "valuation_date": meta["requested_valuation_date"],
         "total_clients": 0,
@@ -1249,112 +1256,103 @@ def generate_portfolio_json(results, user_configs, user_output_dir="output/users
         "updated_at": datetime.now(ZoneInfo("Asia/Kolkata")).replace(tzinfo=None).isoformat(sep=" ")
     }
 
+    failed_users = []
+
     for cfg in user_configs:
-
-        login = cfg["login_id"]
-
-        print(f"Building JSON for {login}")
-
-        data = build_user_json(
-            results=results,
-            pans=cfg["pans"],
-            label=cfg["name"],
-            user_type=cfg["user_type"],
-        )
-
-        payload = clean_nan({
-            "password": cfg["password"],
-            "user_type": cfg["user_type"],
-            "name": cfg["name"],
-            "pans": cfg["pans"],
-            "data": compress_keys(data),
-            "_meta": meta,
-        })
-
+        login = cfg.get("login_id", "UNKNOWN_LOGIN")
         file_name = f"{login}.json"
-
         file_path = os.path.join(user_output_dir, file_name)
 
-        with open(file_path, "w", encoding="utf-8") as f:
-            json.dump(
-                payload,
-                f,
-                separators=(",", ":"),
-                allow_nan=False
+        try:
+            print(f"Building JSON for {login}")
+
+            data = build_user_json(
+                results=results,
+                pans=cfg["pans"],
+                label=cfg["name"],
+                user_type=cfg["user_type"],
             )
 
-        print(f"written -> {file_path}")
+            payload = clean_nan({
+                "password": cfg["password"],
+                "user_type": cfg["user_type"],
+                "name": cfg["name"],
+                "pans": cfg["pans"],
+                "data": compress_keys(data),
+                "_meta": meta,
+            })
 
-        users_index.append(clean_nan({
-            "login": login,
-            "name": cfg["name"],
-            "type": cfg["user_type"],
-            "pans": cfg["pans"],
-            "mfu_can": cfg.get("mfu_can"),
-            "mobile": cfg.get("mobile"),
-            "email_connect": cfg.get("email_connect"),
-            "dob": cfg.get("dob"),
-            "file": file_name,
-        }))
+            with open(file_path, "w", encoding="utf-8") as f:
+                json.dump(payload, f, separators=(",", ":"), allow_nan=False)
 
-        kpi = data.get("kpi", {})
+            print(f"written -> {file_path}")
 
-        dashboard_summary["total_clients"] += 1
+            users_index.append(clean_nan({
+                "login": login,
+                "name": cfg["name"],
+                "type": cfg["user_type"],
+                "pans": cfg["pans"],
+                "mfu_can": cfg.get("mfu_can"),
+                "mobile": cfg.get("mobile"),
+                "email_connect": cfg.get("email_connect"),
+                "dob": cfg.get("dob"),
+                "file": file_name,
+            }))
 
-        if len(cfg["pans"]) > 1:
+            kpi = data.get("kpi", {})
+            dashboard_summary["total_clients"] += 1
 
-            dashboard_summary["family_logins"] += 1
+            if len(cfg["pans"]) > 1:
+                dashboard_summary["family_logins"] += 1
+                continue
+
+            dashboard_summary["individual_clients"] += 1
+
+            pv = kpi.get("portfolio_value", 0) or 0
+            inv = kpi.get("invested", 0) or 0
+            ugl = kpi.get("unrealised_gl", 0) or 0
+            rgl = kpi.get("realised_gl", 0) or 0
+
+            dashboard_summary["total_aum"] += pv
+            dashboard_summary["total_invested"] += inv
+            dashboard_summary["total_unrealised"] += ugl
+            dashboard_summary["total_realised"] += rgl
+
+            admin_clients.append(clean_nan({
+                "login_id": login,
+                "name": cfg["name"],
+                "family_name": cfg.get("family_name"),
+                "user_type": cfg["user_type"],
+                "pan": cfg["pans"][0] if cfg["pans"] else None,
+                "mfu_can": cfg.get("mfu_can"),
+                "mobile": cfg.get("mobile"),
+                "email_connect": cfg.get("email_connect"),
+                "dob": cfg.get("dob"),
+                "portfolio_value": pv,
+                "invested_value": inv,
+                "unrealised_gl": ugl,
+                "realised_gl": rgl,
+                "abs_return": kpi.get("abs_return_pct"),
+                "annualised_return": kpi.get("xirr_entire"),
+                "valuation_date": meta["requested_valuation_date"],
+                "updated_at": datetime.now(ZoneInfo("Asia/Kolkata")).replace(tzinfo=None).isoformat(sep=" ")
+            }))
+
+        except Exception as exc:
+            failed_users.append({"login": login, "file": file_name, "error": str(exc)})
+            log_error(login, file_name, exc)
             continue
 
-        dashboard_summary["individual_clients"] += 1
-
-        pv = kpi.get("portfolio_value", 0) or 0
-        inv = kpi.get("invested", 0) or 0
-        ugl = kpi.get("unrealised_gl", 0) or 0
-        rgl = kpi.get("realised_gl", 0) or 0
-
-        dashboard_summary["total_aum"] += pv
-        dashboard_summary["total_invested"] += inv
-        dashboard_summary["total_unrealised"] += ugl
-        dashboard_summary["total_realised"] += rgl
-
-        admin_clients.append(clean_nan({
-            "login_id": login,
-            "name": cfg["name"],
-            "family_name": cfg.get("family_name"),
-            "user_type": cfg["user_type"],
-            "pan": cfg["pans"][0] if cfg["pans"] else None,
-            "mfu_can": cfg.get("mfu_can"),
-            "mobile": cfg.get("mobile"),
-            "email_connect": cfg.get("email_connect"),
-            "dob": cfg.get("dob"),
-            "portfolio_value": pv,
-            "invested_value": inv,
-            "unrealised_gl": ugl,
-            "realised_gl": rgl,
-            "abs_return": kpi.get("abs_return_pct"),
-            "annualised_return": kpi.get("xirr_entire"),
-            "valuation_date": meta["requested_valuation_date"],
-            "updated_at": datetime.now(ZoneInfo("Asia/Kolkata")).replace(tzinfo=None).isoformat(sep=" ")
-        }))
-
     index_path = os.path.join(user_output_dir, "users_index.json")
-
     with open(index_path, "w", encoding="utf-8") as f:
-        json.dump(
-            {"users": users_index},
-            f,
-            separators=(",", ":")
-        )
+        json.dump({"users": users_index}, f, separators=(",", ":"))
 
     print(f"index written -> {index_path}")
 
     print()
-
     print("=" * 60)
     print("ADMIN SUMMARY")
     print("=" * 60)
-
     print(f"Total Logins      : {dashboard_summary['total_clients']}")
     print(f"Family Logins     : {dashboard_summary['family_logins']}")
     print(f"Individual Clients: {dashboard_summary['individual_clients']}")
@@ -1363,8 +1361,14 @@ def generate_portfolio_json(results, user_configs, user_output_dir="output/users
     print(f"Total Unrealised  : {dashboard_summary['total_unrealised']:,.2f}")
     print(f"Total Realised    : {dashboard_summary['total_realised']:,.2f}")
 
+    if failed_users:
+        print("\nFAILED USERS:")
+        for item in failed_users:
+            print(f" - {item['login']} -> {item['file']} -> {item['error']}")
+
     return {
         "output_dir": user_output_dir,
         "admin_clients": admin_clients,
         "dashboard_summary": dashboard_summary,
+        "failed_users": failed_users,
     }
