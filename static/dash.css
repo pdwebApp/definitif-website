@@ -271,8 +271,7 @@ line-height:1.25;
 }
 
 #adminClientsTable td.client-col {
-  white-space: normal;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
 }
 
 #adminClientsTable th:nth-child(3),
