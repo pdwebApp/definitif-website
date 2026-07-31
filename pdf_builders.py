@@ -3,8 +3,7 @@ from __future__ import annotations
 
 from dataclasses import asdict
 from pathlib import Path
-from typing import Any, Dict, List, Sequence
-import sys
+from typing import Any, List, Sequence
 import numpy as np
 import squarify
 import matplotlib.pyplot as plt
@@ -26,11 +25,6 @@ from itertools import groupby
 import datetime
 
 
-def log(msg):
-    if isinstance(msg, (dict, list)):
-        msg = json.dumps(msg, indent=2, default=str)
-    print(f"[{datetime.datetime.now(datetime.timezone.utc).isoformat()}] {msg}", file=sys.stderr, flush=True)
-
 def format_date_ordinal(date_str):
     if not date_str:
         return "-"
@@ -46,15 +40,6 @@ def format_date_with_suffix(date_obj):
     else:
         suffix = {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
     return f"{day}{suffix} {date_obj.strftime('%B %Y')}"
-
-def get_report_email_body_date(report_json, client_login, client_name, output_dir):
-    builder = PdfBuilder(output_dir=output_dir)
-    result = builder.build(report_json)
-
-    return {
-        "portfolio_stmt_pdf": result["portfolio_stmt_pdf"],
-        "valuation_date": result["valuation_date"],
-    }
 
 class Card(Flowable):
     def __init__(self, width, height, title, value, subtitle="", accent=colors.HexColor("#3B82F6")):
@@ -155,6 +140,41 @@ class KPIBox(Flowable):
         if self.subtitle:
             c.setFillColor(colors.HexColor("#6B7280"))
             c.setFont("Helvetica", 7)
+            c.drawString(10, 10, self.subtitle)
+
+        c.restoreState()
+
+class CLANBox(Flowable):
+    def __init__(self, width, height, label, value, subtitle="", accent="#24579e"):
+        super().__init__()
+        self.width = width
+        self.height = height
+        self.label = label
+        self.value = value
+        self.subtitle = subtitle
+        self.accent = colors.HexColor(accent)
+
+    def wrap(self, availWidth, availHeight):
+        return self.width, self.height
+
+    def draw(self):
+        c = self.canv
+        c.saveState()
+        c.setStrokeColor(colors.HexColor("#E5E7EB"))
+        c.setFillColor(colors.HexColor("#F3F4F6"))
+        c.roundRect(0, 0, self.width, self.height, 10, stroke=1, fill=1)
+
+        c.setFillColor(colors.HexColor("#6B7280"))
+        c.setFont("Helvetica", 6.5)
+        c.drawString(10, self.height - 20, self.label)
+
+        c.setFillColor(colors.HexColor("#111827"))
+        c.setFont("Helvetica-Bold", 12)
+        c.drawString(10, self.height - 42, str(self.value))
+
+        if self.subtitle:
+            c.setFillColor(colors.HexColor("#6B7280"))
+            c.setFont("Helvetica", 5.5)
             c.drawString(10, 10, self.subtitle)
 
         c.restoreState()
@@ -345,38 +365,6 @@ class BaseReportBuilder:
         except Exception:
             return str(v)
 
-    def _kpi_block(self, report: ClientReportData):
-        k = report.kpi
-        rows = [
-            ["Portfolio Value", self._num(k.pv)],
-            ["Invested Value", self._num(k.inv)],
-            ["Unrealised Gains", self._num(k.ugl)],
-            ["Realised Gains", self._num(k.rgl)],
-            ["Return", self._pct(k.ret)],
-            ["XIRR (Holdings)", self._pct(k.x1)],
-            ["XIRR (Since Inception)", self._pct(k.x2)],
-            ["Valuation Date", k.val_date or "-"],
-        ]
-        data = [[Paragraph("<b>Metric</b>", self.styles["BodySmall"]), Paragraph("<b>Value</b>", self.styles["BodySmall"])]]
-        for a, b in rows:
-            data.append([Paragraph(str(a), self.styles["BodySmall"]), Paragraph(str(b), self.styles["BodySmall"])])
-        t = Table(data, colWidths=[64 * mm, 95 * mm])
-        t.setStyle(
-            TableStyle(
-                [
-                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#e8eef7")),
-                    ("GRID", (0, 0), (-1, -1), 0.35, colors.lightgrey),
-                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                    ("LEFTPADDING", (0, 0), (-1, -1), 5),
-                    ("RIGHTPADDING", (0, 0), (-1, -1), 5),
-                    ("TOPPADDING", (0, 0), (-1, -1), 4),
-                    ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-                ]
-            )
-        )
-        return [Paragraph("KPI", self.styles["SectionTitle"]), t, Spacer(1, 4 * mm)]
-
     def _table_from_rows(
         self,
         rows: Sequence[Any],
@@ -520,6 +508,12 @@ class SummaryReportDoc(BaseDocTemplate):
             onPage=self._portfolio_page,
         )
 
+        clanview_template = PageTemplate(
+            id="ClanviewBody",
+            frames=[body_frame],
+            onPage=self._clanview_page,
+        )
+
         performance_template = PageTemplate(
             id="PerformanceBody",
             frames=[body_frame],
@@ -541,6 +535,7 @@ class SummaryReportDoc(BaseDocTemplate):
         self.addPageTemplates([
             cover_template,
             portfolio_template,
+            clanview_template,
             performance_template,
             profitbook_template,
             last_template,
@@ -549,6 +544,7 @@ class SummaryReportDoc(BaseDocTemplate):
         # hooks
         self.cover_page_fn = None
         self.portfolio_page_fn = None
+        self.clanview_page_fn = None
         self.performance_page_fn = None
         self.profitbook_page_fn = None
         self.last_page_fn = None
@@ -560,6 +556,10 @@ class SummaryReportDoc(BaseDocTemplate):
     def _portfolio_page(self, canvas, doc):
         if self.portfolio_page_fn:
             self.portfolio_page_fn(canvas, doc)
+
+    def _clanview_page(self, canvas, doc):
+            if self.clanview_page_fn:
+                self.clanview_page_fn(canvas, doc)
 
     def _performance_page(self, canvas, doc):
         if self.performance_page_fn:
@@ -755,8 +755,33 @@ class SummaryReportBuilder:
         ]))
         return t
     
+
     def _perf_long_table(self, rows, col_widths, group_row_indices=None):
-        t = LongTable(rows, colWidths=col_widths, repeatRows=1)
+        wrap_style = ParagraphStyle(
+            name="WrapFirstCol",
+            fontName="Helvetica",
+            fontSize=8,
+            leading=9,
+            alignment=TA_LEFT,
+            wordWrap="CJK",
+        )
+
+        def wrap_first_col(v):
+            if isinstance(v, Paragraph):
+                return v
+            return Paragraph(str(v or "-").replace("\n", "<br/>"), wrap_style)
+
+        wrapped_rows = []
+        for r_idx, row in enumerate(rows):
+            if r_idx == 0:
+                wrapped_rows.append(row)
+            else:
+                new_row = list(row)
+                if new_row:
+                    new_row[0] = wrap_first_col(new_row[0])
+                wrapped_rows.append(new_row)
+
+        t = LongTable(wrapped_rows, colWidths=col_widths, repeatRows=1)
 
         # Base styles
         style_commands = [
@@ -781,14 +806,75 @@ class SummaryReportBuilder:
             ("FONTNAME", (0, 1), (-1, 1), "Helvetica-Bold"),
         ]
 
-        # TOTAL row: row 1 if present
         if len(rows) > 1:
             style_commands.extend([
                 ("BACKGROUND", (0, 1), (-1, 1), colors.HexColor("#eef6ff")),
                 ("FONTNAME", (0, 1), (-1, 1), "Helvetica-Bold"),
             ])
 
-        # Add bold style for each group label row
+        if group_row_indices:
+            for r in group_row_indices:
+                style_commands.append(("FONTNAME", (0, r), (-1, r), "Helvetica-Bold"))
+
+        t.setStyle(TableStyle(style_commands))
+        return t
+
+    def _perf_table_family(self, rows, col_widths, group_row_indices=None):
+        wrap_style = ParagraphStyle(
+            name="WrapCell",
+            fontName="Helvetica",
+            fontSize=8,
+            leading=9,
+            alignment=TA_LEFT,
+            wordWrap="CJK",
+        )
+
+        def wrap_cell(v):
+            if isinstance(v, Paragraph):
+                return v
+            return Paragraph(str(v or "-").replace("\n", "<br/>"), wrap_style)
+
+        wrapped_rows = []
+        for r_idx, row in enumerate(rows):
+            if r_idx == 0:
+                wrapped_rows.append(row)
+            else:
+                new_row = list(row)
+                if len(new_row) > 0:
+                    new_row[0] = wrap_cell(new_row[0])   # Fund
+                if len(new_row) > 1:
+                    new_row[1] = wrap_cell(new_row[1])   # Held by
+                wrapped_rows.append(new_row)
+
+        t = LongTable(wrapped_rows, colWidths=col_widths, repeatRows=1)
+        
+        # Base styles
+        style_commands = [
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#e8eef7")),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("VALIGN", (0, 0), (-1, 0), "TOP"),
+
+            ("FONTSIZE", (0, 0), (-1, -1), 8),
+            ("GRID", (0, 0), (-1, -1), 0.35, colors.lightgrey),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("ALIGN", (0, 0), (0, -1), "LEFT"),
+            ("ALIGN", (2, 0), (-1, -1), "RIGHT"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 4),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 4),
+            ("TOPPADDING", (0, 0), (-1, -1), 3),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+            ("WRAP", (0, 0), (-1, -1), True),
+
+            ("BACKGROUND", (0, 1), (-1, 1), colors.HexColor("#eef6ff")),
+            ("FONTNAME", (0, 1), (-1, 1), "Helvetica-Bold"),
+        ]
+
+        if len(rows) > 1:
+            style_commands.extend([
+                ("BACKGROUND", (0, 1), (-1, 1), colors.HexColor("#eef6ff")),
+                ("FONTNAME", (0, 1), (-1, 1), "Helvetica-Bold"),
+            ])
+
         if group_row_indices:
             for r in group_row_indices:
                 style_commands.append(("FONTNAME", (0, r), (-1, r), "Helvetica-Bold"))
@@ -797,7 +883,31 @@ class SummaryReportBuilder:
         return t
 
     def _profit_table(self, rows, col_widths):
-        table = Table(rows, colWidths=col_widths, repeatRows=1)  # repeat first row on each page
+        wrap_style = ParagraphStyle(
+            name="WrapFirstCol",
+            fontName="Helvetica",
+            fontSize=8,
+            leading=9,
+            alignment=TA_LEFT,
+            wordWrap="CJK",
+        )
+
+        def wrap_first_col(v):
+            if isinstance(v, Paragraph):
+                return v
+            return Paragraph(str(v or "-").replace("\n", "<br/>"), wrap_style)
+
+        wrapped_rows = []
+        for r_idx, row in enumerate(rows):
+            if r_idx == 0:
+                wrapped_rows.append(row)
+            else:
+                new_row = list(row)
+                if new_row:
+                    new_row[0] = wrap_first_col(new_row[0])
+                wrapped_rows.append(new_row)
+
+        table = Table(wrapped_rows, colWidths=col_widths, repeatRows=1)
         table.setStyle(TableStyle([
             # Header
             ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#e8eef7")),
@@ -819,11 +929,6 @@ class SummaryReportBuilder:
             ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
         ]))
         return table
-    
-    def _profit_table_no_repeat(self, data, widths):
-        t = Table(data, colWidths=widths, repeatRows=0)
-        t.setStyle(self._table_style())
-        return t
     
     def make_pie_chart(title, data, labels, width=180, height=120):
         drawing = Drawing(width, height)
@@ -1068,6 +1173,7 @@ class SummaryReportBuilder:
         )
         doc.cover_page_fn = self._cover_page
         doc.portfolio_page_fn = self._portfolio_page_body
+        doc.clanview_page_fn = self._clanview_page_body
         doc.performance_page_fn = self._performance_page_body
         doc.profitbook_page_fn = self._profitbook_page_body
         doc.last_page_fn = self._last_page
@@ -1158,6 +1264,9 @@ class SummaryReportBuilder:
 
     def _portfolio_page_body(self, canvas, doc):
         self._draw_common_body_chrome(canvas, doc, header_title="Portfolio")
+
+    def _clanview_page_body(self, canvas, doc):
+        self._draw_common_body_chrome(canvas, doc, header_title="Clanview")
 
     def _performance_page_body(self, canvas, doc):
         self._draw_common_body_chrome(canvas, doc, header_title="Performance")
@@ -1294,6 +1403,7 @@ class SummaryReportBuilder:
         kpi = getattr(report, "kpi", None)
         doc.header_title = "Summary"
         story.append(Spacer(1, 0))
+        user_type = str(getattr(kpi, "user_type", "individual")).strip().lower()
 
         story.append(Paragraph("Overview", self.styles["SectionHead"]))
         story.append(Spacer(1, 8))
@@ -1317,7 +1427,7 @@ class SummaryReportBuilder:
         story.append(Spacer(1, 8))
 
         return_row = [
-            KPIBox(60 * mm, 25 * mm, "Absolute", self._fmt_pct(self._safe(kpi, "ret", default=0.0)), "Simple Return", "#65C1B7"),
+            KPIBox(60 * mm, 25 * mm, "Absolute (Current Holdings)", self._fmt_pct(self._safe(kpi, "ret", default=0.0)), "Simple Return", "#65C1B7"),
             KPIBox(60 * mm, 25 * mm, "XIRR (Current Holdings)", self._fmt_pct(self._safe(kpi, "x1", default=0.0)), "Annualized Return", "#65C1B7"),
             KPIBox(60 * mm, 25 * mm, "XIRR (Since Inception)", self._fmt_pct(self._safe(kpi, "x2", default=0.0)), "Annualized Return", "#65C1B7"),
             KPIBox(60 * mm, 25 * mm, "Valuation", self._safe(kpi, "val_date", default="-"), "Date", "#65C1B7"),
@@ -1408,123 +1518,345 @@ class SummaryReportBuilder:
             story.append(Image(chart_path, width=256 * mm, height=64 * mm))
             story.append(Spacer(1, 2))
 
-        ### Performance Page ###
-
-        def norm(v):
-            return str(v or "").strip().lower()
-
-        perf_isin = sorted(
-            getattr(report, "perf_isin", []) or [],
-            key=lambda x: (
-                norm(getattr(x, "g", "")),
-                norm(getattr(x, "c", "")),
-                norm(getattr(x, "fund_display", getattr(x, "p", ""))),
-            )
-        )
+        ### Family Summary Page ###
 
         kpi = getattr(report, "kpi", None)
-        pv = float(getattr(kpi, "pv", 0.0) or 0.0)
-        has_current_holdings = round(pv, 0) != 0
+        doc.header_title = "Clanview"
+        story.append(Spacer(1, 0))
+        user_type = str(getattr(kpi, "user_type", "individual")).strip().lower()
 
-        perf_strat = getattr(report, "perf_strat", None)
-        if perf_strat is None and isinstance(report, dict):
-            perf_strat = report.get("perf_strat")
-        perf_strat = perf_strat or []
-
-        has_perf_data = has_current_holdings and (bool(perf_isin) or bool(perf_strat))
-
-        if has_perf_data:
-            story.append(NextPageTemplate("PerformanceBody"))
+        if user_type == "family":
+            
+            story.append(NextPageTemplate("ClanviewBody"))
             story.append(PageBreak())
-
-            doc.header_title = "Performance"
             story.append(Spacer(1, 0))
 
-            perf_strat_map = {}
-            for x in perf_strat:
-                key = norm(x.get("g", "")) if isinstance(x, dict) else norm(getattr(x, "g", ""))
-                perf_strat_map[key] = x
+            pan_summary = getattr(report, "pan_summary", None)
+            if pan_summary is None and isinstance(report, dict):
+                pan_summary = report.get("pan_summary", [])
 
-            perf_colWidth = [85 * mm, 18 * mm, 28 * mm, 28 * mm, 28 * mm, 27 * mm, 32 * mm, 27 * mm]
+            if pan_summary:
+                for item in pan_summary:
+                    clan_total = sum(float(self._safe(x, "cv", default=0.0)) for x in pan_summary) or 1.0
+                    share = (float(self._safe(item, "cv", default=0.0)) / clan_total) * 100
 
-            rows = [[
-                "Fund",
-                "Weight",
-                "Investment",
-                "Current Value",
-                "Gains",
-                "Return(Abs)",
-                "XIRR(Holdings)",
-                "XIRR(SI)",
-            ]]
+                    story.append(
+                        Paragraph(
+                            f'{self._safe(item, "n", default="-")} ({share:.2f}%)',
+                            self.styles["SectionHead"]
+                        )
+                    )
+                    # story.append(Paragraph(self._safe(item, "n", default="-"), self.styles["SectionHead"]))
+                    story.append(Spacer(1, 8))
 
-            group_row_indices = []
+                    pan_row = [
+                        CLANBox(33 * mm, 25 * mm, "Portfolio Value", self._fmt(self._safe(item, "cv", default=0.0)), "INR", "#65C1B7"),
+                        CLANBox(33 * mm, 25 * mm, "Investment Value", self._fmt(self._safe(item, "inv", default=0.0)), "INR", "#65C1B7"),
+                        CLANBox(33 * mm, 25 * mm, "Unrealised Gains", self._fmt(self._safe(item, "ugl", default=0.0)), "INR", "#65C1B7"),
+                        CLANBox(33 * mm, 25 * mm, "Realised Gains", self._fmt(self._safe(item, "rgl", default=0.0)), "INR", "#65C1B7"),
+                        CLANBox(33 * mm, 25 * mm, "Absolute (Current Holdings)", self._fmt_pct(self._safe(item, "ret", default=0.0)), "Simple Return", "#65C1B7"),
+                        CLANBox(33 * mm, 25 * mm, "XIRR (Current Holdings)", self._fmt_pct(self._safe(item, "x1", default=0.0)), "Annualized Return", "#65C1B7"),
+                        CLANBox(35 * mm, 25 * mm, "XIRR (Since Inception)", self._fmt_pct(self._safe(item, "x2", default=0.0)), "Annualized Return", "#65C1B7"),
+                    ]
 
-            if not perf_isin:
-                rows.append(["-", "-", "-", "-", "-", "-", "-", "-"])
-            else:
-                pan_summary = getattr(report, "pan_summary", None)
-                if pan_summary is None and isinstance(report, dict):
-                    pan_summary = report.get("pan_summary")
-                pan_item = (pan_summary or [None])[0]
+                    story.append(Table(
+                        [[pan_row[0], pan_row[1], pan_row[2], pan_row[3], pan_row[4], pan_row[5], pan_row[6]]],
+                        colWidths=[36.5 * mm, 36.5 * mm, 36.5 * mm, 36.5 * mm, 36.5 * mm, 36.5 * mm, 36.5 * mm],
+                        style=TableStyle([
+                            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                            ("LEFTPADDING", (0, 0), (-1, -1), 2),
+                            ("RIGHTPADDING", (0, 0), (-1, -1), 2),
+                            ("TOPPADDING", (0, 0), (-1, -1), 0),
+                            ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+                        ])
+                    ))
+                    story.append(Spacer(1, 8))
 
-                if pan_item:
-                    rows.append([
-                        Paragraph("<b>Portfolio</b>", self.styles["BodySmall"]),
-                        "",
-                        self._fmt(getattr(pan_item, "inv", 0.0)),
-                        self._fmt(getattr(pan_item, "cv", 0.0)),
-                        self._fmt(getattr(pan_item, "ugl", 0.0)),
-                        self._fmt_pct(getattr(pan_item, "ret", 0.0)),
-                        self._fmt_pct(getattr(pan_item, "x1", 0.0)),
-                        self._fmt_pct(getattr(pan_item, "x2", 0.0)),
-                    ])
+        ### Family Performance Page ###
 
-                for group_key, group_iter in groupby(perf_isin, key=lambda x: norm(getattr(x, "g", "")) or "-"):
-                    group_items = list(group_iter)
-                    group_label = getattr(group_items[0], "g", group_key.title()) if group_items else group_key.title()
+        kpi = getattr(report, "kpi", None)
+        user_type = str(getattr(kpi, "user_type", "individual")).strip().lower()
 
-                    g = perf_strat_map.get(group_key)
-                    if g is None:
-                        g = type("G", (), {
-                            "w": 0.0, "inv": 0.0, "cv": 0.0, "ugl": 0.0,
-                            "ret": 0.0, "x1": 0.0, "x2": 0.0
-                        })()
+        if user_type == "family":
 
-                    group_row_indices.append(len(rows))
-                    rows.append([
-                        Paragraph(f"<b>{group_label}</b>", self.styles["BodySmall"]),
-                        self._fmt_pct(getattr(g, "w", 0.0)),
-                        self._fmt(getattr(g, "inv", 0.0)),
-                        self._fmt(getattr(g, "cv", 0.0)),
-                        self._fmt(getattr(g, "ugl", 0.0)),
-                        self._fmt_pct(getattr(g, "ret", 0.0)),
-                        self._fmt_pct(getattr(g, "x1", 0.0)),
-                        self._fmt_pct(getattr(g, "x2", 0.0)),
-                    ])
+            ### Family Performance Page ###
 
-                    for category, cat_iter in groupby(group_items, key=lambda x: norm(getattr(x, "c", "")) or "-"):
-                        cat_items = list(cat_iter)
-                        category_label = getattr(cat_items[0], "c", category.title()) if cat_items else category.title()
+            def norm(v):
+                return str(v or "").strip().lower()
 
+            def norm_pan(v):
+                return str(v or "").strip().upper()
+
+            def get_val(obj, key, default=""):
+                if isinstance(obj, dict):
+                    return obj.get(key, default)
+                return getattr(obj, key, default)
+
+            def unique_preserve(seq):
+                seen = set()
+                out = []
+                for x in seq:
+                    x = str(x or "").strip()
+                    if x and x not in seen:
+                        seen.add(x)
+                        out.append(x)
+                return out
+
+
+            perf_isin = sorted(
+                getattr(report, "perf_isin", []) or [],
+                key=lambda x: (
+                    norm(get_val(x, "g", "")),
+                    norm(get_val(x, "c", "")),
+                    norm(get_val(x, "fund_display", get_val(x, "p", ""))),
+                )
+            )
+
+            kpi = getattr(report, "kpi", None)
+            pv = float(get_val(kpi, "pv", 0.0) or 0.0) if kpi is not None else 0.0
+            has_current_holdings = round(pv, 0) != 0
+
+            perf_strat = getattr(report, "perf_strat", None)
+            if perf_strat is None and isinstance(report, dict):
+                perf_strat = report.get("perf_strat")
+            perf_strat = perf_strat or []
+
+            has_perf_data = has_current_holdings and (bool(perf_isin) or bool(perf_strat))
+
+            if has_perf_data:
+                story.append(NextPageTemplate("PerformanceBody"))
+                story.append(PageBreak())
+
+                doc.header_title = "Performance"
+                story.append(Spacer(1, 0))
+
+                perf_strat_map = {}
+                for x in perf_strat:
+                    key = norm(get_val(x, "g", ""))
+                    perf_strat_map[key] = x
+                
+                perf_colWidth = [78 * mm, 35 * mm, 16 * mm, 24 * mm, 24 * mm, 24 * mm, 24 * mm, 24 * mm, 24 * mm]
+
+                rows = [[
+                    "Fund",
+                    "Investor Name",
+                    "Weight",
+                    "Investment",
+                    "Current Value",
+                    "Gains",
+                    "Return(Abs)",
+                    "XIRR(Holdings)",
+                    "XIRR(SI)",
+                ]]
+
+                group_row_indices = []
+
+                pan_source = getattr(report, "pan_summary", None)
+                if pan_source is None and isinstance(report, dict):
+                    pan_source = report.get("pan_summary", [])
+
+                pan_to_name = {}
+                for item in pan_source or []:
+                    pan = norm_pan(get_val(item, "p", ""))
+                    name = str(get_val(item, "n", "") or get_val(item, "inv_name", "") or "").strip()
+                    if pan and name:
+                        pan_to_name.setdefault(pan, []).append(name)
+
+                def held_by_for_row(x):
+                    pan = norm_pan(get_val(x, "p", ""))
+                    names = pan_to_name.get(pan, [])
+                    names = unique_preserve(names)
+                    return ", ".join(names) if names else "-"
+
+                if not perf_isin:
+                    rows.append(["-", "-", "-", "-", "-", "-", "-", "-", "-"])
+                else:
+                    kpi = getattr(report, "kpi", None)
+                    if kpi is None and isinstance(report, dict):
+                        kpi = report.get("kpi")
+                    kpi_item = (kpi or [None])
+
+                    if kpi_item:
                         rows.append([
-                            Paragraph(f'<font color="#24579e"><b>{category_label}</b></font>', self.styles["BodySmall"]),
-                            "", "", "", "", "", "", "",
+                            Paragraph("<b>Portfolio Metrics</b>", self.styles["BodySmall"]),
+                            "",
+                            self._fmt(get_val(kpi_item, "w", "-")),
+                            self._fmt(get_val(kpi_item, "inv", 0.0)),
+                            self._fmt(get_val(kpi_item, "pv", 0.0)),
+                            self._fmt(get_val(kpi_item, "ugl", 0.0)),
+                            self._fmt_pct(get_val(kpi_item, "ret", 0.0)),
+                            self._fmt_pct(get_val(kpi_item, "x1", 0.0)),
+                            self._fmt_pct(get_val(kpi_item, "x2", 0.0)),
                         ])
 
-                        for x in cat_items:
+                    for group_key, group_iter in groupby(perf_isin, key=lambda x: norm(get_val(x, "g", "")) or "-"):
+                        group_items = list(group_iter)
+                        group_label = get_val(group_items[0], "g", group_key.title()) if group_items else group_key.title()
+
+                        g = perf_strat_map.get(group_key)
+                        if g is None:
+                            g = type("G", (), {
+                                "w": 0.0, "inv": 0.0, "cv": 0.0, "ugl": 0.0,
+                                "ret": 0.0, "x1": 0.0, "x2": 0.0
+                            })()
+
+                        group_row_indices.append(len(rows))
+                        rows.append([
+                            Paragraph(f"<b>{group_label}</b>", self.styles["BodySmall"]),
+                            "",
+                            self._fmt_pct(get_val(g, "w", 0.0)),
+                            self._fmt(get_val(g, "inv", 0.0)),
+                            self._fmt(get_val(g, "cv", 0.0)),
+                            self._fmt(get_val(g, "ugl", 0.0)),
+                            self._fmt_pct(get_val(g, "ret", 0.0)),
+                            self._fmt_pct(get_val(g, "x1", 0.0)),
+                            self._fmt_pct(get_val(g, "x2", 0.0)),
+                        ])
+
+                        for category, cat_iter in groupby(group_items, key=lambda x: norm(get_val(x, "c", "")) or "-"):
+                            cat_items = list(cat_iter)
+                            category_label = get_val(cat_items[0], "c", category.title()) if cat_items else category.title()
+
                             rows.append([
-                                getattr(x, "fund_display", getattr(x, "p", "-")),
-                                self._fmt(getattr(x, "w", 0.0)),
-                                self._fmt(getattr(x, "inv", 0.0)),
-                                self._fmt(getattr(x, "cv", 0.0)),
-                                self._fmt(getattr(x, "ugl", 0.0)),
-                                self._fmt_pct(getattr(x, "ret", 0.0)),
-                                self._fmt_pct(getattr(x, "x1", 0.0)),
-                                self._fmt_pct(getattr(x, "x2", 0.0)),
+                                Paragraph(f'<font color="#24579e"><b>{category_label}</b></font>', self.styles["BodySmall"]),
+                                "",
+                                "", "", "", "", "", "", "",
                             ])
 
-            story.append(self._perf_long_table(rows, perf_colWidth, group_row_indices))
+                            for x in cat_items:
+                                rows.append([
+                                    get_val(x, "fund_display", get_val(x, "p", "-")),
+                                    held_by_for_row(x),
+                                    self._fmt(get_val(x, "w", 0.0)),
+                                    self._fmt(get_val(x, "inv", 0.0)),
+                                    self._fmt(get_val(x, "cv", 0.0)),
+                                    self._fmt(get_val(x, "ugl", 0.0)),
+                                    self._fmt_pct(get_val(x, "ret", 0.0)),
+                                    self._fmt_pct(get_val(x, "x1", 0.0)),
+                                    self._fmt_pct(get_val(x, "x2", 0.0)),
+                                ])
+
+                story.append(self._perf_table_family(rows, perf_colWidth, group_row_indices))
+
+        else:
+
+        ### Individual Performance Page ###
+
+            def norm(v):
+                return str(v or "").strip().lower()
+
+            perf_isin = sorted(
+                getattr(report, "perf_isin", []) or [],
+                key=lambda x: (
+                    norm(getattr(x, "g", "")),
+                    norm(getattr(x, "c", "")),
+                    norm(getattr(x, "fund_display", getattr(x, "p", ""))),
+                )
+            )
+
+            kpi = getattr(report, "kpi", None)
+            pv = float(getattr(kpi, "pv", 0.0) or 0.0)
+            has_current_holdings = round(pv, 0) != 0
+
+            perf_strat = getattr(report, "perf_strat", None)
+            if perf_strat is None and isinstance(report, dict):
+                perf_strat = report.get("perf_strat")
+            perf_strat = perf_strat or []
+
+            has_perf_data = has_current_holdings and (bool(perf_isin) or bool(perf_strat))
+
+            if has_perf_data:
+                story.append(NextPageTemplate("PerformanceBody"))
+                story.append(PageBreak())
+
+                doc.header_title = "Performance"
+                story.append(Spacer(1, 0))
+
+                perf_strat_map = {}
+                for x in perf_strat:
+                    key = norm(x.get("g", "")) if isinstance(x, dict) else norm(getattr(x, "g", ""))
+                    perf_strat_map[key] = x
+
+                perf_colWidth = [85 * mm, 18 * mm, 28 * mm, 28 * mm, 28 * mm, 27 * mm, 32 * mm, 27 * mm]
+
+                rows = [[
+                    "Fund",
+                    "Weight",
+                    "Investment",
+                    "Current Value",
+                    "Gains",
+                    "Return(Abs)",
+                    "XIRR(Holdings)",
+                    "XIRR(SI)",
+                ]]
+
+                group_row_indices = []
+
+                if not perf_isin:
+                    rows.append(["-", "-", "-", "-", "-", "-", "-", "-"])
+                else:
+                    pan_summary = getattr(report, "pan_summary", None)
+                    if pan_summary is None and isinstance(report, dict):
+                        pan_summary = report.get("pan_summary")
+                    pan_item = (pan_summary or [None])[0]
+
+                    if pan_item:
+                        rows.append([
+                            Paragraph("<b>Portfolio Metrics</b>", self.styles["BodySmall"]),
+                            "",
+                            self._fmt(getattr(pan_item, "inv", 0.0)),
+                            self._fmt(getattr(pan_item, "cv", 0.0)),
+                            self._fmt(getattr(pan_item, "ugl", 0.0)),
+                            self._fmt_pct(getattr(pan_item, "ret", 0.0)),
+                            self._fmt_pct(getattr(pan_item, "x1", 0.0)),
+                            self._fmt_pct(getattr(pan_item, "x2", 0.0)),
+                        ])
+
+                    for group_key, group_iter in groupby(perf_isin, key=lambda x: norm(getattr(x, "g", "")) or "-"):
+                        group_items = list(group_iter)
+                        group_label = getattr(group_items[0], "g", group_key.title()) if group_items else group_key.title()
+
+                        g = perf_strat_map.get(group_key)
+                        if g is None:
+                            g = type("G", (), {
+                                "w": 0.0, "inv": 0.0, "cv": 0.0, "ugl": 0.0,
+                                "ret": 0.0, "x1": 0.0, "x2": 0.0
+                            })()
+
+                        group_row_indices.append(len(rows))
+                        rows.append([
+                            Paragraph(f"<b>{group_label}</b>", self.styles["BodySmall"]),
+                            self._fmt_pct(getattr(g, "w", 0.0)),
+                            self._fmt(getattr(g, "inv", 0.0)),
+                            self._fmt(getattr(g, "cv", 0.0)),
+                            self._fmt(getattr(g, "ugl", 0.0)),
+                            self._fmt_pct(getattr(g, "ret", 0.0)),
+                            self._fmt_pct(getattr(g, "x1", 0.0)),
+                            self._fmt_pct(getattr(g, "x2", 0.0)),
+                        ])
+
+                        for category, cat_iter in groupby(group_items, key=lambda x: norm(getattr(x, "c", "")) or "-"):
+                            cat_items = list(cat_iter)
+                            category_label = getattr(cat_items[0], "c", category.title()) if cat_items else category.title()
+
+                            rows.append([
+                                Paragraph(f'<font color="#24579e"><b>{category_label}</b></font>', self.styles["BodySmall"]),
+                                "", "", "", "", "", "", "",
+                            ])
+
+                            for x in cat_items:
+                                rows.append([
+                                    getattr(x, "fund_display", getattr(x, "p", "-")),
+                                    self._fmt(getattr(x, "w", 0.0)),
+                                    self._fmt(getattr(x, "inv", 0.0)),
+                                    self._fmt(getattr(x, "cv", 0.0)),
+                                    self._fmt(getattr(x, "ugl", 0.0)),
+                                    self._fmt_pct(getattr(x, "ret", 0.0)),
+                                    self._fmt_pct(getattr(x, "x1", 0.0)),
+                                    self._fmt_pct(getattr(x, "x2", 0.0)),
+                                ])
+
+                story.append(self._perf_long_table(rows, perf_colWidth, group_row_indices))
 
         ### Profitbook Page ###
 
@@ -1564,7 +1896,6 @@ class SummaryReportBuilder:
 
             kpi = getattr(report, "kpi", None)
             user_type = str(getattr(kpi, "user_type", "individual")).strip().lower()
-            log(f"Client Type for Profitbook={user_type}")
 
             profitbook = sorted(
                 profitbook,

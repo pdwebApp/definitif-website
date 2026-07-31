@@ -1,11 +1,8 @@
-import base64
 import datetime
 import time
 import json
 import smtplib
 import sys
-from email import encoders
-from email.message import EmailMessage
 from email.mime.application import MIMEApplication
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
@@ -15,7 +12,6 @@ from pathlib import Path
 from config import GMAIL_SENDER, GMAIL_APP_PASSWORD, ARTIFACTS_DIR
 from report_models import ClientReportData
 from pdf_builders import SummaryReportBuilder
-from pdf_builders import get_report_email_body_date
 from supabase_storage import fetch_json
 
 

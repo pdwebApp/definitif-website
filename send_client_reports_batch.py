@@ -34,7 +34,7 @@ def load_clients_map():
             flush=True,
         )
 
-        if user_type in {"admin", "family"}:
+        if user_type in {"admin"}:
             continue
 
         if not login:

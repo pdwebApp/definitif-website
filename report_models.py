@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field, asdict
 from typing import Any, Dict, List, Optional
 
+from h11 import Data
+
 
 def _to_float(v: Any, default: float = 0.0) -> float:
     if v is None or v == "":
@@ -27,6 +29,19 @@ def _to_str(v: Any, default: str = "") -> str:
         return default
     return str(v)
 
+def _to_list(value: Any) -> List[str]:
+    return list(value) if isinstance(value, list) else []
+
+@dataclass
+class UserPans:
+    pans: List[str] = None
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "UserPans":
+        data = data or {}
+        return cls(
+            pans=_to_list(data.get("pans")),
+        )
 
 @dataclass
 class KPI:
@@ -127,6 +142,7 @@ def _remap_keys(obj: Any) -> Any:
 
 @dataclass
 class ClientReportData:
+    pans: List[UserPans] = field(default_factory=list)
     kpi: KPI = field(default_factory=KPI)
     holdings: List[Holding] = field(default_factory=list)
     asset_alloc: List[AllocationItem] = field(default_factory=list)
@@ -146,6 +162,7 @@ class ClientReportData:
     def from_dict(cls, data: Dict[str, Any]) -> "ClientReportData":
         data = data or {}
         return cls(
+            pans = UserPans.from_dict(data).pans,
             kpi=KPI.from_dict(data.get("kpi") or {}),
             holdings=[Holding.from_dict(x) for x in (data.get("holdings") or [])],
             asset_alloc=[AllocationItem.from_dict(x) for x in (data.get("assetAlloc") or [])],
