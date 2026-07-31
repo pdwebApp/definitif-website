@@ -41,6 +41,7 @@ def get_admin_clients():
         .select("""
             login_id,
             name,
+            user_type,
             pan,
             mfu_can,
             mobile,

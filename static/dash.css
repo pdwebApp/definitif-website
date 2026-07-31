@@ -258,6 +258,49 @@ line-height:1.25;
   table-layout: auto;
 }
 
+#adminClientsTable th,
+#adminClientsTable td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#adminClientsTable th:nth-child(2),
+#adminClientsTable td:nth-child(2) {
+  text-align: left;
+}
+
+#adminClientsTable td.client-col {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+#adminClientsTable th:nth-child(3),
+#adminClientsTable td:nth-child(3) {
+  text-align: left;
+}
+
+.admin-client-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0 16px;
+  flex-wrap: wrap;
+}
+
+.admin-client-tab {
+  padding: 8px 14px;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.admin-client-tab.active {
+  background: var(--primary-color);
+  color: var(--dark-color);
+  border-color: var(--primary-color);
+}
+
 .bulk-send-status {
   white-space: pre-line;
 }
@@ -573,7 +616,7 @@ color:#111827;
   justify-content: flex-start;
   align-items: center;
   gap: 12px;
-  background: #1e2a38; /* dark blue background */
+  
   padding: 12px 16px;
   border-radius: 8px;
 }
@@ -586,6 +629,7 @@ color:#111827;
   font-size: 13px;
   background: #fff;
   transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  width: 320px;
 }
 
 .action-group select:focus,
@@ -594,6 +638,8 @@ color:#111827;
   box-shadow: 0 0 0 2px rgba(0, 150, 136, 0.2);
   outline: none;
 }
+
+
 
 /* =========================================
 BUTTONS

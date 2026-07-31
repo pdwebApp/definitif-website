@@ -212,6 +212,13 @@ let SESSION_USER = null;   // who logged in
 let VIEW_USER = null;      // whose dashboard is currently shown
 let PAN_MAP = {};
 
+
+function capitalizeFirst(str) {
+  if (!str) return "-";
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+
 function getActiveData(){
   return activeData || rawData[currentUser]?.data || null;
 }
@@ -2135,9 +2142,36 @@ async function renderAdminClients() {
   const panel = document.getElementById("admin-clients");
   const clients = await loadAllClientSummaries();
 
+  const typeOrder = ["individual", "firm", "family", "dummy"];
+  const typeLabel = {
+    individual: "Individual",
+    firm: "Firm",
+    family: "Family",
+    dummy: "Dummy",
+  };
+
+  const capitalizeFirst = (str) => {
+    if (!str) return "-";
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  };
+
   panel.innerHTML = `
     <div class="card">
       <h3>Client Search</h3>
+
+      <div class="admin-client-tabs" role="tablist" aria-label="Client types">
+        ${typeOrder.map((type, index) => `
+          <button
+            type="button"
+            class="admin-client-tab ${index === 0 ? "active" : ""}"
+            role="tab"
+            aria-selected="${index === 0 ? "true" : "false"}"
+            data-type="${type}"
+          >
+            ${typeLabel[type]}
+          </button>
+        `).join("")}
+      </div>
 
       <div class="admin-clients-wrap">
         <div class="admin-bulk-toolbar">
@@ -2159,29 +2193,39 @@ async function renderAdminClients() {
                 <option value="manual">Send to Manual Email</option>
               </select>
 
-            <input
-              type="text"
-              id="manualEmailInput"
-              placeholder="Enter manual email(s), comma separated"
-              class="admin-manual-email-input"
-              style="display:none;"
-              data-testid="manual-email-input"
-            />
+              <input
+                type="text"
+                id="manualEmailInput"
+                placeholder="Enter manual email(s), comma separated"
+                class="admin-manual-email-input"
+                style="display:none;"
+                data-testid="manual-email-input"
+              />
 
-            <button
-              id="sendSelectedReportsBtn"
-              class="btn primary"
-              data-testid="send-selected-reports-btn"
-              disabled
-            >
-              Send Reports
-            </button>
-          </div>
+              <button
+                id="sendSelectedReportsBtn"
+                class="btn primary"
+                data-testid="send-selected-reports-btn"
+                disabled
+              >
+                Send Reports
+              </button>
+            </div>
           </div>
         </div>
 
         <div class="table-scroll admin-table-wrap">
           <table id="adminClientsTable" data-testid="admin-clients-table">
+            <colgroup>
+              <col style="width: 3%;">
+              <col style="width: 24%;">
+              <col style="width: 24%;">
+              <col style="width: 10%;">
+              <col style="width: 10%;">
+              <col style="width: 10%;">
+              <col style="width: 10%;">
+              <col style="width: 10%;">
+            </colgroup>
             <thead>
               <tr>
                 <th>
@@ -2193,21 +2237,22 @@ async function renderAdminClients() {
                   />
                 </th>
                 <th>Client</th>
+                <th>Email Connect</th>
                 <th>PAN</th>
                 <th>MFU CAN</th>
                 <th>Mobile</th>
-                <th>Email Connect</th>
                 <th>DOB</th>
                 <th>Value</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody id="adminClientsTbody">
               ${clients.map(c => `
                 <tr
                   class="admin-client-row"
                   data-login="${c.login_id}"
                   data-name="${(c.name || "").replace(/"/g, "&quot;")}"
                   data-email-connect="${(c.email_connect || "").replace(/"/g, "&quot;")}"
+                  data-user-type="${String(c.user_type || "").toLowerCase()}"
                   data-testid="client-row-${c.login_id}"
                 >
                   <td>
@@ -2219,11 +2264,11 @@ async function renderAdminClients() {
                       aria-label="Select ${c.name || c.login_id}"
                     />
                   </td>
-                  <td>${c.name || "-"}</td>
+                  <td class="client-col">${c.name || "-"}</td>
+                  <td>${c.email_connect || "-"}</td>
                   <td>${c.pan || "-"}</td>
                   <td>${c.mfu_can || "-"}</td>
                   <td>${c.mobile || "-"}</td>
-                  <td>${c.email_connect || "-"}</td>
                   <td>${c.dob || "-"}</td>
                   <td>${formatNumber(c.portfolio_value || 0)}</td>
                 </tr>
@@ -2237,6 +2282,7 @@ async function renderAdminClients() {
     </div>
   `;
 
+  const tabs = Array.from(panel.querySelectorAll(".admin-client-tab"));
   const searchInput = document.getElementById("adminClientSearch");
   const selectAll = document.getElementById("selectAllClients");
   const recipientMode = document.getElementById("recipientMode");
@@ -2244,20 +2290,44 @@ async function renderAdminClients() {
   const sendBtn = document.getElementById("sendSelectedReportsBtn");
   const selectedCount = document.getElementById("selectedClientCount");
   const statusBox = document.getElementById("bulkSendStatus");
+  const rows = Array.from(panel.querySelectorAll(".admin-client-row"));
+
+  let activeType = "individual";
+
+  function getSearchQuery() {
+    return searchInput.value.toLowerCase().trim();
+  }
+
+  function isRowVisible(row) {
+    const typeMatch = row.dataset.userType === activeType;
+    const search = getSearchQuery();
+    const textMatch = !search || row.innerText.toLowerCase().includes(search);
+    return typeMatch && textMatch;
+  }
 
   function getVisibleRows() {
-    return Array.from(document.querySelectorAll(".admin-client-row"))
-      .filter(row => row.style.display !== "none");
+    return rows.filter(row => isRowVisible(row));
   }
 
   function getSelectedRows() {
-    return Array.from(document.querySelectorAll(".client-select-checkbox:checked"))
-      .map(cb => cb.closest(".admin-client-row"))
-      .filter(Boolean);
+    return rows
+      .filter(row => row.style.display !== "none")
+      .filter(row => {
+        const cb = row.querySelector(".client-select-checkbox");
+        return cb && cb.checked;
+      });
+  }
+
+  function applyFilters() {
+    rows.forEach(row => {
+      row.style.display = isRowVisible(row) ? "" : "none";
+    });
+    updateBulkUI();
   }
 
   function updateBulkUI() {
-    const visibleCheckboxes = getVisibleRows()
+    const visibleRows = getVisibleRows();
+    const visibleCheckboxes = visibleRows
       .map(row => row.querySelector(".client-select-checkbox"))
       .filter(Boolean);
 
@@ -2271,44 +2341,54 @@ async function renderAdminClients() {
       checkedVisible.length > 0 &&
       checkedVisible.length < visibleCheckboxes.length;
 
-    const selectedRows = getSelectedRows();
+    const selectedRows = rows.filter(row => {
+      const cb = row.querySelector(".client-select-checkbox");
+      return cb && cb.checked;
+    });
+
     selectedCount.textContent = `${selectedRows.length} selected`;
     sendBtn.disabled = selectedRows.length === 0;
   }
 
-  searchInput.addEventListener("input", e => {
-    const q = e.target.value.toLowerCase().trim();
+  function setActiveTab(type) {
+    activeType = type;
 
-    document.querySelectorAll(".admin-client-row").forEach(row => {
-      row.style.display = row.innerText.toLowerCase().includes(q) ? "" : "none";
+    tabs.forEach(btn => {
+      const active = btn.dataset.type === type;
+      btn.classList.toggle("active", active);
+      btn.setAttribute("aria-selected", active ? "true" : "false");
     });
 
-    updateBulkUI();
+    applyFilters();
+  }
+
+  searchInput.addEventListener("input", () => {
+    applyFilters();
   });
 
   selectAll.addEventListener("change", () => {
     const shouldCheck = selectAll.checked;
-
     getVisibleRows().forEach(row => {
       const cb = row.querySelector(".client-select-checkbox");
       if (cb) cb.checked = shouldCheck;
     });
-
     updateBulkUI();
   });
 
-  document.querySelectorAll(".client-select-checkbox").forEach(cb => {
-    cb.addEventListener("change", e => {
-      e.stopPropagation();
-      updateBulkUI();
-    });
+  rows.forEach(row => {
+    const cb = row.querySelector(".client-select-checkbox");
 
-    cb.addEventListener("click", e => {
-      e.stopPropagation();
-    });
-  });
+    if (cb) {
+      cb.addEventListener("change", e => {
+        e.stopPropagation();
+        updateBulkUI();
+      });
 
-  document.querySelectorAll(".admin-client-row").forEach(row => {
+      cb.addEventListener("click", e => {
+        e.stopPropagation();
+      });
+    }
+
     row.addEventListener("click", async e => {
       if (
         e.target.closest(".client-select-checkbox") ||
@@ -2323,142 +2403,148 @@ async function renderAdminClients() {
     });
   });
 
+  tabs.forEach(btn => {
+    btn.addEventListener("click", () => {
+      setActiveTab(btn.dataset.type);
+    });
+  });
+
   recipientMode.addEventListener("change", () => {
     manualEmailInput.style.display =
       recipientMode.value === "manual" ? "" : "none";
   });
 
   sendBtn.addEventListener("click", async () => {
-  const selectedRows = getSelectedRows();
+    const selectedRows = getSelectedRows();
 
-  if (!selectedRows.length) {
-    alert("Please select at least one client.");
-    return;
-  }
+    if (!selectedRows.length) {
+      alert("Please select at least one client.");
+      return;
+    }
 
-  const manualEmails = recipientMode.value === "manual"
-    ? manualEmailInput.value.split(",").map(v => v.trim()).filter(Boolean)
-    : [];
+    const manualEmails = recipientMode.value === "manual"
+      ? manualEmailInput.value.split(",").map(v => v.trim()).filter(Boolean)
+      : [];
 
-  if (recipientMode.value === "manual" && manualEmails.length === 0) {
-    alert("Please enter at least one manual email.");
-    return;
-  }
+    if (recipientMode.value === "manual" && manualEmails.length === 0) {
+      alert("Please enter at least one manual email.");
+      return;
+    }
 
-  const payload = {
-    clientLogins: selectedRows.map(row => row.dataset.login),
-    recipientMode: recipientMode.value,
-    manualEmails
-  };
+    const payload = {
+      clientLogins: selectedRows.map(row => row.dataset.login),
+      recipientMode: recipientMode.value,
+      manualEmails
+    };
 
-  sendBtn.disabled = true;
-  statusBox.textContent = "Starting report job...";
-
-  try {
-    const startRes = await fetch("/api/client-reports/send", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    const startText = await startRes.text();
-    let startData = null;
+    sendBtn.disabled = true;
+    statusBox.textContent = "Starting report job...";
 
     try {
-      startData = startText ? JSON.parse(startText) : null;
-    } catch (parseErr) {
-      startData = null; // Silently handle
-    }
-
-    if (!startRes.ok) {
-      throw new Error(
-        startData?.error ||
-        startData?.message ||
-        `Request failed (${startRes.status})`
-      );
-    }
-
-    const jobId = startData?.jobId;
-    if (!jobId) {
-      throw new Error("Missing jobId from server");
-    }
-
-    statusBox.textContent = `Report job started. Job ID: ${jobId}`;
-
-    let finalResult = null;
-    const pollIntervalMs = 2500;
-    const maxPolls = 720;
-
-    for (let attempt = 1; attempt <= maxPolls; attempt++) {
-      await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
-
-      const pollRes = await fetch(`/api/client-reports/status/${encodeURIComponent(jobId)}`);
-      const pollText = await pollRes.text();
-
-      let pollData = null;
-      try {
-        pollData = pollText ? JSON.parse(pollText) : null;
-      } catch (parseErr) {
-        pollData = null; // Silently handle
-      }
-
-      if (!pollRes.ok) {
-        throw new Error(
-          pollData?.error ||
-          pollData?.message ||
-          `Status check failed (${pollRes.status})`
-        );
-      }
-
-      const status = pollData?.status;
-
-      if (status === "queued" || status === "running") {
-        statusBox.textContent = `Report job ${status}...`;
-        continue;
-      }
-
-      if (status === "error") {
-        throw new Error(
-          pollData?.result?.error ||
-          pollData?.result?.details ||
-          "Report job failed"
-        );
-      }
-
-      if (status === "done") {
-        finalResult = pollData?.result || null;
-        break;
-      }
-
-      throw new Error(`Unexpected job status: ${status || "unknown"}`);
-    }
-
-    if (!finalResult) {
-      throw new Error("Timed out while waiting for report job completion");
-    }
-
-    const lines = [finalResult?.message || "Reports processed successfully."];
-
-    if (Array.isArray(finalResult?.results)) {
-      finalResult.results.forEach(item => {
-        lines.push(
-          `${item.clientName || item.login}: ` +
-          `Portfolio Statement - ${item.portfolioStmtPdf ? "Yes" : "No"}, ` +
-          `Email - ${item.emailSent ? "Sent" : "Not Sent"}`
-        );
+      const startRes = await fetch("/api/client-reports/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
       });
+
+      const startText = await startRes.text();
+      let startData = null;
+
+      try {
+        startData = startText ? JSON.parse(startText) : null;
+      } catch (parseErr) {
+        startData = null;
+      }
+
+      if (!startRes.ok) {
+        throw new Error(
+          startData?.error ||
+          startData?.message ||
+          `Request failed (${startRes.status})`
+        );
+      }
+
+      const jobId = startData?.jobId;
+      if (!jobId) {
+        throw new Error("Missing jobId from server");
+      }
+
+      statusBox.textContent = `Report job started. Job ID: ${jobId}`;
+
+      let finalResult = null;
+      const pollIntervalMs = 2500;
+      const maxPolls = 720;
+
+      for (let attempt = 1; attempt <= maxPolls; attempt++) {
+        await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
+
+        const pollRes = await fetch(`/api/client-reports/status/${encodeURIComponent(jobId)}`);
+        const pollText = await pollRes.text();
+
+        let pollData = null;
+        try {
+          pollData = pollText ? JSON.parse(pollText) : null;
+        } catch (parseErr) {
+          pollData = null;
+        }
+
+        if (!pollRes.ok) {
+          throw new Error(
+            pollData?.error ||
+            pollData?.message ||
+            `Status check failed (${pollRes.status})`
+          );
+        }
+
+        const status = pollData?.status;
+
+        if (status === "queued" || status === "running") {
+          statusBox.textContent = `Report job ${status}...`;
+          continue;
+        }
+
+        if (status === "error") {
+          throw new Error(
+            pollData?.result?.error ||
+            pollData?.result?.details ||
+            "Report job failed"
+          );
+        }
+
+        if (status === "done") {
+          finalResult = pollData?.result || null;
+          break;
+        }
+
+        throw new Error(`Unexpected job status: ${status || "unknown"}`);
+      }
+
+      if (!finalResult) {
+        throw new Error("Timed out while waiting for report job completion");
+      }
+
+      const lines = [finalResult?.message || "Reports processed successfully."];
+
+      if (Array.isArray(finalResult?.results)) {
+        finalResult.results.forEach(item => {
+          lines.push(
+            `${item.clientName || item.login}: ` +
+            `Portfolio Statement - ${item.portfolioStmtPdf ? "Yes" : "No"}, ` +
+            `Email - ${item.emailSent ? "Sent" : "Not Sent"}`
+          );
+        });
+      }
+
+      statusBox.textContent = lines.join("\n");
+    } catch (err) {
+      statusBox.textContent = `Send failed: ${err.message}`;
+    } finally {
+      sendBtn.disabled = false;
+      updateBulkUI();
     }
+  });
 
-    statusBox.textContent = lines.join("\n");
-  } catch (err) {
-    statusBox.textContent = `Send failed: ${err.message}`;
-  } finally {
-    sendBtn.disabled = false;
-    updateBulkUI();
-  }
-});
-
-  updateBulkUI();
+  setActiveTab("individual");
 }
 
 async function openAdminClient(login) {
@@ -4158,6 +4244,11 @@ async function renderAdminOverview() {
       </div>
 
       <div class="card admin-kpi-card">
+        <div class="kpi-title">Entity Logins</div>
+        <div class="kpi-value">${formatNumber(d.entity_logins || 0)}</div>
+      </div>
+
+      <div class="card admin-kpi-card">
         <div class="kpi-title">Family Logins</div>
         <div class="kpi-value">${formatNumber(d.family_logins || 0)}</div>
       </div>
@@ -4167,10 +4258,7 @@ async function renderAdminOverview() {
         <div class="kpi-value">${formatNumber(d.dummy_logins || 0)}</div>
       </div>
 
-      <div class="card admin-kpi-card">
-        <div class="kpi-title">Individual Clients</div>
-        <div class="kpi-value">${formatNumber(d.individual_clients || 0)}</div>
-      </div>
+      
 
       <div class="card admin-kpi-card">
         <div class="kpi-title">Total AUM</div>

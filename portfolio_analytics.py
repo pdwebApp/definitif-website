@@ -881,36 +881,6 @@ def build_user_json(results, pans, label, user_type='individual'):
 
     cat_alloc = cat_alloc.round(2)
 
-    # ── Performance tables (scoped) ───────────────────────────────────────
-    # cat_rows = []
-
-    # for strategy, h_cat in h.groupby("global_broad_category_group"):
-
-    #     invested = h_cat["cost_value"].sum()
-    #     current_value = h_cat["current_value"].sum()
-    #     gain = h_cat["unrealised_gl"].sum()
-
-    #     rta_cat = rta_user[
-    #         rta_user["isin"].isin(h_cat["isin"].unique())
-    #     ]
-
-    #     # XIRR - since inception
-    #     xi_all = compute_xirr_entire(rta_cat, current_value, val_ts)
-    #     # XIRR - current holdings
-    #     xi_exist = compute_xirr_existing(h_cat, val_ts)
-
-    #     cat_rows.append({
-    #         "global_broad_category_group": strategy,
-    #         "invested": round(invested,2),
-    #         "current_value": round(current_value,2),
-    #         "unrealised_gl": round(gain,2),
-    #         "abs_return_pct": round(gain/invested*100,2) if invested else None,
-    #         "xirr_existing": round(xi_exist*100,2) if xi_exist else None,
-    #         "xirr_entire": round(xi_all*100,2) if xi_all else None
-    #     })
-
-    # cat_summ = pd.DataFrame(cat_rows)
-
     inv_map = (
         rta_user[['pan', 'inv_name']].drop_duplicates('pan')
         if 'inv_name' in rta_user.columns
@@ -1265,6 +1235,7 @@ def generate_portfolio_json(results, user_configs, user_output_dir="output/users
         "total_clients": 0,
         "individual_clients": 0,
         "corporate_clients": 0,
+        "entity_logins": 0,
         "family_logins": 0,
         "dummy_logins": 0,
         "total_aum": 0,
@@ -1309,7 +1280,6 @@ def generate_portfolio_json(results, user_configs, user_output_dir="output/users
             users_index.append(clean_nan({
                 "login": login,
                 "name": cfg["name"],
-                "type": cfg["user_type"],
                 "client_type": client_type,
                 "pans": cfg["pans"],
                 "mfu_can": cfg.get("mfu_can"),
@@ -1348,9 +1318,11 @@ def generate_portfolio_json(results, user_configs, user_output_dir="output/users
             if client_type == "individual":
                 dashboard_summary["individual_clients"] += 1
                 dashboard_summary["total_clients"] += 1
+                dashboard_summary["entity_logins"] += 1
             elif client_type == "firm":
                 dashboard_summary["corporate_clients"] += 1
                 dashboard_summary["total_clients"] += 1
+                dashboard_summary["entity_logins"] += 1
             elif client_type == "family":
                 dashboard_summary["family_logins"] += 1
             elif client_type == "dummy":
