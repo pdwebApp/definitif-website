@@ -57,23 +57,8 @@ import email
 def fetch_emails():
     print("📬 Connecting to IMAP...")
 
-    email_user = os.environ.get("EMAIL_KD", "")
-    email_pass = os.environ.get("EMAIL_KD_PASS", "")
-
-    print("EMAIL_KD present:", bool(email_user))
-    print("EMAIL_KD length:", len(email_user))
-    print("EMAIL_KD_PASS present:", bool(email_pass))
-    print("EMAIL_KD_PASS length:", len(email_pass))
-    print(
-        "EMAIL_KD_PASS has whitespace:",
-        any(c.isspace() for c in email_pass)
-    )
-
-    if not email_user:
-        raise RuntimeError("EMAIL_KD is missing or empty")
-
-    if not email_pass:
-        raise RuntimeError("EMAIL_KD_PASS is missing or empty")
+    email_user = os.environ["EMAIL_KD"]
+    email_pass = os.environ["EMAIL_KD_PASS"]
 
     mail = imaplib.IMAP4_SSL("imap.gmail.com", 993)
 
@@ -82,15 +67,43 @@ def fetch_emails():
         mail.login(email_user, email_pass)
 
         print("📂 Selecting inbox...")
-        mail.select("INBOX")
+        status, data = mail.select("INBOX")
+        if status != "OK":
+            raise RuntimeError(f"Could not select inbox: {data}")
 
         print("🔎 Searching emails...")
         status, messages = mail.search(None, "ALL")
-
         if status != "OK":
-            raise RuntimeError(f"IMAP search failed: {messages}")
+            raise RuntimeError(f"Email search failed: {messages}")
 
-        # Continue with your existing fetching code here
+        nums = messages[0].split()
+        print(f"Total messages: {len(nums)}")
+
+        email_list = []
+
+        for i, num in enumerate(nums[-20:]):
+            print(f"Fetching {i + 1}/{min(20, len(nums))}")
+
+            status, data = mail.fetch(num, "(RFC822)")
+            if status != "OK":
+                print(f"⚠️ Failed to fetch message {num}: {data}")
+                continue
+
+            raw_message = next(
+                (
+                    item[1]
+                    for item in data
+                    if isinstance(item, tuple) and len(item) > 1
+                ),
+                None,
+            )
+
+            if raw_message:
+                email_list.append(
+                    email.message_from_bytes(raw_message)
+                )
+
+        return email_list
 
     finally:
         try:
@@ -905,6 +918,19 @@ if "prodcode" in isinMapper.columns:
 ########## Main Execution Block  ##############
 run_id = None
 try:
+    print("🔄 Fetching pipeline state...")
+    state = fetch_pipeline_state()
+
+    print("📝 Creating pipeline run...")
+    res = supabase.table("pipeline_runs").insert({
+        "status": "RUNNING",
+        "run_started_at": datetime.datetime.now(
+            datetime.timezone.utc
+        ).isoformat(),
+    }).execute()
+
+    run_id = res.data[0]["id"]
+
     emails = fetch_emails()
     print(len(emails))
     
@@ -1034,11 +1060,18 @@ try:
     
     print(f"✅ Run completed: {final_status}")
 except Exception as e:
-    supabase.table("pipeline_runs").update({
-        "status": "FAILED",
-        "run_completed_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-        "error_message": str(e)
-    }).eq("id", run_id).execute()
+    print("❌ Pipeline failed:", repr(e))
 
-    print("❌ Pipeline failed:", e)
+    if run_id is not None:
+        try:
+            supabase.table("pipeline_runs").update({
+                "status": "FAILED",
+                "run_completed_at": datetime.datetime.now(
+                    datetime.timezone.utc
+                ).isoformat(),
+                "error_message": str(e)[:4000],
+            }).eq("id", run_id).execute()
+        except Exception as log_error:
+            print("⚠️ Could not record failure:", repr(log_error))
+
     raise
