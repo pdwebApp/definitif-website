@@ -1,4 +1,5 @@
 import os
+import shutil
 import pyzipper
 import datetime
 from supabase import create_client
@@ -12,7 +13,23 @@ import numpy as np
 
 socket.setdefaulttimeout(15)  # 15 seconds max
 
-os.makedirs("./raw", exist_ok=True)
+RAW_DIR = os.path.abspath("./raw")
+
+def reset_raw_directory():
+    """
+    Delete all files and subdirectories inside raw,
+    then recreate the directory.
+    """
+    if os.path.islink(RAW_DIR):
+        raise RuntimeError(f"Refusing to delete symlink: {RAW_DIR}")
+
+    if os.path.isdir(RAW_DIR):
+        shutil.rmtree(RAW_DIR)
+
+    os.makedirs(RAW_DIR, exist_ok=True)
+    print(f"🧹 Raw directory cleared: {RAW_DIR}")
+
+reset_raw_directory()
 
 # -------------------------------
 # Email Connection
