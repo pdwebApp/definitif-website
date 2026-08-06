@@ -49,7 +49,7 @@ jobs:
           pip install -r scripts/requirements_amfiPipe.txt
 
       - name: Run NAV Job
-        run: python scripts/nav_job.py
+        run: python scripts/amfi_pipeline.py
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
