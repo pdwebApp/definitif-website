@@ -1,5 +1,4 @@
 import os
-import shutil
 import pyzipper
 import datetime
 from supabase import create_client
@@ -13,27 +12,12 @@ import numpy as np
 
 socket.setdefaulttimeout(15)  # 15 seconds max
 
-RAW_DIR = os.path.abspath("./raw")
-
-def reset_raw_directory():
-    """
-    Delete all files and subdirectories inside raw,
-    then recreate the directory.
-    """
-    if os.path.islink(RAW_DIR):
-        raise RuntimeError(f"Refusing to delete symlink: {RAW_DIR}")
-
-    if os.path.isdir(RAW_DIR):
-        shutil.rmtree(RAW_DIR)
-
-    os.makedirs(RAW_DIR, exist_ok=True)
-    print(f"🧹 Raw directory cleared: {RAW_DIR}")
-
-reset_raw_directory()
+os.makedirs("./raw", exist_ok=True)
 
 # -------------------------------
 # Email Connection
 # -------------------------------
+
 EMAIL_KD = os.environ.get("EMAIL_KD")
 EMAIL_KD_PASS = os.environ.get("EMAIL_KD_PASS")
 
@@ -57,59 +41,34 @@ import email
 def fetch_emails():
     print("📬 Connecting to IMAP...")
 
-    email_user = os.environ["EMAIL_KD"]
-    email_pass = os.environ["EMAIL_KD_PASS"]
+    mail = imaplib.IMAP4_SSL("imap.gmail.com")
+    
+    print("🔐 Logging in...")
+    mail.login(EMAIL_KD, EMAIL_KD_PASS)
 
-    mail = imaplib.IMAP4_SSL("imap.gmail.com", 993)
+    print("📂 Selecting inbox...")
+    mail.select("inbox")
 
-    try:
-        print("🔐 Logging in...")
-        mail.login(email_user, email_pass)
+    print("🔎 Searching emails...")
+    status, messages = mail.search(None, 'ALL')
 
-        print("📂 Selecting inbox...")
-        status, data = mail.select("INBOX")
-        if status != "OK":
-            raise RuntimeError(f"Could not select inbox: {data}")
+    print("📥 Fetching emails...")
 
-        print("🔎 Searching emails...")
-        status, messages = mail.search(None, "ALL")
-        if status != "OK":
-            raise RuntimeError(f"Email search failed: {messages}")
+    email_list = []
+    nums = messages[0].split()
 
-        nums = messages[0].split()
-        print(f"Total messages: {len(nums)}")
+    print(f"Total messages: {len(nums)}")
 
-        email_list = []
+    for i, num in enumerate(nums[-20:]):  # 👈 LIMIT to last 20 emails
+        print(f"Fetching {i+1}/{min(20, len(nums))}")
 
-        for i, num in enumerate(nums[-20:]):
-            print(f"Fetching {i + 1}/{min(20, len(nums))}")
+        status, data = mail.fetch(num, "(RFC822)")
+        msg = email.message_from_bytes(data[0][1])
+        email_list.append(msg)
 
-            status, data = mail.fetch(num, "(RFC822)")
-            if status != "OK":
-                print(f"⚠️ Failed to fetch message {num}: {data}")
-                continue
+    print("✅ Emails fetched")
 
-            raw_message = next(
-                (
-                    item[1]
-                    for item in data
-                    if isinstance(item, tuple) and len(item) > 1
-                ),
-                None,
-            )
-
-            if raw_message:
-                email_list.append(
-                    email.message_from_bytes(raw_message)
-                )
-
-        return email_list
-
-    finally:
-        try:
-            mail.logout()
-        except Exception:
-            pass
+    return email_list
 
 import pandas as pd
 from supabase import create_client, Client
@@ -298,58 +257,40 @@ def extract_links(body, source):
     print("🔗 Links found:", links)
     return links
 
-import zipfile
 import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
-
-def make_session():
-    retry = Retry(
-        total=5,
-        connect=5,
-        read=5,
-        backoff_factor=2,
-        status_forcelist=[429, 500, 502, 503, 504],
-        allowed_methods=["GET", "HEAD"]
-    )
-    session = requests.Session()
-    adapter = HTTPAdapter(max_retries=retry)
-    session.mount("http://", adapter)
-    session.mount("https://", adapter)
-    return session
 
 def download_file(url, path):
     try:
         headers = {
             "User-Agent": "Mozilla/5.0",
-            "Referer": "https://www.camsonline.com/"
+            "Referer": "https://mfs.kfintech.com/"
         }
 
-        session = make_session()
-        response = session.get(
-            url,
-            headers=headers,
-            allow_redirects=True,
-            stream=True,
-            timeout=(60, 120)
-        )
+        session = requests.Session()
 
-        print("Final URL:", response.url)
-        print("Content-Type:", response.headers.get("Content-Type", ""))
+        # Step 1: hit tracking URL
+        response = session.get(url, headers=headers, allow_redirects=True, stream=True)
 
-        with open(path, "wb") as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                if chunk:
-                    f.write(chunk)
+        final_url = response.url
+        content_type = response.headers.get("Content-Type", "")
 
-        if not zipfile.is_zipfile(path):
-            print("❌ Downloaded file is not a valid ZIP")
+        print("Final URL:", final_url)
+        print("Content-Type:", content_type)
+
+        # ❌ If not a ZIP → stop
+        if "zip" not in content_type.lower():
+            print("❌ Not a ZIP file. Likely redirect page.")
             return False
+
+        # ✅ Save file
+        with open(path, "wb") as f:
+            for chunk in response.iter_content(8192):
+                f.write(chunk)
 
         print(f"⬇️ Downloaded: {path}")
         return True
 
-    except requests.exceptions.RequestException as e:
+    except Exception as e:
         print("Download error:", e)
         return False
 
@@ -633,9 +574,9 @@ def process_rta_file(file_path, source, cams_isinMapper):
             # handle dividend option
             if 'dividend option' in df.columns:
                 df['prodcode'] = df['prodcode'].astype(str) + df['dividend option'].fillna('')
-
         else:
             print("❌ Unknown KFIN format")
+            print('Karvy Format 2 dataframe:/n',df.columns)
             return None
 
         # Cleaning up the reversed transactions whose units are negative       
@@ -916,21 +857,7 @@ if "prodcode" in isinMapper.columns:
     isinMapper["prodcode"] = isinMapper["prodcode"].astype(str)
 
 ########## Main Execution Block  ##############
-run_id = None
 try:
-    print("🔄 Fetching pipeline state...")
-    state = fetch_pipeline_state()
-
-    print("📝 Creating pipeline run...")
-    res = supabase.table("pipeline_runs").insert({
-        "status": "RUNNING",
-        "run_started_at": datetime.datetime.now(
-            datetime.timezone.utc
-        ).isoformat(),
-    }).execute()
-
-    run_id = res.data[0]["id"]
-
     emails = fetch_emails()
     print(len(emails))
     
@@ -939,7 +866,7 @@ try:
     # -------------------------------
     # START PIPELINE RUN
     # -------------------------------
-    run_start_time = datetime.datetime.now(datetime.timezone.utc)
+    run_start_time = datetime.datetime.now(datetime.UTC)
     
     run_log = {
         "run_started_at": run_start_time.isoformat(),
@@ -1045,7 +972,7 @@ try:
     # -------------------------------
     # COMPLETE PIPELINE RUN
     # -------------------------------
-    run_end_time = datetime.datetime.now(datetime.timezone.utc)
+    run_end_time = datetime.datetime.now(datetime.UTC)
     
     final_status = "SUCCESS" if latest_ts else "NO_DATA"
     
@@ -1060,18 +987,11 @@ try:
     
     print(f"✅ Run completed: {final_status}")
 except Exception as e:
-    print("❌ Pipeline failed:", repr(e))
+    supabase.table("pipeline_runs").update({
+        "status": "FAILED",
+        "run_completed_at": datetime.datetime.now(datetime.UTC).isoformat(),
+        "error_message": str(e)
+    }).eq("id", run_id).execute()
 
-    if run_id is not None:
-        try:
-            supabase.table("pipeline_runs").update({
-                "status": "FAILED",
-                "run_completed_at": datetime.datetime.now(
-                    datetime.timezone.utc
-                ).isoformat(),
-                "error_message": str(e)[:4000],
-            }).eq("id", run_id).execute()
-        except Exception as log_error:
-            print("⚠️ Could not record failure:", repr(log_error))
-
+    print("❌ Pipeline failed:", e)
     raise
