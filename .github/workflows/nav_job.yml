@@ -27,8 +27,8 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          EMAIL_ID: ${{ secrets.EMAIL_KD }}
-          EMAIL_PASS: ${{ secrets.EMAIL_KD_PASS }}
+          EMAIL_KD: ${{ secrets.EMAIL_KD }}
+          EMAIL_KD_PASS: ${{ secrets.EMAIL_KD_PASS }}
 
   nav-job:
     runs-on: ubuntu-latest
@@ -49,7 +49,7 @@ jobs:
           pip install -r scripts/requirements_amfiPipe.txt
 
       - name: Run NAV Job
-        run: python scripts/nav_job.py
+        run: python scripts/amfi_pipeline.py
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

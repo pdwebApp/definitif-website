@@ -861,7 +861,7 @@ try:
     # -------------------------------
     # START PIPELINE RUN
     # -------------------------------
-    run_start_time = datetime.datetime.now(datetime.UTC)
+    run_start_time = datetime.datetime.now(datetime.timezone.utc)
     
     run_log = {
         "run_started_at": run_start_time.isoformat(),
@@ -967,7 +967,7 @@ try:
     # -------------------------------
     # COMPLETE PIPELINE RUN
     # -------------------------------
-    run_end_time = datetime.datetime.now(datetime.UTC)
+    run_end_time = datetime.datetime.now(datetime.timezone.utc)
     
     final_status = "SUCCESS" if latest_ts else "NO_DATA"
     
@@ -984,7 +984,7 @@ try:
 except Exception as e:
     supabase.table("pipeline_runs").update({
         "status": "FAILED",
-        "run_completed_at": datetime.datetime.now(datetime.UTC).isoformat(),
+        "run_completed_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "error_message": str(e)
     }).eq("id", run_id).execute()
 
