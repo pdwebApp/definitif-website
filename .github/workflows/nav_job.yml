@@ -23,12 +23,13 @@ jobs:
           pip install -r scripts/requirements_amfiPipe.txt
 
       - name: Run RTA Pipeline
-        run: python scripts/rtaData_pipeline.py
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           EMAIL_KD: ${{ secrets.EMAIL_KD }}
           EMAIL_KD_PASS: ${{ secrets.EMAIL_KD_PASS }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          
+        run: python scripts/rtaData_pipeline.py
 
   nav-job:
     runs-on: ubuntu-latest
