@@ -27,6 +27,8 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          EMAIL_ID: ${{ secrets.EMAIL_KD }}
+          EMAIL_PASS: ${{ secrets.EMAIL_KD_PASS }}
 
   nav-job:
     runs-on: ubuntu-latest
