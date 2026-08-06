@@ -22,6 +22,28 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r scripts/requirements_amfiPipe.txt
 
+      - name: Check email secret injection
+        env:
+          EMAIL_KD: ${{ secrets.EMAIL_KD }}
+          EMAIL_KD_PASS: ${{ secrets.EMAIL_KD_PASS }}
+        run: |
+          python - <<'PY'
+          import os
+
+          user = os.environ.get("EMAIL_KD", "")
+          password = os.environ.get("EMAIL_KD_PASS", "")
+
+          print("EMAIL_KD present:", bool(user))
+          print("EMAIL_KD length:", len(user))
+          print("EMAIL_KD contains @:", "@" in user)
+
+          print("EMAIL_KD_PASS present:", bool(password))
+          print("EMAIL_KD_PASS length:", len(password))
+          print("EMAIL_KD_PASS has whitespace:", any(c.isspace() for c in password))
+          print("EMAIL_KD_PASS starts with quote:", password.startswith(("'", '"')))
+          print("EMAIL_KD_PASS ends with quote:", password.endswith(("'", '"')))
+          PY
+
       - name: Run RTA Pipeline
         env:
           EMAIL_KD: ${{ secrets.EMAIL_KD }}

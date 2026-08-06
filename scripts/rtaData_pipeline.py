@@ -57,34 +57,46 @@ import email
 def fetch_emails():
     print("📬 Connecting to IMAP...")
 
-    mail = imaplib.IMAP4_SSL("imap.gmail.com")
-    
-    print("🔐 Logging in...")
-    mail.login(EMAIL_KD, EMAIL_KD_PASS)
+    email_user = os.environ.get("EMAIL_KD", "")
+    email_pass = os.environ.get("EMAIL_KD_PASS", "")
 
-    print("📂 Selecting inbox...")
-    mail.select("inbox")
+    print("EMAIL_KD present:", bool(email_user))
+    print("EMAIL_KD length:", len(email_user))
+    print("EMAIL_KD_PASS present:", bool(email_pass))
+    print("EMAIL_KD_PASS length:", len(email_pass))
+    print(
+        "EMAIL_KD_PASS has whitespace:",
+        any(c.isspace() for c in email_pass)
+    )
 
-    print("🔎 Searching emails...")
-    status, messages = mail.search(None, 'ALL')
+    if not email_user:
+        raise RuntimeError("EMAIL_KD is missing or empty")
 
-    print("📥 Fetching emails...")
+    if not email_pass:
+        raise RuntimeError("EMAIL_KD_PASS is missing or empty")
 
-    email_list = []
-    nums = messages[0].split()
+    mail = imaplib.IMAP4_SSL("imap.gmail.com", 993)
 
-    print(f"Total messages: {len(nums)}")
+    try:
+        print("🔐 Logging in...")
+        mail.login(email_user, email_pass)
 
-    for i, num in enumerate(nums[-20:]):  # 👈 LIMIT to last 20 emails
-        print(f"Fetching {i+1}/{min(20, len(nums))}")
+        print("📂 Selecting inbox...")
+        mail.select("INBOX")
 
-        status, data = mail.fetch(num, "(RFC822)")
-        msg = email.message_from_bytes(data[0][1])
-        email_list.append(msg)
+        print("🔎 Searching emails...")
+        status, messages = mail.search(None, "ALL")
 
-    print("✅ Emails fetched")
+        if status != "OK":
+            raise RuntimeError(f"IMAP search failed: {messages}")
 
-    return email_list
+        # Continue with your existing fetching code here
+
+    finally:
+        try:
+            mail.logout()
+        except Exception:
+            pass
 
 import pandas as pd
 from supabase import create_client, Client
@@ -891,6 +903,7 @@ if "prodcode" in isinMapper.columns:
     isinMapper["prodcode"] = isinMapper["prodcode"].astype(str)
 
 ########## Main Execution Block  ##############
+run_id = None
 try:
     emails = fetch_emails()
     print(len(emails))
