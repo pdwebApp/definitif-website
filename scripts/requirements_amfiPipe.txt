@@ -1,4 +1,8 @@
-pandas
-requests
-numpy
 supabase
+pandas
+numpy
+pyzipper
+beautifulsoup4
+requests
+openpyxl
+xlrd
