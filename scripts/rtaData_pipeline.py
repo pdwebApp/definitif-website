@@ -15,13 +15,16 @@ socket.setdefaulttimeout(15)  # 15 seconds max
 os.makedirs("./raw", exist_ok=True)
 
 # -------------------------------
+# Email Connection
+# -------------------------------
+EMAIL_KD = os.environ.get("EMAIL_KD")
+EMAIL_KD_PASS = os.environ.get("EMAIL_KD_PASS")
+
+# -------------------------------
 # Supabase Connection
 # -------------------------------
-
 url = os.environ.get("SUPABASE_URL")
 key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
-EMAIL_ID = os.environ.get("EMAIL_KD")
-EMAIL_PASS = os.environ.get("EMAIL_KD_PASS")
 
 if not url:
     raise ValueError("SUPABASE_URL is missing")
@@ -40,7 +43,7 @@ def fetch_emails():
     mail = imaplib.IMAP4_SSL("imap.gmail.com")
     
     print("🔐 Logging in...")
-    mail.login(EMAIL_ID, EMAIL_PASS)
+    mail.login(EMAIL_KD, EMAIL_KD_PASS)
 
     print("📂 Selecting inbox...")
     mail.select("inbox")
@@ -236,58 +239,75 @@ from bs4 import BeautifulSoup
 
 def extract_links(body, source):
     links = []
-
     soup = BeautifulSoup(body, "html.parser")
 
     for a in soup.find_all("a", href=True):
+        href = a["href"].strip()
         text = a.get_text(strip=True).lower()
-        href = a["href"]
 
-        # 🎯 KFIN: specifically look for "click here"
-        if source == "KFIN" and "click here" in text:
-            links.append(href)
+        if source == "CAMS":
+            if "mailback_result/" in href and href.lower().endswith(".zip"):
+                links.append(href)
 
-        # CAMS (keep your existing logic if needed)
-        elif source == "CAMS" and "http" in href:
-            links.append(href)
+        elif source == "KFIN":
+            if "click here" in text:
+                links.append(href)
 
     print("🔗 Links found:", links)
     return links
 
+import zipfile
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
+def make_session():
+    retry = Retry(
+        total=5,
+        connect=5,
+        read=5,
+        backoff_factor=2,
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=["GET", "HEAD"]
+    )
+    session = requests.Session()
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+    return session
 
 def download_file(url, path):
     try:
         headers = {
             "User-Agent": "Mozilla/5.0",
-            "Referer": "https://mfs.kfintech.com/"
+            "Referer": "https://www.camsonline.com/"
         }
 
-        session = requests.Session()
+        session = make_session()
+        response = session.get(
+            url,
+            headers=headers,
+            allow_redirects=True,
+            stream=True,
+            timeout=(60, 120)
+        )
 
-        # Step 1: hit tracking URL
-        response = session.get(url, headers=headers, allow_redirects=True, stream=True)
+        print("Final URL:", response.url)
+        print("Content-Type:", response.headers.get("Content-Type", ""))
 
-        final_url = response.url
-        content_type = response.headers.get("Content-Type", "")
-
-        print("Final URL:", final_url)
-        print("Content-Type:", content_type)
-
-        # ❌ If not a ZIP → stop
-        if "zip" not in content_type.lower():
-            print("❌ Not a ZIP file. Likely redirect page.")
-            return False
-
-        # ✅ Save file
         with open(path, "wb") as f:
-            for chunk in response.iter_content(8192):
-                f.write(chunk)
+            for chunk in response.iter_content(chunk_size=8192):
+                if chunk:
+                    f.write(chunk)
+
+        if not zipfile.is_zipfile(path):
+            print("❌ Downloaded file is not a valid ZIP")
+            return False
 
         print(f"⬇️ Downloaded: {path}")
         return True
 
-    except Exception as e:
+    except requests.exceptions.RequestException as e:
         print("Download error:", e)
         return False
 
@@ -502,7 +522,7 @@ def process_rta_file(file_path, source, cams_isinMapper):
     elif source == "KFIN":
 
         df.columns = df.columns.str.lower()
-    
+        
         # -------------------------------
         # FORMAT 1 (classic KFIN)
         # -------------------------------
@@ -513,15 +533,16 @@ def process_rta_file(file_path, source, cams_isinMapper):
             df = df.rename(columns={
                 'fmcode':'prodcode',
                 'pan1':'pan',
+                'invname':'inv_name',
                 'td_acno':'folio_no',
                 'funddesc':'scheme',
                 'td_trno':'trxnno',
-                'invname':'inv_name',
                 'trnstat':'trxnstat',
                 'navdate':'traddate',
                 'td_prdt':'postdate',
                 'td_pop':'purprice',
                 'td_units':'units',
+                'td_nav':'purprice',
                 'td_amt':'amount',
                 'td_agent':'brokcode',
                 'trdesc':'transaction_type',
@@ -546,32 +567,33 @@ def process_rta_file(file_path, source, cams_isinMapper):
         elif 'product code' in df.columns:
     
             print("✅ KFIN Format 2 detected")
-    
+
+            df = df.drop('scheme', axis = 1)
+            
             df = df.rename(columns={
                 'product code':'prodcode',
-                'folio number':'folio_no',
-                'investor name':'inv_name',
                 'pan1':'pan',
+                'investor name':'inv_name',
+                'folio number':'folio_no',
+                'fund description':'scheme',
                 'transaction number':'trxnno',
                 'transaction status':'trxnstat',
                 'transaction date':'traddate',
                 'process date':'postdate',
-                'amount':'amount',
                 'units':'units',
+                'nav':'purprice',
+                'amount':'amount',
                 'agent code':'brokcode',
                 'transaction description':'transaction_type',
                 'remarks':'rev_remark',
-                'nav':'purprice',
-                'scheme':'scheme'
             })
     
             # handle dividend option
             if 'dividend option' in df.columns:
                 df['prodcode'] = df['prodcode'].astype(str) + df['dividend option'].fillna('')
-    
+
         else:
             print("❌ Unknown KFIN format")
-            print(df.columns)
             return None
 
         # Cleaning up the reversed transactions whose units are negative       
@@ -608,7 +630,7 @@ def process_rta_file(file_path, source, cams_isinMapper):
     trData = df.copy()
 
     trData['txn_code'] = trData['transaction_type'].map(txn_cat_map)
-
+    
     trData['fund_name'] = trData['scheme'].str.replace(r"\(.*?\)", "", regex=True)
 
     trData['purchase_mode'] = trData['fund_name'].str.contains(
