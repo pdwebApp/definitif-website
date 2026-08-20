@@ -70,11 +70,11 @@ def fetch_amfi_data(date_list):
             continue
 
         temp_df = rawData[~rawData['ISIN Div Payout/ISIN Growth'].isnull()] \
-            .drop(['Repurchase Price','Sale Price'], axis=1)
+            .drop(['Plan','Option'], axis=1)
 
         temp_df = temp_df.rename(columns={
             'Scheme Code': 'amfi_code',
-            'Scheme Name': 'fund_name',
+            'NAV Name': 'fund_name',
             'ISIN Div Payout/ISIN Growth': 'isin',
             'Net Asset Value': 'nav',
             'Date': 'nav_date'
