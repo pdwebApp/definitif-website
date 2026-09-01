@@ -47,8 +47,9 @@ def build_email_html(client_name: str, today_format: str):
         </p>
         <p>
         Note:<br>
-        - Valuations might get delayed by 1 business day in some occations.<br>
-        - Data is updated on every Tuesday and at the end of every month.
+        - Data is now getting getting updated from RTAs on daily basis.<br>
+        - In some cases where the fund has US exposure are delayed by up to 2-3 days.<br>
+        - For month-end STPs, redemptions may occur in the previous month while reinvestments post in the current month, resulting in lower Portfolio Values and Investments.
         </p>
         <p>Regards,</p>
         <table role="presentation" cellpadding="0" cellspacing="0" border="0"
