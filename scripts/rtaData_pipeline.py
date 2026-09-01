@@ -523,7 +523,6 @@ def process_rta_file(file_path, source, cams_isinMapper):
                 'trnstat':'trxnstat',
                 'navdate':'traddate',
                 'td_prdt':'postdate',
-                'td_pop':'purprice',
                 'td_units':'units',
                 'td_nav':'purprice',
                 'td_amt':'amount',
