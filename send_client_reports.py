@@ -47,7 +47,7 @@ def build_email_html(client_name: str, today_format: str):
         </p>
         <p>
         Note:<br>
-        - Data is now getting getting updated from RTAs on daily basis.<br>
+        - Data is now getting updated from RTAs on a daily basis.<br>
         - In some cases where the fund has US exposure are delayed by up to 2-3 days.<br>
         - For month-end STPs, redemptions may occur in the previous month while reinvestments post in the current month, resulting in lower Portfolio Values and Investments.
         </p>
