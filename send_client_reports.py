@@ -222,7 +222,7 @@ def run_client_report_job(
 
         report_email_body_date = reports.get("valuation_date") if isinstance(reports, dict) else None
         if not report_email_body_date:
-            report_email_body_date = format_date_with_suffix(dt.date.today())
+            report_email_body_date = format_date_with_suffix(datetime.date.today())
 
         email_sent = False    
         if recipients and attachments:
