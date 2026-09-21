@@ -300,10 +300,56 @@ def run_pipeline():
     )
 
     # -------------------------------
+    # Pre-check: remove rows that already exist in DB
+    # -------------------------------
+    print("Checking for existing (isin, nav_date) rows in DB...")
+
+    dates_to_load = amfiNAV['nav_date'].unique().tolist()
+    if dates_to_load:
+        existing = (
+            supabase.table("amfi_nav")
+            .select("isin, nav_date")
+            .in_("nav_date", dates_to_load)
+            .execute()
+        )
+    else:
+        existing = type('obj', (object,), {'data': []})()
+
+    if existing.data:
+        existing_df = pd.DataFrame(existing.data)
+        # Ensure nav_date is string to match amfiNAV
+        existing_df['nav_date'] = existing_df['nav_date'].astype(str)
+
+        # Identify rows that already exist
+        to_skip = amfiNAV.merge(
+            existing_df,
+            on=['isin', 'nav_date'],
+            how='inner'
+        )
+
+        if not to_skip.empty:
+            print(f"Found {len(to_skip)} rows that already exist for (isin, nav_date).")
+            # Keep only rows that are NOT in to_skip
+            amfiNAV = amfiNAV.merge(
+                to_skip,
+                on=['isin', 'nav_date'],
+                how='outer',
+                indicator=True
+            ).query('_merge == "left_only"').drop('_merge', axis=1)
+
+    if amfiNAV.empty:
+        print("All ISINs data is already updated. Nothing to upsert.")
+        if sif_loaded:
+            print("Pipeline completed successfully! (MF + SIF)")
+        else:
+            print("Pipeline completed successfully! (MF only; SIF NAVs were not loaded)")
+        return
+
+    print(f"Upserting {len(amfiNAV)} new/updated rows into amfi_nav...")
+
+    # -------------------------------
     # UPSERT Data with conflict handling
     # -------------------------------
-    print(f"Upserting {len(amfiNAV)} rows into amfi_nav...")
-
     try:
         (
             supabase.table("amfi_nav")
