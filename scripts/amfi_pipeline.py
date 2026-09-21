@@ -45,19 +45,19 @@ def get_isin_mapper():
     return pd.DataFrame(columns=["isin"])
 
 # -------------------------------
-# Fetch AMFI NAV Data
+# Fetch AMFI Mutual Fund NAV Data
 # -------------------------------
 def fetch_amfi_data(date_list):
     amfiNAV = pd.DataFrame(columns=['amfi_code','fund_name','isin','nav_date','nav'])
 
     for navDate in date_list:
-        print(f"Fetching {navDate}")
+        print(f"Fetching MF NAV for {navDate}")
 
         url = f'https://portal.amfiindia.com/DownloadNAVHistoryReport_Po.aspx?frmdt={navDate}'
         response = requests.get(url)
 
         if response.status_code != 200:
-            print(f"Failed for {navDate}")
+            print(f"MF NAV fetch failed for {navDate}")
             continue
 
         rawData = pd.read_csv(
@@ -105,6 +105,89 @@ def fetch_amfi_data(date_list):
         amfiNAV = pd.concat([temp_df_mod, amfiNAV], ignore_index=True)
 
     return amfiNAV
+    
+# -------------------------------
+# Fetch AMFI SIF NAV Data (TXT)
+# -------------------------------
+SIF_NAV_URL = "https://portal.amfiindia.com/spages/SIF_NAVAll.txt"
+
+def fetch_sif_data():
+    """
+    Downloads the latest SIF NAV text file from AMFI, stacks the two ISIN columns
+    into one, and returns a DataFrame with columns:
+      sif_code, fund_name, isin, nav_date, nav
+
+    If anything fails, returns an empty DataFrame and lets the caller handle it.
+    """
+    print("Fetching SIF NAV from AMFI...")
+    try:
+        resp = requests.get(SIF_NAV_URL, timeout=60)
+        resp.raise_for_status()
+
+        # SIF file is semicolon-delimited
+        raw = pd.read_csv(
+            io.StringIO(resp.content.decode('utf-8')),
+            delimiter=';',
+            on_bad_lines='skip'
+        )
+
+        if raw.empty:
+            print("SIF NAV file is empty.")
+            return pd.DataFrame(columns=['sif_code', 'fund_name', 'isin', 'nav_date', 'nav'])
+
+        raw = raw.rename(columns={
+            'Scheme Code': 'sif_code',
+            'Scheme Name': 'fund_name',
+            'ISIN Div Payout/ ISIN Growth': 'isin_growth',
+            'ISIN Div Reinvestment': 'isin_reinvestment',
+            'Net Asset Value': 'nav',
+            'Date': 'nav_date',
+        })
+
+        mask = (
+            raw['sif_code'].notna() &
+            raw['fund_name'].notna() &
+            raw['nav'].notna() &
+            raw['nav_date'].notna()
+        )
+        rows = raw.loc[mask, [
+            'sif_code', 'fund_name', 'isin_growth', 'isin_reinvestment', 'nav', 'nav_date'
+        ]].copy()
+
+        if rows.empty:
+            print("No valid SIF NAV rows found after filtering.")
+            return pd.DataFrame(columns=['sif_code', 'fund_name', 'isin', 'nav_date', 'nav'])
+
+        # Stack the two ISIN columns into one
+        out = pd.concat([
+            rows[['sif_code', 'fund_name', 'isin_growth', 'nav', 'nav_date']]
+                .rename(columns={'isin_growth': 'isin'}),
+            rows[['sif_code', 'fund_name', 'isin_reinvestment', 'nav', 'nav_date']]
+                .rename(columns={'isin_reinvestment': 'isin'}),
+        ], ignore_index=True)
+
+        # Clean ISINs
+        out['isin'] = out['isin'].astype('string').str.strip()
+        out = out[out['isin'].notna() & out['isin'].ne('') & out['isin'].ne('-')]
+
+        # Clean NAV and date
+        out['nav'] = pd.to_numeric(out['nav'], errors='coerce')
+        out['nav_date'] = pd.to_datetime(
+            out['nav_date'],
+            format='%d-%b-%Y',
+            errors='coerce'
+        )
+
+        out = out.dropna(subset=['nav', 'nav_date'])
+        out = out.drop_duplicates(['isin', 'nav_date'], keep='first').reset_index(drop=True)
+
+        result = out[['sif_code', 'fund_name', 'isin', 'nav_date', 'nav']]
+        print(f"Fetched {len(result)} SIF NAV rows.")
+        return result
+
+    except Exception as e:
+        print(f"Heads up: SIF NAVs could not be loaded. Error: {e}")
+        return pd.DataFrame(columns=['sif_code', 'fund_name', 'isin', 'nav_date', 'nav'])
 
 # -------------------------------
 # Main Pipeline
@@ -115,37 +198,61 @@ def run_pipeline():
     today = date.today()
 
     # -------------------------------
-    # Dynamic Date Range
+    # Dynamic Date Range for MF NAVs
     # -------------------------------
     last_nav_date = get_last_nav_date()
 
     if last_nav_date is None:
-        print("No existing data. Using default T-2 logic.")
+        print("No existing data. Using default T-2 logic for MF.")
         start_date = today - timedelta(days=2)
     else:
-        # Re-fetch one day before last stored date (correction)
         start_date = last_nav_date - timedelta(days=1)
 
     end_date = today - timedelta(days=1)
 
-    print(f"Fetching from {start_date} to {end_date}")
+    print(f"Fetching MF NAVs from {start_date} to {end_date}")
 
-    if start_date > end_date:
-        print("Data already up to date. Exiting.")
-        return
+    mf_nav = pd.DataFrame(columns=['amfi_code','fund_name','isin','nav_date','nav'])
 
-    date_list = [
-        d.strftime("%d-%b-%Y")
-        for d in pd.date_range(start_date, end_date)
-    ]
+    if start_date <= end_date:
+        date_list = [
+            d.strftime("%d-%b-%Y")
+            for d in pd.date_range(start_date, end_date)
+        ]
+
+        mf_nav = fetch_amfi_data(date_list)
+
+        if mf_nav.empty:
+            print("No MF NAV data fetched.")
+    else:
+        print("MF NAV data already up to date. Skipping MF fetch.")
 
     # -------------------------------
-    # Fetch Data
+    # Fetch SIF Data (latest only)
     # -------------------------------
-    amfiNAV = fetch_amfi_data(date_list)
+    sif_nav = fetch_sif_data()
+    sif_loaded = not sif_nav.empty
+
+    if not sif_loaded:
+        print("Heads up: SIF NAVs could not be loaded. Continuing with MF NAVs only.")
+
+    # -------------------------------
+    # Combine MF + SIF
+    # -------------------------------
+    if not mf_nav.empty:
+        mf_nav = mf_nav[['isin', 'nav', 'nav_date']].copy()
+    else:
+        mf_nav = pd.DataFrame(columns=['isin', 'nav', 'nav_date'])
+
+    if not sif_nav.empty:
+        sif_nav = sif_nav[['isin', 'nav', 'nav_date']].copy()
+    else:
+        sif_nav = pd.DataFrame(columns=['isin', 'nav', 'nav_date'])
+
+    amfiNAV = pd.concat([mf_nav, sif_nav], ignore_index=True)
 
     if amfiNAV.empty:
-        print("No NAV data fetched.")
+        print("No NAV data fetched (MF + SIF). Exiting.")
         return
 
     # -------------------------------
@@ -153,7 +260,6 @@ def run_pipeline():
     # -------------------------------
     amfiNAV['nav_date'] = pd.to_datetime(
         amfiNAV['nav_date'],
-        format='%d-%b-%Y',
         errors='coerce'
     )
 
@@ -162,6 +268,14 @@ def run_pipeline():
     amfiNAV = amfiNAV.replace(0, np.nan)
 
     amfiNAV = amfiNAV[['isin', 'nav', 'nav_date']]
+    amfiNAV = amfiNAV.dropna(subset=['isin', 'nav', 'nav_date'])
+
+    # Drop exact duplicates on (isin, nav, nav_date) in the incoming batch
+    before_dedup = len(amfiNAV)
+    amfiNAV = amfiNAV.drop_duplicates(subset=['isin', 'nav', 'nav_date'], keep='first').reset_index(drop=True)
+    after_dedup = len(amfiNAV)
+    if before_dedup != after_dedup:
+        print(f"Dropped {before_dedup - after_dedup} duplicate rows in incoming data (isin, nav, nav_date).")
 
     # -------------------------------
     # Filter Required ISINs
@@ -171,7 +285,11 @@ def run_pipeline():
     if not isinMapper.empty:
         amfiNAV = amfiNAV.merge(isinMapper, on='isin', how='inner')
     else:
-        print("Warning: ISIN mapper empty")
+        print("Warning: ISIN mapper empty; proceeding without filter.")
+
+    if amfiNAV.empty:
+        print("No NAV data after ISIN filtering. Exiting.")
+        return
 
     # -------------------------------
     # Format Date for Supabase
@@ -182,15 +300,21 @@ def run_pipeline():
     )
 
     # -------------------------------
-    # UPSERT Data
+    # UPSERT Data with conflict handling
     # -------------------------------
-    print("Upserting data into Supabase...")
+    print(f"Upserting {len(amfiNAV)} rows into amfi_nav...")
 
     supabase.table("amfi_nav") \
-        .upsert(amfiNAV.to_dict(orient="records")) \
+        .upsert(
+            amfiNAV.to_dict(orient="records"),
+            on_conflict="isin,nav_date"  # matches the unique constraint
+        ) \
         .execute()
 
-    print("Pipeline completed successfully!")
+    if sif_loaded:
+        print("Pipeline completed successfully! (MF + SIF)")
+    else:
+        print("Pipeline completed successfully! (MF only; SIF NAVs were not loaded)")
 
 # -------------------------------
 # Run
