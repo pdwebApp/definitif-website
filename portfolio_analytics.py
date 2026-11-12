@@ -302,11 +302,19 @@ def build_portfolio_analytics(rta_df, amfi_nav_df, isin_mapper_df, valuation_dat
         rta_df = rta_df[rta_df['trxnstat'].isin(['Processed', 'Y', 'y'])].copy()
 
     if 'transaction_type' in rta_df.columns:
-        rta_df = rta_df[~rta_df['transaction_type'].isin(['Pledging', 'Unpledging'])].copy()
+        rta_df = rta_df[~rta_df['transaction_type'].isin([
+            'Pledging',
+            'Unpledging',
+            'Purchase Rejection',
+            'New Purchase Pre-Rejection',
+            'Additional Purchase Pre-Rejection',
+            'Refund',
+            'Redemption Rejection',
+            'Systematic Investment Pre-Rejection',
+        ])].copy()
 
     if 'txn_code' in rta_df.columns:
-            rta_df = rta_df[~rta_df['txn_code'].isin(['L'])].copy()
-
+            rta_df = rta_df[~rta_df['txn_code'].isin(['L','D'])].copy()
 
     isin_meta = isin_mapper_df[
         ['isin', 'global_broad_category_group', 'morningstar_category',
@@ -687,7 +695,7 @@ def build_fund_performance_view(
 
     if not out.empty:
         out = out.sort_values(
-            ['current_value', 'fund_display'],
+            ['global_broad_category_group','morningstar_category', 'current_value', 'fund_display'],
             ascending=[False, True]
         ).reset_index(drop=True)
 
