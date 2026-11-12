@@ -695,7 +695,7 @@ def build_fund_performance_view(
 
     if not out.empty:
         out = out.sort_values(
-            ['global_broad_category_group','morningstar_category', 'current_value', 'fund_display'],
+            ['current_value', 'fund_display'],
             ascending=[False, True]
         ).reset_index(drop=True)
 
