@@ -82,10 +82,53 @@ def fetch_data_supabase_py(supabase_url: str, supabase_key: str, page_size: int 
 
     amfi_nav_df = fetch_all("amfi_nav")
     isin_mapper_df = fetch_all("isin_mapper")
+
     # Clean Morningstar category
+    
+#     isin_mapper_df["morningstar_category"] = (
+#         isin_mapper_df["morningstar_category"]
+#         .str.replace(r"^India Fund\s*", "", regex=True)
+#    )
+
+    MORNINGSTAR_CATEGORY_MAP = {
+        "Large-Cap": "Large Cap",
+        "Focused Fund": "Focused",
+        "Flexi Cap": "Flexi Cap",
+        "Multi-Cap": "Multi Cap",
+        "Large & Mid-Cap": "Large & Mid Cap",
+        "Mid-Cap": "Mid Cap",
+        "Small-Cap": "Small Cap",
+        "Equity - Other": "Equity - Other",
+        "ELSS (Tax Savings)": "ELSS",
+        "Global - Other": "Global",
+        "Equity - Consumption": "Sector - Consumption",
+        "Equity - Infrastructure": "Sector - Infrastructure",
+        "Sector - Financial Services": "Sector - Financial Services",
+        "Sector - Healthcare": "Sector - Healthcare",
+        "Sector - Technology": "Sector - Technology",
+        "Equity Long-Short Fund": "Equity Long-Short",
+        "Equity - ESG": "Equity - ESG",
+        "Equity Savings": "Equity Savings",
+        "Index Funds": "Index Funds",
+        "Sector - Precious Metals": "Sector - Precious Metals",
+    }
+
     isin_mapper_df["morningstar_category"] = (
         isin_mapper_df["morningstar_category"]
+        # Remove leading "India Fund" prefix
         .str.replace(r"^India Fund\s*", "", regex=True)
+        # Normalize ONLY spaced hyphens used in category labels:
+        # "Equity-Other" / "Equity -Other" / "Equity- Other" -> "Equity - Other"
+        .str.replace(
+            r"\b(Equity|Global|Sector)\s*-\s*",
+            r"\1 - ",
+            regex=True
+        )
+        # Collapse repeated whitespace
+        .str.replace(r"\s+", " ", regex=True)
+        .str.strip()
+        # Apply explicit mappings; retain unrecognized categories
+        .map(lambda category: MORNINGSTAR_CATEGORY_MAP.get(category, category))
     )
 
     # Build consistent fund display name
@@ -322,7 +365,7 @@ def build_portfolio_analytics(rta_df, amfi_nav_df, isin_mapper_df, valuation_dat
        'asset_alloc_other', 'large_cap', 'mid_cap', 'small_cap', 'micro_cap']
     ].drop_duplicates('isin')
 
-    cat_map = isin_meta[['isin', 'global_broad_category_group']].drop_duplicates('isin')
+    cat_map = isin_meta[['isin', 'global_broad_category_group','morningstar_category']].drop_duplicates('isin')
 
     rta_enr = rta_df.merge(cat_map, on='isin', how='left')
     # standardize investor name
@@ -631,7 +674,10 @@ def build_fund_performance_view(
         # STRATEGY
         # -----------------------------
         category = (
-            h_isin['global_broad_category_group'].dropna().iloc[0]
+            h_isin['global_broad_category_group']
+            .dropna()
+            .sort_values()
+            .iloc[0]
             if 'global_broad_category_group' in h_isin.columns
             and not h_isin['global_broad_category_group'].dropna().empty
             else None
@@ -641,7 +687,10 @@ def build_fund_performance_view(
         # SUB CATEGORY
         # -----------------------------
         subcategory = (
-            h_isin['morningstar_category'].dropna().iloc[0]
+            h_isin['morningstar_category']
+            .dropna()
+            .sort_values()
+            .iloc[0]
             if 'morningstar_category' in h_isin.columns
             and not h_isin['morningstar_category'].dropna().empty
             else None
@@ -763,6 +812,9 @@ def build_user_json(results, pans, label, user_type='individual'):
     total_realized = realized_user["gain_loss"].sum() if not realized_user.empty else 0
 
     rta_user = rta_enr[rta_enr['pan'].isin(pans)].copy()
+    rta_user = rta_user.sort_values(['global_broad_category_group','morningstar_category','traddate', 'txn_id'], 
+                                    ascending=[True, True, True, True])
+
 
     # XIRR - since inception
     xi_all = compute_xirr_entire(rta_user,total_cv,val_ts)

@@ -2,7 +2,7 @@ name: AMFI NAV Pipeline  # updated 2026-09-21
 
 on:
   schedule:
-    - cron: '30 3 * * *'
+    - cron: '00 3 * * *'
   workflow_dispatch:
 
 jobs:
