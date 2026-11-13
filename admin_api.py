@@ -49,7 +49,7 @@ def get_admin_clients():
             dob,
             portfolio_value
         """)
-        .order("portfolio_value", desc=True)
+        .order("name", ascending=True)
         .execute()
     )
 
