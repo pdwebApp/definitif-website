@@ -84,7 +84,7 @@ def fetch_data_supabase_py(supabase_url: str, supabase_key: str, page_size: int 
     isin_mapper_df = fetch_all("isin_mapper")
 
     # Clean Morningstar category
-    
+
 #     isin_mapper_df["morningstar_category"] = (
 #         isin_mapper_df["morningstar_category"]
 #         .str.replace(r"^India Fund\s*", "", regex=True)
@@ -309,13 +309,14 @@ def xirr(cashflows: list, max_irr=0.6):
     except Exception:
         return None
 
-
 def classify_gain(category: str, holding_days: int) -> str:
     cat = str(category).strip().lower()
     if any(x in cat for x in ['fixed income', 'capital preservation', 'money market', 'bond']):
         return 'STCG'
-    if any(x in cat for x in ['equity', 'arbitrage', 'allocation']):
+    if any(x in cat for x in ['equity', 'arbitrage', 'alternative strategies', 'allocation']):
         return 'LTCG' if holding_days >= 366 else 'STCG'
+    if any(x in cat for x in ['real assets']):
+        return 'LTCG' if holding_days >= 731 else 'STCG'
     return 'LTCG' if holding_days >= 731 else 'STCG'
 
 def get_effective_nav(amfi_nav_df, valuation_date):
@@ -812,8 +813,7 @@ def build_user_json(results, pans, label, user_type='individual'):
     total_realized = realized_user["gain_loss"].sum() if not realized_user.empty else 0
 
     rta_user = rta_enr[rta_enr['pan'].isin(pans)].copy()
-    rta_user = rta_user.sort_values(['global_broad_category_group','morningstar_category','traddate', 'txn_id'], 
-                                    ascending=[True, True, True, True])
+    rta_user = rta_user.sort_values(['traddate', 'txn_id'], ascending=[ True, True])
 
 
     # XIRR - since inception

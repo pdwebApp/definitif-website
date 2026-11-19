@@ -53,7 +53,7 @@ body{visibility:hidden}
 <div class="card"><div class="kpi-title">Investment Value</div><div id="kpi_invested" class="kpi-value"></div></div>
 <div class="card"><div class="kpi-title">Unrealised Gain</div><div id="kpi_gain" class="kpi-value"></div></div>
 <div class="card"><div class="kpi-title">Realised Gain</div><div id="kpi_relgain" class="kpi-value"></div></div>
-<div class="card"><div class="kpi-title">Absolute Return</div><div id="kpi_return" class="kpi-value"></div></div>
+<div class="card"><div class="kpi-title">Abs Return (Current Holdings)</div><div id="kpi_return" class="kpi-value"></div></div>
 <div class="card"><div class="kpi-title">XIRR (Current Holdings)</div><div id="kpi_xirr_current" class="kpi-value"></div></div>
 <div class="card"><div class="kpi-title">XIRR (Since Inception)</div><div id="kpi_xirr_entire" class="kpi-value"></div></div>
 <div class="card"><div class="kpi-title">As On</div><div id="kpi_value_date" class="kpi-value"></div></div>
@@ -321,6 +321,43 @@ function toggleExpandAll(containerId) {
 
 }
 
+const CATEGORY_ORDER = [
+  "ELSS",
+  "Large Cap",
+  "Focused",
+  "Flexi Cap",
+  "Multi Cap",
+  "Large & Mid Cap",
+  "Mid Cap",
+  "Small Cap",
+  "Equity - Other",
+  "Index Funds",
+  "Global",
+  "Sector - Technology",
+  "Sector - Healthcare",
+  "Sector - Consumption",
+  "Sector - Infrastructure",
+  "Sector - Financial Services",
+];
+
+const getCategoryRank = (category) => {
+  const index = CATEGORY_ORDER.indexOf(category);
+  return index === -1 ? CATEGORY_ORDER.length : index;
+};
+
+const sortCategoryKeys = (keys) =>
+  keys.sort((a, b) => {
+    const rankDiff = getCategoryRank(a) - getCategoryRank(b);
+
+    if (rankDiff !== 0) {
+      return rankDiff;
+    }
+
+    return a.localeCompare(b);
+  });
+
+/* ================= ASYNC FUNCTIONS ================= */
+
 async function loadUserIndex(){
 
   if (USER_INDEX && Object.keys(PAN_MAP).length) {
@@ -356,7 +393,6 @@ async function loadUserIndex(){
   });
 
 }
-/* ================= ASYNC FUNCTIONS ================= */
 
 async function loadDashLayout(){
 
@@ -384,7 +420,7 @@ async function loadTransactionView() {
 
   container.innerHTML = `
     <div class="admin-loading-state txn-loading-state">
-      <div class="admin-loading-card">Loading transaction view...</div>
+      <div class="admin-loading-card">Loading current holdings...</div>
     </div>
   `;
 
@@ -3248,7 +3284,7 @@ function renderPan(arr){
       stratMap[s].push(f);
     });
 
-    Object.keys(stratMap).forEach(strategy => {
+    sortCategoryKeys(Object.keys(stratMap)).forEach(strategy => {
 
       const stratKey = panKey + "_s_" + strategy;
       const stratFunds = stratMap[strategy];
@@ -3293,7 +3329,7 @@ function renderPan(arr){
         catMap[c].push(f);
       });
 
-      Object.keys(catMap).forEach(category => {
+      sortCategoryKeys(Object.keys(catMap)).forEach(category => {
 
         const trC = document.createElement("tr");
         trC.classList.add("level-3");
@@ -3462,58 +3498,52 @@ bindToggle(trS.querySelector(".ui-toggle"), stratKey, tbody);
 
 
 /* CATEGORY GROUP */
+const catMap = {};
 
-const catMap={};
+stratFunds.forEach(f => {
+  const c = f.morningstar_category || "Other";
 
-stratFunds.forEach(f=>{
-const c=f.morningstar_category || "Other";
-if(!catMap[c]) catMap[c]=[];
-catMap[c].push(f);
+  if (!catMap[c]) catMap[c] = [];
+
+  catMap[c].push(f);
 });
 
+sortCategoryKeys(Object.keys(catMap))
+  .forEach(category => {
+    const trC = document.createElement("tr");
+    trC.classList.add("level-2");
+    trC.dataset.parent = stratKey;
+    trC.style.display = "none";
 
-Object.keys(catMap).forEach(category=>{
+    trC.innerHTML = `
+      <td style="padding-left:20px"><b>${category}</b></td>
+      <td></td><td></td><td></td>
+      <td></td><td></td><td></td><td></td>
+    `;
 
-const trC=document.createElement("tr");
-trC.classList.add("level-2");
-trC.dataset.parent=stratKey;
-trC.style.display="none";
+    tbody.appendChild(trC);
 
-trC.innerHTML=`
-<td style="padding-left:20px"><b>${category}</b></td>
-<td></td><td></td><td></td>
-<td></td><td></td><td></td><td></td>
-`;
+    /* FUND ROWS */
+    catMap[category].forEach(f => {
+      const tr = document.createElement("tr");
+      tr.classList.add("level-3");
+      tr.dataset.parent = stratKey;
+      tr.style.display = "none";
 
-tbody.appendChild(trC);
+      tr.innerHTML = `
+        <td style="padding-left:40px">${f.fund_display}</td>
+        <td></td>
+        <td>${formatCurrency(f.invested)}</td>
+        <td>${formatCurrency(f.current_value)}</td>
+        <td>${formatCurrency(f.unrealised_gl)}</td>
+        <td>${formatPct(f.abs_return_pct)}</td>
+        <td>${formatPct(f.xirr_existing)}</td>
+        <td>${formatPct(f.xirr_entire)}</td>
+      `;
 
-
-/* FUND ROWS */
-
-catMap[category].forEach(f=>{
-
-const tr=document.createElement("tr");
-tr.classList.add("level-3");
-tr.dataset.parent=stratKey;
-tr.style.display="none";
-
-tr.innerHTML=`
-<td style="padding-left:40px">${f.fund_display}</td>
-<td></td>
-<td>${formatCurrency(f.invested)}</td>
-<td>${formatCurrency(f.current_value)}</td>
-<td>${formatCurrency(f.unrealised_gl)}</td>
-<td>${formatPct(f.abs_return_pct)}</td>
-<td>${formatPct(f.xirr_existing)}</td>
-<td>${formatPct(f.xirr_entire)}</td>
-`;
-
-tbody.appendChild(tr);
-
-});
-
-});
-
+      tbody.appendChild(tr);
+    });
+  });
 });
 
 container.appendChild(table);

@@ -24,6 +24,56 @@ from report_models import (AllocationItem,ClientReportData,)
 from itertools import groupby
 import datetime
 
+STRATEGY_ORDER = [
+    "Equity",
+    "Allocation",
+    "Alternative Strategies",
+    "Real Assets",
+    "Fixed Income",
+    "Capital Preservation",
+]
+
+def strategy_rank(value: Any) -> int:
+    value = str(value or "").strip()
+    try:
+        return STRATEGY_ORDER.index(value)
+    except ValueError:
+        return len(STRATEGY_ORDER)
+
+
+def strategy_sort_key(value: Any) -> tuple[int, str]:
+    return (strategy_rank(value), str(value or "").lower())
+
+CATEGORY_ORDER = [
+    "ELSS",
+    "Large Cap",
+    "Focused",
+    "Flexi Cap",
+    "Multi Cap",
+    "Large & Mid Cap",
+    "Large & Mid Cap",
+    "Mid Cap",
+    "Small Cap",
+    "Equity - Other",
+    "Index Funds",
+    "Global",
+    "Sector - Technology",
+    "Sector - Healthcare",
+    "Sector - Consumption",
+    "Sector - Infrastructure",
+    "Sector - Financial Services",
+]
+
+def category_rank(value: Any) -> int:
+    value = str(value or "").strip()
+    try:
+        return CATEGORY_ORDER.index(value)
+    except ValueError:
+        return len(CATEGORY_ORDER)
+
+
+def category_sort_key(value: Any) -> tuple[int, str]:
+    return (category_rank(value), str(value or "").lower())
 
 def format_date_ordinal(date_str):
     if not date_str:
@@ -1602,14 +1652,14 @@ class SummaryReportBuilder:
                         out.append(x)
                 return out
 
-
             perf_isin = sorted(
                 getattr(report, "perf_isin", []) or [],
                 key=lambda x: (
-                    norm(get_val(x, "g", "")),
-                    norm(get_val(x, "c", "")),
-                    norm(get_val(x, "fund_display", get_val(x, "p", ""))),
-                )
+                    strategy_sort_key(getattr(x, "g", "")),
+                    category_sort_key(getattr(x, "c", "")),
+                    norm(getattr(x, "fund_display", "")),
+                    getattr(x, "p", ""),
+                ),
             )
 
             kpi = getattr(report, "kpi", None)
@@ -1748,10 +1798,11 @@ class SummaryReportBuilder:
             perf_isin = sorted(
                 getattr(report, "perf_isin", []) or [],
                 key=lambda x: (
-                    norm(getattr(x, "g", "")),
-                    norm(getattr(x, "c", "")),
-                    norm(getattr(x, "fund_display", getattr(x, "p", ""))),
-                )
+                    strategy_sort_key(getattr(x, "g", "")),
+                    category_sort_key(getattr(x, "c", "")),
+                    norm(getattr(x, "fund_display", "")),
+                    getattr(x, "p", ""),
+                ),
             )
 
             kpi = getattr(report, "kpi", None)
