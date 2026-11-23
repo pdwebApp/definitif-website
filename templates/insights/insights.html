@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+  Insights | Définitif
+{% endblock %}
+
+
+{% block content %}
+<main class="insights-page">
+
+  <!-- Hero Banner -->
+  <section class="insights-hero">
+    <div class="banner-insights">
+      <p class="banner-subtext">
+        Stay informed with timely market updates, 
+        investment perspectives and practical insights to 
+        help you navigate through changing economic conditions.
+      </p>
+
+      <h2>
+        <span>Insights</span>
+        <span class="red-separator">|</span>
+        <span>Knowledge</span>
+        <span class="red-separator">|</span>
+        <span>Perspectives</span>
+      </h2>
+    </div>
+
+    <div class="insights-hero-actions">
+      <a href="#blogs" class="btn btn-primary">
+        Explore Articles
+      </a>
+
+      <a href="#market-updates" class="btn btn-primary">
+        Market Updates
+      </a>
+
+      <a href="#perspectives" class="btn btn-primary">
+        Prespectives
+      </a>
+    </div>
+  </section>
+
+  <!-- Featured Insight -->
+  {% if featured_article %}
+    <section class="featured-section" aria-labelledby="featured-heading">
+      <div class="container">
+        <h2 id="featured-heading" class="visually-hidden">
+          Featured Insight
+        </h2>
+
+        <article class="featured-card">
+          <a
+            class="featured-card-link"
+            href="{{ url_for(
+              'insights.blog_detail' if featured_section == 'blogs'
+              else 'insights.market_update_detail' if featured_section == 'market-updates'
+              else 'insights.perspective_detail',
+              slug=featured_article.slug
+            ) }}"
+          >
+            <div class="featured-card-thumbnail">
+              <img
+                src="{{ url_for('static', filename=featured_article.thumbnail) }}"
+                alt="{{ featured_article.title }}"
+                loading="lazy"
+                width="1200"
+                height="675"
+              >
+            </div>
+
+            <div class="featured-card-content">
+              <p class="insight-card-category">
+                {{ featured_article.category }}
+              </p>
+
+              <h3 class="featured-card-title">
+                {{ featured_article.title }}
+              </h3>
+
+              <p class="featured-card-summary">
+                {{ featured_article.summary }}
+              </p>
+
+              <p class="insight-card-meta">
+                <span>
+                  Published
+                  <time datetime="{{ featured_article.published_at }}">
+                    {{ featured_article.published_at }}
+                  </time>
+                </span>
+
+                <span aria-hidden="true">·</span>
+                <span>{{ featured_article.reading_time }}</span>
+              </p>
+
+              <span class="insight-card-cta">
+                Read More
+                <span aria-hidden="true">...</span>
+              </span>
+            </div>
+          </a>
+        </article>
+      </div>
+    </section>
+  {% endif %}
+
+  <!-- Content sections -->
+  {% for section, section_data in sections.items() %}
+    <section
+      id="{{ section }}"
+      class="insights-section"
+      aria-labelledby="{{ section }}-heading"
+    >
+      <div class="container">
+        <div class="section-header section-header--centered">
+          <p class="section-eyebrow">
+            {{ section_data.eyebrow }}
+          </p>
+
+          <h2 id="{{ section }}-heading" class="section-title">
+            {{ section_data.heading }}
+          </h2>
+
+          <p class="section-text">
+            {{ section_data.intro }}
+          </p>
+
+          <a
+            class="section-link"
+            href="{{ url_for('insights.section_list', section=section) }}"
+          >
+            {{ section_data.cta }}
+            <span aria-hidden="true">...</span>
+          </a>
+        </div>
+
+        {% if section_data.articles %}
+          <ul
+            class="insights-rail{% if section == 'market-updates' %} insights-rail--market{% elif section == 'perspectives' %} insights-rail--perspectives{% endif %}"
+            role="list"
+          >
+            {% for article in section_data.articles %}
+              <li class="insights-rail-item" role="listitem">
+                {% include "insights/partials/insight_card.html" %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="section-empty">
+            No insights are available in this section yet.
+          </p>
+        {% endif %}
+      </div>
+    </section>
+  {% endfor %}
+
+</main>
+{% endblock %}

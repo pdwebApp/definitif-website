@@ -98,6 +98,7 @@ def fetch_data_supabase_py(supabase_url: str, supabase_key: str, page_size: int 
         "Large & Mid-Cap": "Large & Mid Cap",
         "Mid-Cap": "Mid Cap",
         "Small-Cap": "Small Cap",
+        "Contra": "Contra",
         "Equity - Other": "Equity - Other",
         "ELSS (Tax Savings)": "ELSS",
         "Global - Other": "Global",

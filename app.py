@@ -27,6 +27,7 @@ from retirement_logic import retirementCalci
 from transaction_view import build_transaction_view
 from supabase_storage import fetch_json
 from admin_api import admin_api
+from blueprints.insights import insights_bp
 import uuid
 import threading
 import supabase
@@ -154,6 +155,7 @@ def create_app():
     )
     
     app.register_blueprint(admin_api)
+    app.register_blueprint(insights_bp)
     app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev-only-fallback")
     app.config["VALUATION_DATE"] = date.today() - timedelta(days=1)
 
@@ -185,9 +187,9 @@ def create_app():
     def calculators():
         return render_template("calculators.html")
 
-    @app.route("/insights")
-    def insights():
-        return render_template("insights.html")
+    # @app.route("/insights")
+    # def insights():
+    #     return render_template("insights.html")
 
     @app.route("/about")
     def about():

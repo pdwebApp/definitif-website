@@ -1,0 +1,56 @@
+<a
+  class="insight-card insight-card-link{% if section == 'market-updates' %} insight-card--market-update{% elif section == 'perspectives' %} insight-card--perspective{% endif %}"
+  href="{{ url_for(
+    'insights.blog_detail' if section == 'blogs'
+    else 'insights.market_update_detail' if section == 'market-updates'
+    else 'insights.perspective_detail',
+    slug=article.slug
+  ) }}"
+>
+  <div class="insight-card-thumbnail">
+    <img
+      src="{{ url_for('static', filename=article.thumbnail) }}"
+      alt="{{ article.title }}"
+      loading="lazy"
+    >
+  </div>
+
+  <div class="insight-card-content">
+    <div class="insight-card-category-row">
+      <p class="insight-card-category">
+        {{ article.category }}
+      </p>
+
+      {% if section == 'market-updates' %}
+        <p class="insight-card-update-badge">
+          Market Update
+        </p>
+      {% endif %}
+    </div>
+
+    <h3 class="insight-card-title">
+      {{ article.title }}
+    </h3>
+
+    <p class="insight-card-summary">
+      {{ article.summary }}
+    </p>
+
+    <p class="insight-card-meta">
+      <span>
+        Published
+        <time datetime="{{ article.published_at }}">
+          {{ article.published_at }}
+        </time>
+      </span>
+
+      <span aria-hidden="true">·</span>
+      <span>{{ article.reading_time }}</span>
+    </p>
+
+    <span class="insight-card-cta">
+      Read More
+      <span aria-hidden="true">...</span>
+    </span>
+  </div>
+</a>

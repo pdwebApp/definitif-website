@@ -54,6 +54,7 @@ CATEGORY_ORDER = [
     "Large & Mid Cap",
     "Mid Cap",
     "Small Cap",
+    "Contra",
     "Equity - Other",
     "Index Funds",
     "Global",

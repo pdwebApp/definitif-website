@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {{ section_config.label }} | Définitif Insights
+{% endblock %}
+
+{% block content %}
+<main class="insights-page">
+  <section class="insights-section">
+    <div class="container">
+
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="{{ url_for('insights.insights') }}">Home</a>
+        <span aria-hidden="true">→</span>
+        <a href="{{ url_for('insights.insights') }}">Insights</a>
+        <span aria-hidden="true">→</span>
+        <span aria-current="page">
+          {{ section_config.label }}
+        </span>
+      </nav>
+
+      <div class="section-header">
+        <div>
+          <p class="section-eyebrow">
+            {{ section_config.eyebrow }}
+          </p>
+
+          <h1 class="section-title">
+            {{ section_config.heading }}
+          </h1>
+
+          <p class="section-text">
+            {{ section_config.intro }}
+          </p>
+        </div>
+      </div>
+
+      {% if articles %}
+        <div class="insights-article-list">
+          {% for article in articles %}
+
+            {% if section == 'blogs' %}
+              {% set article_url = url_for('insights.blog_detail', slug=article.slug) %}
+            {% elif section == 'market-updates' %}
+              {% set article_url = url_for('insights.market_update_detail', slug=article.slug) %}
+            {% else %}
+              {% set article_url = url_for('insights.perspective_detail', slug=article.slug) %}
+            {% endif %}
+
+            <a
+              class="insights-article-card"
+              href="{{ article_url }}"
+            >
+              <div class="insights-article-card-media">
+                <img
+                  src="{{ url_for('static', filename=article.thumbnail) }}"
+                  alt="{{ article.title }}"
+                  loading="lazy"
+                >
+              </div>
+
+              <div class="insights-article-card-content">
+                <div class="insights-article-card-top">
+                  <p class="insights-article-card-category">
+                    {{ article.category }}
+                  </p>
+
+                  {% if section == 'market-updates' %}
+                    <p class="insights-article-card-badge">
+                      Market Update
+                    </p>
+                  {% endif %}
+                </div>
+
+                <h2 class="insights-article-card-title">
+                  {{ article.title }}
+                </h2>
+
+                <p class="insights-article-card-summary">
+                  {{ article.summary }}
+                </p>
+
+                <div class="insights-article-card-meta">
+                  <span>
+                    Published
+                    <time datetime="{{ article.published_at }}">
+                      {{ article.published_at }}
+                    </time>
+                  </span>
+
+                  <span aria-hidden="true">·</span>
+                  <span>{{ article.reading_time }}</span>
+                </div>
+
+                <span class="insights-article-card-cta">
+                  Read More
+                  <span aria-hidden="true">...</span>
+                </span>
+              </div>
+            </a>
+
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="section-empty">
+          No insights are available in this section yet.
+        </p>
+      {% endif %}
+
+      <a class="back-link" href="{{ url_for('insights.insights') }}">
+        <span aria-hidden="true">←</span>
+        Back to Insights
+      </a>
+
+    </div>
+  </section>
+</main>
+{% endblock %}
