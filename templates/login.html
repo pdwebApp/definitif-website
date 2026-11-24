@@ -7,7 +7,7 @@
   <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-  <link rel="icon" href="{{ url_for('static', filename='icons/paralogram_icon.png') }}">
+  <link rel="icon" href="{{ url_for('static', filename='images/icons/paralogram_icon.png') }}">
 </head>
 
 <body>
@@ -35,7 +35,7 @@
   <div class="landing-grid">
 
     <a href="/dashboard" class="landing-card" target="_blank" rel="noopener noreferrer">
-      <img src="static/cardImg/echo-card-zero.jpg" alt="Products">
+      <img src="static/images/cardImg/echo-card-zero.jpg" alt="Products">
       <div class="card-overlay">
         <p>Welcome to écho.</p>
         <p>Gain secure access to your investment portfolio - all in one place.</p>
@@ -43,7 +43,7 @@
     </a>
 
     <a href="https://www.mfuonline.com" class="landing-card" target="_blank" rel="noopener noreferrer">
-      <img src="static/cardImg/mfu-card-zero.jpg" alt="Products">
+      <img src="static/images/cardImg/mfu-card-zero.jpg" alt="Products">
       <div class="card-overlay">
         <p>Transact through MF Utility.</p>
         <p>Common Account Number (CAN) is required to log-in.</p>
@@ -89,7 +89,7 @@
   <footer id="footer"></footer>
 
   <!-- JavaScript injection -->
-  <script src="{{ url_for('static', filename='loadHeaderFooter.js') }}"></script>
+  <script src="{{ url_for('static', filename='javascripts/loadHeaderFooter.js') }}"></script>
 
 </body>
 </html>

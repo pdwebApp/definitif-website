@@ -6,7 +6,7 @@
   <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-  <link rel="icon" href="{{ url_for('static', filename='icons/paralogram_icon.png') }}">
+  <link rel="icon" href="{{ url_for('static', filename='images/icons/paralogram_icon.png') }}">
 </head>
 
 <body>
@@ -31,7 +31,7 @@
     <!-- Horizontal Sections -->
   <div class="landing-grid">
     <a href="{{ url_for('investment') }}" class="landing-card">
-      <img src="static/cardImg/growth_hand.jpg" alt="Investment Growth">
+      <img src="static/images/cardImg/growth_hand.jpg" alt="Investment Growth">
       <div class="card-overlay">
         <h2>Portfolio Creation</h2>
         <p>Estimate the potential growth of your portfolio over time.</p>
@@ -39,7 +39,7 @@
     </a>
     
     <a href="{{ url_for('goal') }}" class="landing-card">
-      <img src="static/cardImg/goal_peak.jpg" alt="Goal Planner">
+      <img src="static/images/cardImg/goal_peak.jpg" alt="Goal Planner">
       <div class="card-overlay">
         <h2>Goal Planner</h2>
         <p>Plan your financial goals with our effortless goal planning tool.</p>
@@ -47,7 +47,7 @@
     </a>
 
     <a href="{{ url_for('retirement') }}" class="landing-card">
-      <img src="static/cardImg/retire_couple.jpg" alt="Retirement">
+      <img src="static/images/cardImg/retire_couple.jpg" alt="Retirement">
       <div class="card-overlay">
         <h2>Retirement Planner</h2>
         <p>Plan your retirement with our intuitive retirement planning tool.</p>
@@ -59,7 +59,7 @@
   <footer id="footer"></footer>
 
   <!-- JavaScript injection -->
-  <script src="{{ url_for('static', filename='loadHeaderFooter.js') }}"></script>
+  <script src="{{ url_for('static', filename='javascripts/loadHeaderFooter.js') }}"></script>
 
 </body>
 </html>

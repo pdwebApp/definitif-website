@@ -627,10 +627,10 @@ class SummaryReportDoc(BaseDocTemplate):
 class SummaryReportBuilder:
     def __init__(self, output_path):
         self.output_path = output_path
-        self.definitif_logo_path = Path("static/websiteLogos/definitif_logo_wb_v2_red.png")
-        self.definitif_echo_logo_path = Path("static/websiteLogos/definitif_echo_logo_wb.png")
-        self.echo_logo_path = Path("static/dashLogos/powered_by_echo_wb_logo.png")
-        self.watermark_path = Path("static/watermarks/watermark_ifinite_two.png")
+        self.definitif_logo_path = Path("static/images/websiteLogos/definitif_logo_wb_v2_red.png")
+        self.definitif_echo_logo_path = Path("static/images/websiteLogos/definitif_echo_logo_wb.png")
+        self.echo_logo_path = Path("static/images/dashLogos/powered_by_echo_wb_logo.png")
+        self.watermark_path = Path("static/images/watermarks/watermark_ifinite_two.png")
         self.styles = getSampleStyleSheet()
         self._setup_styles()
 

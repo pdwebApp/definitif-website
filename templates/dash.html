@@ -11,7 +11,7 @@ body{visibility:hidden}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dash.css') }}">
-<link rel="icon" href="{{ url_for('static', filename='icons/paralogram_icon.png') }}">
+<link rel="icon" href="{{ url_for('static', filename='images/icons/paralogram_icon.png') }}">
 
 </head>
 <body>
@@ -85,7 +85,7 @@ body{visibility:hidden}
         <h3>Performance - Client Wise</h3>
         <div class="download-icons">
             <span class="expand-all" title="Expand All" onclick="toggleExpandAll('panTable')">⤢</span>
-            <img src="static/icons/pdf.png"
+            <img src="static/images/icons/pdf.png"
                 id="panPDF"
                 class="download-icon"
                 title="Download PDF"
@@ -121,12 +121,12 @@ body{visibility:hidden}
         <h3>Performance - Strategy Wise</h3>
         <div class="download-icons">
             <span class="expand-all" title="Expand All" onclick="toggleExpandAll('perfContainer')">⤢</span>
-            <img src="static/icons/pdf.png"
+            <img src="static/images/icons/pdf.png"
                 id="prefPDF"
                 class="download-icon"
                 title="Download PDF"
                 onclick="downloadPrefPDF()">
-            <img src="static/icons/xls.png" 
+            <img src="static/images/icons/xls.png" 
                 id="prefExcel"
                 class="download-icon"
                 title="Download Excel"
@@ -144,12 +144,12 @@ body{visibility:hidden}
             <h3>Profitbook - FY Wise</h3>
                 <div class="download-icons">
                     <span class="expand-all" title="Expand All" onclick="toggleExpandAll('profitContainer')">⤢</span>
-                    <img src="static/icons/pdf.png"
+                    <img src="static/images/icons/pdf.png"
                         id="profitPDF"
                         class="download-icon"
                         title="Download PDF"
                         onclick="downloadProfitPDF()">
-                    <img src="static/icons/xls.png" 
+                    <img src="static/images/icons/xls.png" 
                         id="profitExcel"
                         class="download-icon"
                         title="Download Excel"
@@ -169,12 +169,12 @@ body{visibility:hidden}
         </h3>
         <div class="download-icons">
             <span class="expand-all" title="Expand All" onclick="toggleExpandAll('transactionContainer')">⤢</span>
-            <img src="static/icons/pdf.png"
+            <img src="static/images/icons/pdf.png"
                 id="txnPDF"
                 class="download-icon"
                 title="Download PDF"
                 onclick="downloadTxnPDF()">
-            <img src="static/icons/xls.png" 
+            <img src="static/images/icons/xls.png" 
                 id="txnExcel"
                 class="download-icon"
                 title="Download Excel"
@@ -397,8 +397,8 @@ async function loadUserIndex(){
 
 async function loadDashLayout(){
 
-  const header = await fetch("/static/dash-header.html").then(r => r.text());
-  const footer = await fetch("/static/dash-footer.html").then(r => r.text());
+  const header = await fetch("/static/htmls/dash-header.html").then(r => r.text());
+  const footer = await fetch("/static/htmls/dash-footer.html").then(r => r.text());
 
   document.getElementById("dashHeader").innerHTML = header;
 
@@ -757,7 +757,7 @@ document.getElementById("clientNameHeader")?.innerText || "";
 
 // ---------- LOGO ----------
 const logo = new Image();
-logo.src = "static/dashLogos/echo_wb_flat_logo.png";
+logo.src = "static/images/dashLogos/echo_wb_flat_logo.png";
 
 await new Promise((resolve, reject) => {
   logo.onload = resolve;
@@ -997,7 +997,7 @@ document.getElementById("clientNameHeader")?.innerText || "";
 
 // ---------- LOGO ----------
 const logo = new Image();
-logo.src="static/dashLogos/echo_wb_flat_logo.png";
+logo.src="static/images/dashLogos/echo_wb_flat_logo.png";
 
 await new Promise((resolve) => {
   logo.onload = resolve;
@@ -1198,7 +1198,7 @@ document.getElementById("clientNameHeader")?.innerText || "";
 
 // ---------- LOGO ----------
 const logo = new Image();
-logo.src = "static/dashLogos/echo_wb_flat_logo.png";
+logo.src = "static/images/dashLogos/echo_wb_flat_logo.png";
 
 await new Promise((resolve, reject) => {
   logo.onload = resolve;
@@ -1454,7 +1454,7 @@ document.getElementById("clientNameHeader")?.innerText || "";
 
 // ---------- LOGO ----------
 const logo = new Image();
-logo.src = "static/dashLogos/echo_wb_flat_logo.png";
+logo.src = "static/images/dashLogos/echo_wb_flat_logo.png";
 
 await new Promise((resolve) => {
   logo.onload = resolve;

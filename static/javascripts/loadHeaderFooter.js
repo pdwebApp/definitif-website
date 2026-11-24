@@ -62,8 +62,8 @@ function initHamburgerToggle() {
 
 // Load header and footer on page load
 document.addEventListener("DOMContentLoaded", () => {
-  loadComponent("header", "/static/header.html");
-  loadComponent("footer", "/static/footer.html");
+  loadComponent("header", "/static/htmls/header.html");
+  loadComponent("footer", "/static/htmls/footer.html");
 });
 
 function initFooterForm() {

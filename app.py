@@ -187,10 +187,6 @@ def create_app():
     def calculators():
         return render_template("calculators.html")
 
-    # @app.route("/insights")
-    # def insights():
-    #     return render_template("insights.html")
-
     @app.route("/about")
     def about():
         return render_template("about.html")

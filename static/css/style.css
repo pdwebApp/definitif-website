@@ -17,18 +17,17 @@
 }
 
 :root {
-
-  --banner-home-img: url("static/images/banners/home-one.jpg");
-  --banner-homeportfolio-img: url("static/images/banners/portfolio-banner-one.jpg");
-  --banner-products-img: url("static/images/banners/services-one.jpg");
-  --banner-insights-img: url("static/images/banners/insights.jpg");
-  --banner-about-img: url("static/images/banners/about-one.jpg");
-  --banner-calculators-img: url("static/images/banners/calculators_page.png");
-  --banner-login-img: url("static/images/banners/login-one.jpg");
-  --banner-loginmessage-img: url("static/images/banners/discovery.jpg");
-  --banner-goalcalc-img: url("static/images/banners/goal-calci.jpg");
-  --banner-investcalc-img: url("static/images/banners/investment-calci.jpg");
-  --banner-retirecalc-img: url("static/images/banners/retirement-calci.jpg");
+  --banner-home-img: url("../images/banners/home-one.jpg");
+  --banner-homeportfolio-img: url("../images/banners/portfolio-banner-one.jpg");
+  --banner-products-img: url("../images/banners/services-one.jpg");
+  --banner-insights-img: url("../images/banners/insights.jpg");
+  --banner-about-img: url("../images/banners/about-one.jpg");
+  --banner-calculators-img: url("../images/banners/calculators_page.png");
+  --banner-login-img: url("../images/banners/login-one.jpg");
+  --banner-loginmessage-img: url("../images/banners/discovery.jpg");
+  --banner-goalcalc-img: url("../images/banners/goal-calci.jpg");
+  --banner-investcalc-img: url("../images/banners/investment-calci.jpg");
+  --banner-retirecalc-img: url("../images/banners/retirement-calci.jpg");
 }
 
 /* ============================= */

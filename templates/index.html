@@ -7,7 +7,7 @@
   <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-  <link rel="icon" href="{{ url_for('static', filename='icons/paralogram_icon.png') }}">
+  <link rel="icon" href="{{ url_for('static', filename='images/icons/paralogram_icon.png') }}">
 </head>
 
 <body>
@@ -34,7 +34,7 @@
   <div class="landing-grid">
 
     <a href="{{ url_for('services') }}" class="landing-card">
-      <img src="static/cardImg/products.jpg" alt="Products">
+      <img src="static/images/cardImg/products.jpg" alt="Products">
       <div class="card-overlay">
         <h2>Strategies</h2>
         <p>"Explore our full range of tailored financial solutions.</p>
@@ -42,7 +42,7 @@
     </a>
 
     <a href="{{ url_for('calculators') }}" class="landing-card">
-      <img src="static/cardImg/road_ahead.jpg" alt="Calculators">
+      <img src="static/images/cardImg/road_ahead.jpg" alt="Calculators">
       <div class="card-overlay">
         <h2>Planners</h2>
         <p>Plan your future with powerful financial planning tools.</p>
@@ -50,7 +50,7 @@
     </a>
 
     <a href="{{ url_for('insights.insights') }}" class="landing-card">
-      <img src="static/cardImg/outlook.jpg" alt="Insights">
+      <img src="static/images/cardImg/outlook.jpg" alt="Insights">
       <div class="card-overlay">
         <h2>Insights</h2>
         <p>Stay informed with market updates and our perspectives.</p>
@@ -73,7 +73,7 @@
   <footer id="footer"></footer>
 
   <!-- JavaScript injection -->
-  <script src="{{ url_for('static', filename='loadHeaderFooter.js') }}"></script>
+  <script src="{{ url_for('static', filename='javascripts/loadHeaderFooter.js') }}"></script>
 
 </body>
 </html>
