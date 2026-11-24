@@ -1023,6 +1023,14 @@ main.article-page .article-header {
     font-size: 1.5rem;
   }
 
+  main.article-page .article-meta {
+    margin: 0.5rem 0 1rem;
+  }
+
+  main.article-page .article-hero {
+    margin-top: 4rem;
+  }
+
   main.insights-page ul.insights-rail {
     gap: 1rem;
     margin: 0 -0.75rem;
