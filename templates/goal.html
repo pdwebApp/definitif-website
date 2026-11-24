@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Goal | Définitif</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <link rel="icon" href="{{ url_for('static', filename='icons/paralogram_icon.png') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
@@ -81,16 +81,21 @@
 
       <div class="calculator-navigation">
 
-        <p class="calc-nav-title">Explore Other Planning Tools</p>
+        <p class="calc-nav-title">Explore Other Planning Tools and Insights</p>
         <div class="calculator-actions">
           <a href="/investment" class="calculator-card">
-          <i class="fas fa-chart-line"></i>
-          <span>Portfolio Creation</span>
+            <i class="fas fa-chart-line"></i>
+            <span>Portfolio Planner</span>
           </a>
 
           <a href="/retirement" class="calculator-card">
-          <i class="fas fa-user-clock"></i>
-          <span>Retirement Planning</span>
+            <i class="fas fa-user-clock"></i>
+            <span>Retirement Planner</span>
+          </a>
+
+          <a href="{{ url_for('insights.blog_detail', slug='systematic-investment-plans-long-term-wealth') }}" class="calculator-card">
+            <i class="fas fa-chart-pie"></i>
+            <span>Explore Insights</span>
           </a>
         </div>
       </div>  

@@ -18,17 +18,17 @@
 
 :root {
 
-  --banner-home-img: url("banners/home-one.jpg");
-  --banner-homeportfolio-img: url("banners/portfolio-banner-one.jpg");
-  --banner-products-img: url("banners/services-one.jpg");
-  --banner-insights-img: url("banners/insights.jpg");
-  --banner-about-img: url("banners/about-one.jpg");
-  --banner-calculators-img: url("banners/calculators_page.png");
-  --banner-login-img: url("banners/login-one.jpg");
-  --banner-loginmessage-img: url("banners/discovery.jpg");
-  --banner-goalcalc-img: url("banners/goal-calci.jpg");
-  --banner-investcalc-img: url("banners/investment-calci.jpg");
-  --banner-retirecalc-img: url("banners/retirement-calci.jpg");
+  --banner-home-img: url("static/images/banners/home-one.jpg");
+  --banner-homeportfolio-img: url("static/images/banners/portfolio-banner-one.jpg");
+  --banner-products-img: url("static/images/banners/services-one.jpg");
+  --banner-insights-img: url("static/images/banners/insights.jpg");
+  --banner-about-img: url("static/images/banners/about-one.jpg");
+  --banner-calculators-img: url("static/images/banners/calculators_page.png");
+  --banner-login-img: url("static/images/banners/login-one.jpg");
+  --banner-loginmessage-img: url("static/images/banners/discovery.jpg");
+  --banner-goalcalc-img: url("static/images/banners/goal-calci.jpg");
+  --banner-investcalc-img: url("static/images/banners/investment-calci.jpg");
+  --banner-retirecalc-img: url("static/images/banners/retirement-calci.jpg");
 }
 
 /* ============================= */
@@ -229,13 +229,13 @@ header.scrolled {
 .banner-calculators {
   background-size: cover;
   background-position: center;
-  height: calc(100vh - var(--header-height));
+  height: calc(110vh - var(--header-height));
   display: flex;              /* center text inside */
   align-items: center;        /* center horizontally */
   flex-direction: column; /* stack children vertically */
   justify-content: flex-end; /* optional: center vertically if needed */
   text-align: center;
-  padding-bottom: 80px;
+  padding-bottom: 100px;
 }
 
 /* light-mode banners */
