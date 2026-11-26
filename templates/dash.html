@@ -30,6 +30,11 @@ body{visibility:hidden}
 
 <!-- APP -->
 <div class="container" id="app">
+  <!-- ADMIN TABS -->
+  <div id="appInitialLoader" class="app-initial-loader">
+    <div class="loading-spinner"></div>
+    <p>Loading dashboard...</p>
+  </div>
 <!-- ADMIN TABS -->
 <div id="adminTabs" class="tabs" style="display:none">
     <button class="tab active" data-admin="overview">Overview</button>
@@ -90,7 +95,7 @@ body{visibility:hidden}
                 class="download-icon"
                 title="Download PDF"
                 onclick="downloadPanPDF()">
-            <img src="static/icons/xls.png" 
+            <img src="static/images/icons/xls.png" 
                 id="panExcel"
                 class="download-icon"
                 title="Download Excel"
@@ -100,7 +105,7 @@ body{visibility:hidden}
             <table class="freeze-table" id="panTable">
                 <thead>
                     <tr>
-                        <th>Name</th>
+                        <th>Group</th>
                         <th>Weight</th>
                         <th>Invested</th>
                         <th>Value</th>
@@ -871,14 +876,14 @@ rowText &&
 !isClientName &&
 !isNumericLike &&
 !hasFundWord &&
-rowText !== "Name";
+rowText !== "Group";
 
 const isFund =
 rowText &&
 !isStrategy &&
 !isClientName &&
 !isCategory &&
-rowText !== "Name";
+rowText !== "Group";
 
 // ---------- CLIENT NAME ----------
 if(isClientName){
@@ -1826,7 +1831,7 @@ function styleExcelSheet(ws, headers, rightCols) {
       !isClientPan &&
       !isNumericLike &&
       !hasFundWord &&
-      rowText !== "Name";
+      rowText !== "Group";
 
     const isPerfCategory =
       isPerfSheet &&
@@ -1993,8 +1998,11 @@ async function startSession(login){
   document.getElementById("app").style.display = "block";
 
   if (isAdmin) {
-      await loadAdminDashboard();
-      return;
+    const initialLoader = document.getElementById("appInitialLoader");
+    if (initialLoader) initialLoader.remove();
+
+    await loadAdminDashboard();
+    return;
   }
 
   document.getElementById("adminTabs").style.display = "none";
@@ -2013,6 +2021,9 @@ async function startSession(login){
 
   document.getElementById("tab-overview").classList.add("active");
   document.getElementById("tab-overview").style.display = "block";
+
+  const initialLoader = document.getElementById("appInitialLoader");
+    if (initialLoader) initialLoader.remove();
 
   await loadUser(login);
   applyPanModeTabs();
@@ -2176,6 +2187,7 @@ async function loadAdminDashboard(){
 }
 
 async function renderAdminClients() {
+
   const panel = document.getElementById("admin-clients");
   const clients = await loadAllClientSummaries();
 
@@ -2193,10 +2205,15 @@ async function renderAdminClients() {
   };
 
   panel.innerHTML = `
-    <div class="card">
-      <h3>Client Search</h3>
+  <div class="card admin-client-search-card">
+    <details class="admin-client-search-details" id="adminClientSearchDetails">
+      <summary class="admin-client-search-summary">
+        <span class="admin-client-search-title">Client Search</span>
+        <span class="admin-client-search-arrow" aria-hidden="true">▼</span>
+      </summary>
 
-      <div class="admin-client-tabs" role="tablist" aria-label="Client types">
+      <div class="admin-client-search-body">
+        <div class="admin-client-tabs" role="tablist" aria-label="Client types">
         ${typeOrder.map((type, index) => `
           <button
             type="button"
@@ -2251,73 +2268,127 @@ async function renderAdminClients() {
           </div>
         </div>
 
-        <div class="table-scroll admin-table-wrap">
-          <table id="adminClientsTable" data-testid="admin-clients-table">
-            <colgroup>
-              <col style="width: 3%;">
-              <col style="width: 24%;">
-              <col style="width: 24%;">
-              <col style="width: 10%;">
-              <col style="width: 10%;">
-              <col style="width: 10%;">
-              <col style="width: 10%;">
-              <col style="width: 10%;">
-            </colgroup>
-            <thead>
-              <tr>
-                <th>
-                  <input
-                    type="checkbox"
-                    id="selectAllClients"
-                    data-testid="select-all-clients"
-                    aria-label="Select all clients"
-                  />
-                </th>
-                <th>Client</th>
-                <th>Email Connect</th>
-                <th>PAN</th>
-                <th>MFU CAN</th>
-                <th>Mobile</th>
-                <th>DOB</th>
-                <th>Value</th>
-              </tr>
-            </thead>
-            <tbody id="adminClientsTbody">
-              ${clients.map(c => `
-                <tr
-                  class="admin-client-row"
-                  data-login="${c.login_id}"
-                  data-name="${(c.name || "").replace(/"/g, "&quot;")}"
-                  data-email-connect="${(c.email_connect || "").replace(/"/g, "&quot;")}"
-                  data-user-type="${String(c.user_type || "").toLowerCase()}"
-                  data-testid="client-row-${c.login_id}"
-                >
-                  <td>
+        <div class="admin-table-scroll-area">
+          <div class="table-scroll admin-table-wrap">
+            <table id="adminClientsTable">
+              <colgroup>
+                <col style="width: 3%;">
+                <col style="width: 24%;">
+                <col style="width: 24%;">
+                <col style="width: 10%;">
+                <col style="width: 10%;">
+                <col style="width: 10%;">
+                <col style="width: 10%;">
+                <col style="width: 10%;">
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>
                     <input
                       type="checkbox"
-                      class="client-select-checkbox"
-                      data-login="${c.login_id}"
-                      data-testid="client-checkbox-${c.login_id}"
-                      aria-label="Select ${c.name || c.login_id}"
+                      id="selectAllClients"
+                      data-testid="select-all-clients"
+                      aria-label="Select all clients"
                     />
-                  </td>
-                  <td class="client-col">${c.name || "-"}</td>
-                  <td>${c.email_connect || "-"}</td>
-                  <td>${c.pan || "-"}</td>
-                  <td>${c.mfu_can || "-"}</td>
-                  <td>${c.mobile || "-"}</td>
-                  <td>${c.dob || "-"}</td>
-                  <td>${formatNumber(c.portfolio_value || 0)}</td>
+                  </th>
+                  <th>Client</th>
+                  <th>Email Connect</th>
+                  <th>PAN</th>
+                  <th>MFU CAN</th>
+                  <th>Mobile</th>
+                  <th>DOB</th>
+                  <th>Value</th>
                 </tr>
-              `).join("")}
-            </tbody>
-          </table>
+              </thead>
+              <tbody id="adminClientsTbody">
+                ${clients.map(c => `
+                  <tr
+                    class="admin-client-row"
+                    data-login="${c.login_id}"
+                    data-name="${(c.name || "").replace(/"/g, "&quot;")}"
+                    data-email-connect="${(c.email_connect || "").replace(/"/g, "&quot;")}"
+                    data-user-type="${String(c.user_type || "").toLowerCase()}"
+                    data-testid="client-row-${c.login_id}"
+                  >
+                    <td>
+                      <input
+                        type="checkbox"
+                        class="client-select-checkbox"
+                        data-login="${c.login_id}"
+                        data-testid="client-checkbox-${c.login_id}"
+                        aria-label="Select ${c.name || c.login_id}"
+                      />
+                    </td>
+                    <td class="client-col">${c.name || "-"}</td>
+                    <td>${c.email_connect || "-"}</td>
+                    <td>${c.pan || "-"}</td>
+                    <td>${c.mfu_can || "-"}</td>
+                    <td>${c.mobile || "-"}</td>
+                    <td>${c.dob || "-"}</td>
+                    <td>${formatNumber(c.portfolio_value || 0)}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="admin-table-footer">
+          <div class="admin-table-rows-info">
+            Showing
+            <span id="adminClientsVisibleStart">1</span>–
+            <span id="adminClientsVisibleEnd">20</span>
+            of
+            <span id="adminClientsTotalCount">0</span>
+          </div>
+
+          <div class="admin-table-center-navigation">
+            <button
+              type="button"
+              id="adminClientsPrevBtn"
+              class="admin-pagination-btn admin-pagination-secondary"
+              disabled
+            >
+              Previous
+            </button>
+
+            <label class="admin-page-jump">
+              Page
+              <input
+                type="number"
+                id="adminClientsPageInput"
+                min="1"
+                value="1"
+                class="admin-page-input"
+              />
+              of
+              <span id="adminClientsTotalPages">1</span>
+            </label>
+
+            <button
+              type="button"
+              id="adminClientsNextBtn"
+              class="admin-pagination-btn admin-pagination-primary"
+            >
+              Next
+            </button>
+          </div>
+
+          <select id="adminClientsPageSize" class="admin-page-size-select">
+            <option value="20" selected>20 rows</option>
+            <option value="50">50 rows</option>
+            <option value="100">100 rows</option>
+            <option value="500">500 rows</option>
+            <option value="1000">1000 rows</option>
+          </select>
         </div>
 
         <div id="bulkSendStatus" class="bulk-send-status"></div>
+        </div>
       </div>
-    </div>
-  `;
+    </details>
+  </div>
+`;
 
   const tabs = Array.from(panel.querySelectorAll(".admin-client-tab"));
   const searchInput = document.getElementById("adminClientSearch");
@@ -2330,6 +2401,116 @@ async function renderAdminClients() {
   const rows = Array.from(panel.querySelectorAll(".admin-client-row"));
 
   let activeType = "individual";
+  let currentPage = 1;
+  let currentPageSize = 20;
+  const selectedClientLogins = new Set();
+
+  function getCurrentPageRows() {
+  const visibleRows = getVisibleRows();
+  const totalPages = Math.max(1, Math.ceil(visibleRows.length / currentPageSize));
+
+  currentPage = Math.min(Math.max(1, currentPage), totalPages);
+
+  const start = (currentPage - 1) * currentPageSize;
+  const end = start + currentPageSize;
+
+  return {
+    rows: visibleRows.slice(start, end),
+    start,
+    end,
+    total: visibleRows.length,
+    totalPages
+  };
+}
+
+  function getClientRows() {
+  return rows.filter(row => isRowVisible(row));
+}
+
+function renderVisibleClientRows() {
+  const pageData = getCurrentPageRows();
+
+  rows.forEach(row => {
+    row.style.display = "none";
+  });
+
+  pageData.rows.forEach(row => {
+    row.style.display = "";
+  });
+
+  const startNumber = pageData.total === 0 ? 0 : pageData.start + 1;
+  const endNumber = pageData.total === 0
+    ? 0
+    : Math.min(pageData.end, pageData.total);
+
+  document.getElementById("adminClientsVisibleStart").textContent = startNumber;
+  document.getElementById("adminClientsVisibleEnd").textContent = endNumber;
+  document.getElementById("adminClientsTotalCount").textContent = pageData.total;
+  document.getElementById("adminClientsTotalPages").textContent = pageData.totalPages;
+
+  const pageInput = document.getElementById("adminClientsPageInput");
+
+  if (pageInput) {
+    pageInput.value = currentPage;
+    pageInput.max = pageData.totalPages;
+  }
+
+  if (prevBtn) {
+    prevBtn.disabled = currentPage <= 1;
+  }
+
+  if (nextBtn) {
+    nextBtn.disabled = currentPage >= pageData.totalPages;
+  }
+
+  const scrollArea = document.querySelector(".admin-table-scroll-area");
+
+  if (scrollArea) {
+    scrollArea.scrollTop = 0;
+  }
+
+  updateBulkUI();
+}
+
+  const prevBtn = document.getElementById("adminClientsPrevBtn");
+  const nextBtn = document.getElementById("adminClientsNextBtn");
+
+  prevBtn.addEventListener("click", () => {
+  if (currentPage > 1) {
+    currentPage--;
+    renderVisibleClientRows();
+  }
+});
+
+nextBtn.addEventListener("click", () => {
+  const pageData = getCurrentPageRows();
+
+  if (currentPage < pageData.totalPages) {
+    currentPage++;
+    renderVisibleClientRows();
+  }
+});
+
+const pageInput = document.getElementById("adminClientsPageInput");
+const pageSizeSelect = document.getElementById("adminClientsPageSize");
+
+pageInput.addEventListener("change", () => {
+  const requestedPage = parseInt(pageInput.value, 10);
+
+  if (Number.isNaN(requestedPage) || requestedPage < 1) {
+    currentPage = 1;
+  } else {
+    currentPage = requestedPage;
+  }
+
+  renderVisibleClientRows();
+});
+
+pageSizeSelect.addEventListener("change", () => {
+  currentPageSize = parseInt(pageSizeSelect.value, 10) || 20;
+  currentPage = 1;
+  renderVisibleClientRows();
+});
 
   function getSearchQuery() {
     return searchInput.value.toLowerCase().trim();
@@ -2356,36 +2537,30 @@ async function renderAdminClients() {
   }
 
   function applyFilters() {
-    rows.forEach(row => {
-      row.style.display = isRowVisible(row) ? "" : "none";
-    });
-    updateBulkUI();
-  }
+  currentPage = 1;
+  renderVisibleClientRows();
+}
 
   function updateBulkUI() {
-    const visibleRows = getVisibleRows();
-    const visibleCheckboxes = visibleRows
-      .map(row => row.querySelector(".client-select-checkbox"))
-      .filter(Boolean);
+  const pageData = getCurrentPageRows();
 
-    const checkedVisible = visibleCheckboxes.filter(cb => cb.checked);
+  const pageCheckboxes = pageData.rows
+    .map(row => row.querySelector(".client-select-checkbox"))
+    .filter(Boolean);
 
-    selectAll.checked =
-      visibleCheckboxes.length > 0 &&
-      checkedVisible.length === visibleCheckboxes.length;
+  const checkedPageCheckboxes = pageCheckboxes.filter(cb => cb.checked);
 
-    selectAll.indeterminate =
-      checkedVisible.length > 0 &&
-      checkedVisible.length < visibleCheckboxes.length;
+  selectAll.checked =
+    pageCheckboxes.length > 0 &&
+    checkedPageCheckboxes.length === pageCheckboxes.length;
 
-    const selectedRows = rows.filter(row => {
-      const cb = row.querySelector(".client-select-checkbox");
-      return cb && cb.checked;
-    });
+  selectAll.indeterminate =
+    checkedPageCheckboxes.length > 0 &&
+    checkedPageCheckboxes.length < pageCheckboxes.length;
 
-    selectedCount.textContent = `${selectedRows.length} selected`;
-    sendBtn.disabled = selectedRows.length === 0;
-  }
+  selectedCount.textContent = `${selectedClientLogins.size} selected`;
+  sendBtn.disabled = selectedClientLogins.size === 0;
+}
 
   function setActiveTab(type) {
     activeType = type;
@@ -2404,13 +2579,27 @@ async function renderAdminClients() {
   });
 
   selectAll.addEventListener("change", () => {
-    const shouldCheck = selectAll.checked;
-    getVisibleRows().forEach(row => {
-      const cb = row.querySelector(".client-select-checkbox");
-      if (cb) cb.checked = shouldCheck;
-    });
-    updateBulkUI();
+  const shouldCheck = selectAll.checked;
+  const pageData = getCurrentPageRows();
+
+  pageData.rows.forEach(row => {
+    const cb = row.querySelector(".client-select-checkbox");
+
+    if (!cb) return;
+
+    cb.checked = shouldCheck;
+
+    const login = cb.dataset.login;
+
+    if (shouldCheck) {
+      selectedClientLogins.add(login);
+    } else {
+      selectedClientLogins.delete(login);
+    }
   });
+
+  updateBulkUI();
+});
 
   rows.forEach(row => {
     const cb = row.querySelector(".client-select-checkbox");
@@ -2418,6 +2607,15 @@ async function renderAdminClients() {
     if (cb) {
       cb.addEventListener("change", e => {
         e.stopPropagation();
+
+        const login = cb.dataset.login;
+
+        if (cb.checked) {
+          selectedClientLogins.add(login);
+        } else {
+          selectedClientLogins.delete(login);
+        }
+
         updateBulkUI();
       });
 
@@ -2452,140 +2650,148 @@ async function renderAdminClients() {
   });
 
   sendBtn.addEventListener("click", async () => {
-    const selectedRows = getSelectedRows();
+  if (selectedClientLogins.size === 0) {
+    alert("Please select at least one client.");
+    return;
+  }
 
-    if (!selectedRows.length) {
-      alert("Please select at least one client.");
-      return;
-    }
+  const manualEmails = recipientMode.value === "manual"
+    ? manualEmailInput.value.split(",").map(v => v.trim()).filter(Boolean)
+    : [];
 
-    const manualEmails = recipientMode.value === "manual"
-      ? manualEmailInput.value.split(",").map(v => v.trim()).filter(Boolean)
-      : [];
+  if (recipientMode.value === "manual" && manualEmails.length === 0) {
+    alert("Please enter at least one manual email.");
+    return;
+  }
 
-    if (recipientMode.value === "manual" && manualEmails.length === 0) {
-      alert("Please enter at least one manual email.");
-      return;
-    }
+  const payload = {
+    clientLogins: Array.from(selectedClientLogins),
+    recipientMode: recipientMode.value,
+    manualEmails
+  };
 
-    const payload = {
-      clientLogins: selectedRows.map(row => row.dataset.login),
-      recipientMode: recipientMode.value,
-      manualEmails
-    };
+  sendBtn.disabled = true;
+  statusBox.textContent = "Starting report job...";
 
-    sendBtn.disabled = true;
-    statusBox.textContent = "Starting report job...";
+  try {
+    const startRes = await fetch("/api/client-reports/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const startText = await startRes.text();
+    let startData = null;
 
     try {
-      const startRes = await fetch("/api/client-reports/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
+      startData = startText ? JSON.parse(startText) : null;
+    } catch (parseErr) {
+      startData = null;
+    }
 
-      const startText = await startRes.text();
-      let startData = null;
+    if (!startRes.ok) {
+      throw new Error(
+        startData?.error ||
+        startData?.message ||
+        `Request failed (${startRes.status})`
+      );
+    }
+
+    const jobId = startData?.jobId;
+
+    if (!jobId) {
+      throw new Error("Missing jobId from server");
+    }
+
+    statusBox.textContent = `Report job started. Job ID: ${jobId}`;
+
+    let finalResult = null;
+    const pollIntervalMs = 2500;
+    const maxPolls = 720;
+
+    for (let attempt = 1; attempt <= maxPolls; attempt++) {
+      await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
+
+      const pollRes = await fetch(`/api/client-reports/status/${encodeURIComponent(jobId)}`);
+      const pollText = await pollRes.text();
+
+      let pollData = null;
 
       try {
-        startData = startText ? JSON.parse(startText) : null;
+        pollData = pollText ? JSON.parse(pollText) : null;
       } catch (parseErr) {
-        startData = null;
+        pollData = null;
       }
 
-      if (!startRes.ok) {
+      if (!pollRes.ok) {
         throw new Error(
-          startData?.error ||
-          startData?.message ||
-          `Request failed (${startRes.status})`
+          pollData?.error ||
+          pollData?.message ||
+          `Status check failed (${pollRes.status})`
         );
       }
 
-      const jobId = startData?.jobId;
-      if (!jobId) {
-        throw new Error("Missing jobId from server");
+      const status = pollData?.status;
+
+      if (status === "queued" || status === "running") {
+        statusBox.textContent = `Report job ${status}...`;
+        continue;
       }
 
-      statusBox.textContent = `Report job started. Job ID: ${jobId}`;
-
-      let finalResult = null;
-      const pollIntervalMs = 2500;
-      const maxPolls = 720;
-
-      for (let attempt = 1; attempt <= maxPolls; attempt++) {
-        await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
-
-        const pollRes = await fetch(`/api/client-reports/status/${encodeURIComponent(jobId)}`);
-        const pollText = await pollRes.text();
-
-        let pollData = null;
-        try {
-          pollData = pollText ? JSON.parse(pollText) : null;
-        } catch (parseErr) {
-          pollData = null;
-        }
-
-        if (!pollRes.ok) {
-          throw new Error(
-            pollData?.error ||
-            pollData?.message ||
-            `Status check failed (${pollRes.status})`
-          );
-        }
-
-        const status = pollData?.status;
-
-        if (status === "queued" || status === "running") {
-          statusBox.textContent = `Report job ${status}...`;
-          continue;
-        }
-
-        if (status === "error") {
-          throw new Error(
-            pollData?.result?.error ||
-            pollData?.result?.details ||
-            "Report job failed"
-          );
-        }
-
-        if (status === "done") {
-          finalResult = pollData?.result || null;
-          break;
-        }
-
-        throw new Error(`Unexpected job status: ${status || "unknown"}`);
+      if (status === "error") {
+        throw new Error(
+          pollData?.result?.error ||
+          pollData?.result?.details ||
+          "Report job failed"
+        );
       }
 
-      if (!finalResult) {
-        throw new Error("Timed out while waiting for report job completion");
+      if (status === "done") {
+        finalResult = pollData?.result || null;
+        break;
       }
 
-      const lines = [finalResult?.message || "Reports processed successfully."];
-
-      if (Array.isArray(finalResult?.results)) {
-        finalResult.results.forEach(item => {
-          lines.push(
-            `${item.clientName || item.login}: ` +
-            `Portfolio Statement - ${item.portfolioStmtPdf ? "Yes" : "No"}, ` +
-            `Email - ${item.emailSent ? "Sent" : "Not Sent"}`
-          );
-        });
-      }
-
-      statusBox.textContent = lines.join("\n");
-    } catch (err) {
-      statusBox.textContent = `Send failed: ${err.message}`;
-    } finally {
-      sendBtn.disabled = false;
-      updateBulkUI();
+      throw new Error(`Unexpected job status: ${status || "unknown"}`);
     }
-  });
 
-  setActiveTab("individual");
+    if (!finalResult) {
+      throw new Error("Timed out while waiting for report job completion");
+    }
+
+    const lines = [finalResult?.message || "Reports processed successfully."];
+
+    if (Array.isArray(finalResult?.results)) {
+      finalResult.results.forEach(item => {
+        lines.push(
+          `${item.clientName || item.login}: ` +
+          `Portfolio Statement - ${item.portfolioStmtPdf ? "Yes" : "No"}, ` +
+          `Email - ${item.emailSent ? "Sent" : "Not Sent"}`
+        );
+      });
+    }
+
+    statusBox.textContent = lines.join("\n");
+  } catch (err) {
+    statusBox.textContent = `Send failed: ${err.message}`;
+  } finally {
+    sendBtn.disabled = false;
+    updateBulkUI();
+  }
+});
+
+setActiveTab("individual");
+renderVisibleClientRows();
 }
 
 async function openAdminClient(login) {
+
   if (!adminSessionUser) adminSessionUser = currentUser;
+
+  const searchDetails = document.getElementById("adminClientSearchDetails");
+
+  if (searchDetails) {
+    searchDetails.removeAttribute("open");
+  }
 
   const rec = await getUserIndexRecord(login);
   const pans = Array.isArray(rec?.pans) ? rec.pans.filter(Boolean) : [];
@@ -3435,7 +3641,7 @@ const table=document.createElement("table");
 table.innerHTML=`
 <thead>
 <tr>
-<th>Name</th>
+<th>Group</th>
 <th>Weight</th>
 <th>Invested</th>
 <th>Value</th>
