@@ -3048,3 +3048,703 @@ margin-top:30px;
     order: 4;
   }
 }
+
+/* ==========================
+   CAS Upload — Admin Tab
+   ========================== */
+
+#admin-cas {
+  padding: 4px 0 24px;
+}
+
+.cas-upload-card {
+  padding: 24px;
+  border-radius: 16px;
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.cas-upload-header {
+  margin-bottom: 22px;
+}
+
+.cas-upload-header h3 {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--title-text, #0f172a);
+}
+
+.cas-upload-subtitle {
+  margin: 0;
+  max-width: 780px;
+  color: var(--muted-text, #64748b);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.cas-upload-subtitle code {
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: rgba(47, 193, 164, 0.1);
+  color: var(--primary-color, #0f766e);
+  font-size: 12px;
+}
+
+/* Upload form */
+
+/* CAS upload form */
+.cas-upload-form {
+  display: grid;
+  grid-template-columns: minmax(280px, 1.6fr) minmax(220px, 1fr) auto;
+  gap: 18px;
+  align-items: end;
+  padding: 20px;
+  border-radius: 12px;
+  background: var(--soft-bg, #f8fafc);
+  border: 1px solid var(--border-color, #e5e7eb);
+  margin-bottom: 20px;
+}
+
+.cas-upload-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.cas-upload-field label {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--title-text, #334155);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cas-upload-field input {
+  width: 100%;
+  min-width: 0;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--border-color, #cbd5e1);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--title-text, #0f172a);
+  background: var(--card-bg, #ffffff);
+  box-sizing: border-box;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.cas-upload-field input:focus {
+  border-color: var(--primary-color, #2fc1a4);
+  box-shadow: 0 0 0 3px rgba(47, 193, 164, 0.16);
+  outline: none;
+}
+
+.cas-upload-field input[type="file"] {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  cursor: pointer;
+}
+
+.cas-upload-field input[type="file"]::file-selector-button {
+  height: 32px;
+  margin-right: 12px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--primary-color, #2fc1a4);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.cas-upload-field input[type="file"]::file-selector-button:hover {
+  background: #26a88f;
+}
+
+#parseBtn {
+  height: 42px;
+  padding: 0 22px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Alerts */
+
+.cas-alert {
+  padding: 13px 16px;
+  border-radius: 10px;
+  margin-bottom: 18px;
+  font-size: 14px;
+  line-height: 1.5;
+  border: 1px solid transparent;
+}
+
+.cas-alert-info {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.25);
+  color: #1d4ed8;
+}
+
+.cas-alert-success {
+  background: rgba(47, 193, 164, 0.12);
+  border-color: rgba(47, 193, 164, 0.3);
+  color: #0f766e;
+}
+
+.cas-alert-warning {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.3);
+  color: #92400e;
+}
+
+.cas-alert-danger {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: #b91c1c;
+}
+
+/* Preview section */
+
+.cas-preview-section {
+  margin-top: 6px;
+}
+
+.cas-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.cas-preview-summary {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--title-text, #0f172a);
+}
+
+.cas-missing-badge {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #92400e;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.cas-preview-scroll {
+  max-height: 560px;
+  overflow: auto;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 10px;
+}
+
+.cas-preview-table {
+  width: 100%;
+  min-width: 1150px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.cas-preview-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 10px 12px;
+  background: var(--table-header);
+  color: var(--title-text, #334155);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+
+/* ==========================
+   CAS Preview — Column Alignment
+   ========================== */
+
+/* Left-align all columns by default */
+.cas-preview-table th,
+.cas-preview-table td {
+  text-align: left !important;
+}
+
+/* Right-align the last three columns */
+.cas-preview-table th:nth-last-child(-n + 3),
+.cas-preview-table td:nth-last-child(-n + 3) {
+  text-align: right !important;
+}
+
+/* Keep explicit right-aligned columns right-aligned */
+.cas-preview-table th.text-end,
+.cas-preview-table td.text-end {
+  text-align: right !important;
+}
+
+.cas-preview-table tbody td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  color: var(--title-text, #334155);
+  vertical-align: middle;
+}
+
+.cas-preview-table tbody td.text-end {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.cas-preview-table tbody tr:nth-child(even) {
+  background: var(--soft-bg, #f8fafc);
+}
+
+.cas-preview-table tbody tr:hover {
+  background: rgba(47, 193, 164, 0.07);
+}
+
+.cas-preview-table code {
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: rgba(100, 116, 139, 0.12);
+  color: var(--title-text, #334155);
+  font-size: 12px;
+}
+
+/* Missing ISIN input */
+
+.cas-isin-input {
+  min-width: 165px;
+  padding: 6px 9px;
+  border: 1px solid #ef4444;
+  border-radius: 6px;
+  font-size: 12px;
+  background: var(--card-bg, #ffffff);
+  color: var(--title-text, #0f172a);
+}
+
+.cas-isin-input:focus {
+  outline: none;
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.14);
+}
+
+.cas-isin-input.is-valid {
+  border-color: #10b981;
+}
+
+.cas-isin-input.is-valid:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.16);
+}
+
+.cas-row-warning {
+  background: rgba(245, 158, 11, 0.09) !important;
+}
+
+.cas-txn-badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(100, 116, 139, 0.14);
+  color: var(--title-text, #334155);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Utility */
+
+.cas-upload-card .d-none {
+  display: none !important;
+}
+
+/* Responsive */
+
+@media (max-width: 900px) {
+  .cas-upload-form {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .cas-preview-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cas-preview-header .btn {
+    width: 100%;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .cas-upload-card {
+    background: var(--dark-card-bg, #1f2934);
+    border-color: var(--dark-border, rgba(255, 255, 255, 0.05));
+  }
+
+  .cas-upload-header h3,
+  .cas-preview-summary {
+    color: var(--dark-text, #e2e8f0);
+  }
+
+  .cas-upload-subtitle,
+  .cas-upload-field label,
+  .cas-preview-table tbody td {
+    color: var(--dark-muted, #94a3b8);
+  }
+
+  .cas-upload-subtitle code {
+    background: rgba(45, 212, 191, 0.12);
+    color: #5eead4;
+  }
+
+  .cas-upload-form {
+    background: var(--dark-surface, #0f172a);
+    border-color: var(--dark-border, rgba(255, 255, 255, 0.05));
+  }
+
+  .cas-upload-field input {
+    background: var(--dark-card-bg, #1f2934);
+    color: var(--dark-text, #cbd5e1);
+    border-color: var(--dark-border, rgba(255, 255, 255, 0.05));
+  }
+
+  .cas-upload-field input:focus {
+    border-color: var(--dark-accent, #60a5fa);
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+  }
+
+  .cas-upload-field input[type="file"]::file-selector-button {
+    background: var(--dark-accent, #60a5fa);
+    color: #0f172a;
+  }
+
+  .cas-preview-scroll {
+    border-color: var(--dark-border, rgba(255, 255, 255, 0.05));
+  }
+
+  .cas-preview-table thead th {
+    background: var(--dark-table-header);
+    color: var(--dark-title-text);
+  }
+
+  .cas-preview-table tbody td {
+    border-color: var(--dark-border, rgba(255, 255, 255, 0.05));
+  }
+
+  .cas-preview-table tbody tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .cas-preview-table tbody tr:hover {
+    background: rgba(96, 165, 250, 0.08);
+  }
+
+  .cas-preview-table code {
+    background: rgba(148, 163, 184, 0.15);
+    color: var(--dark-text, #cbd5e1);
+  }
+
+  .cas-isin-input {
+    background: var(--dark-card-bg, #1f2934);
+    color: var(--dark-text, #cbd5e1);
+  }
+
+  .cas-txn-badge {
+    background: rgba(148, 163, 184, 0.15);
+    color: var(--dark-text, #cbd5e1);
+  }
+
+  .cas-alert-info {
+    background: rgba(96, 165, 250, 0.12);
+    border-color: rgba(96, 165, 250, 0.25);
+    color: #93c5fd;
+  }
+
+  .cas-alert-success {
+    background: rgba(45, 212, 191, 0.12);
+    border-color: rgba(45, 212, 191, 0.25);
+    color: #5eead4;
+  }
+
+  .cas-alert-warning {
+    background: rgba(251, 191, 36, 0.12);
+    border-color: rgba(251, 191, 36, 0.25);
+    color: #fcd34d;
+  }
+
+  .cas-alert-danger {
+    background: rgba(248, 113, 113, 0.12);
+    border-color: rgba(248, 113, 113, 0.25);
+    color: #fca5a5;
+  }
+
+  .cas-missing-badge {
+    background: rgba(251, 191, 36, 0.12);
+    border-color: rgba(251, 191, 36, 0.25);
+    color: #fcd34d;
+  }
+}
+
+@media (max-width: 900px) {
+  .cas-upload-form {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .cas-upload-field label {
+    white-space: normal;
+  }
+
+  #parseBtn {
+    width: 100%;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .cas-upload-form {
+    background: var(--dark-surface, #0f172a);
+    border-color: var(--dark-border, rgba(255, 255, 255, 0.05));
+  }
+
+  .cas-upload-field label {
+    color: var(--dark-muted, #94a3b8);
+  }
+
+  .cas-upload-field input {
+    background: var(--dark-card-bg, #1f2934);
+    color: var(--dark-text, #cbd5e1);
+    border-color: var(--dark-border, rgba(255, 255, 255, 0.05));
+  }
+
+  .cas-upload-field input:focus {
+    border-color: var(--dark-accent, #60a5fa);
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+  }
+
+  .cas-upload-field input[type="file"]::file-selector-button {
+    background: var(--dark-accent, #60a5fa);
+    color: #0f172a;
+  }
+}
+
+/* ==========================
+   CAS Upload — Mobile
+   ========================== */
+
+@media (max-width: 768px) {
+  #admin-cas {
+    padding: 0 0 20px;
+  }
+
+  .cas-upload-card {
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .cas-upload-header {
+    margin-bottom: 16px;
+  }
+
+  .cas-upload-header h3 {
+    font-size: 18px;
+    line-height: 1.3;
+  }
+
+  .cas-upload-subtitle {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .cas-upload-subtitle code {
+    font-size: 11px;
+  }
+
+  /* Stack the upload controls */
+  .cas-upload-form {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    align-items: stretch;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .cas-upload-field {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .cas-upload-field label {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    font-size: 13px;
+  }
+
+  .cas-upload-field input {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    height: 44px;
+    font-size: 16px; /* prevents iOS zoom-on-focus */
+    box-sizing: border-box;
+  }
+
+  .cas-upload-field input[type="file"] {
+    padding: 8px 10px;
+  }
+
+  .cas-upload-field input[type="file"]::file-selector-button {
+    height: 32px;
+    margin-right: 10px;
+    padding: 0 12px;
+    font-size: 12px;
+  }
+
+  #parseBtn {
+    width: 100%;
+    height: 46px;
+    font-size: 14px;
+  }
+
+  /* Alerts */
+  .cas-alert {
+    padding: 12px 14px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  /* Preview header */
+  .cas-preview-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .cas-preview-summary {
+    display: block;
+    font-size: 14px;
+  }
+
+  .cas-missing-badge {
+    display: inline-block;
+    margin: 8px 0 0;
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  #casUploadBtn {
+    width: 100%;
+    height: 46px;
+    font-size: 13px;
+    white-space: normal;
+  }
+
+  /* Preview table */
+  .cas-preview-scroll {
+    max-height: 65vh;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .cas-preview-table {
+    min-width: 1080px;
+    font-size: 12px;
+  }
+
+  .cas-preview-table thead th {
+    padding: 9px 10px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .cas-preview-table tbody td {
+    padding: 8px 10px;
+    white-space: nowrap;
+  }
+
+  .cas-isin-input {
+    min-width: 145px;
+    max-width: 100%;
+    font-size: 16px; /* prevents iOS zoom-on-focus */
+  }
+}
+
+/* Very small phones */
+@media (max-width: 420px) {
+  .cas-upload-card {
+    padding: 14px;
+  }
+
+  .cas-upload-header h3 {
+    font-size: 17px;
+  }
+
+  .cas-upload-subtitle {
+    font-size: 12px;
+  }
+
+  .cas-upload-form {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .cas-upload-field input {
+    height: 46px;
+  }
+
+  #parseBtn,
+  #casUploadBtn {
+    height: 48px;
+  }
+
+  .cas-preview-table {
+    min-width: 980px;
+  }
+}
+
+@media (max-width: 768px) {
+  body.dark-mode .cas-upload-card {
+    background: var(--dark-card-bg, #1f2934);
+    border-color: var(--dark-border, rgba(255, 255, 255, 0.05));
+  }
+
+  body.dark-mode .cas-upload-form {
+    background: var(--dark-surface, #0f172a);
+    border-color: var(--dark-border, rgba(255, 255, 255, 0.05));
+  }
+
+  body.dark-mode .cas-upload-field input {
+    background: var(--dark-card-bg, #1f2934);
+    color: var(--dark-text, #cbd5e1);
+    border-color: var(--dark-border, rgba(255, 255, 255, 0.05));
+  }
+
+  body.dark-mode .cas-upload-field input[type="file"]::file-selector-button {
+    background: var(--dark-accent, #60a5fa);
+    color: #0f172a;
+  }
+
+  body.dark-mode .cas-preview-table thead th {
+    background: var(--dark-surface, #0f172a);
+    color: var(--dark-text, #cbd5e1);
+  }
+
+  body.dark-mode .cas-preview-table tbody td {
+    border-color: var(--dark-border, rgba(255, 255, 255, 0.05));
+  }
+}

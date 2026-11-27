@@ -27,6 +27,7 @@ from retirement_logic import retirementCalci
 from transaction_view import build_transaction_view
 from supabase_storage import fetch_json
 from admin_api import admin_api
+from scripts.casData_pipeline import cas_bp
 from blueprints.insights import insights_bp
 import uuid
 import threading
@@ -155,6 +156,7 @@ def create_app():
     )
     
     app.register_blueprint(admin_api)
+    app.register_blueprint(cas_bp)
     app.register_blueprint(insights_bp)
     app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev-only-fallback")
     app.config["VALUATION_DATE"] = date.today() - timedelta(days=1)

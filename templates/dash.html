@@ -39,6 +39,7 @@ body{visibility:hidden}
 <div id="adminTabs" class="tabs" style="display:none">
     <button class="tab active" data-admin="overview">Overview</button>
     <button class="tab" data-admin="clients">Investor Details</button>
+    <button class="tab" data-admin="cas">CAS Upload</button>
 </div>
 <!-- USER TABS -->
 <div class="tabs" id="userTabs">
@@ -51,6 +52,84 @@ body{visibility:hidden}
 
 <div class="tab-panel" id="admin-overview" style="display:none"></div>
 <div class="tab-panel" id="admin-clients" style="display:none"></div>
+
+<div class="tab-panel" id="admin-cas" style="display:none">
+    <div class="card cas-upload-card">
+        <div class="cas-upload-header">
+            <h3>CAS Statement Importer</h3>
+            <p class="cas-upload-subtitle">
+                Upload a CAMS / KFintech Consolidated Account Statement (PDF).<br>
+                Duplicate transactions are skipped automatically and ISIN Mapper is refreshed after upload.
+            </p>
+        </div>
+
+        <form id="casForm" class="cas-upload-form">
+            <div class="cas-upload-field">
+                <label for="cas_file">CAS PDF File</label>
+                <input
+                    type="file"
+                    id="cas_file"
+                    name="cas_file"
+                    accept=".pdf"
+                    required
+                />
+            </div>
+
+            <div class="cas-upload-field">
+                <label for="casPassword">PDF Password (if protected)</label>
+                <input
+                    type="password"
+                    id="casPassword"
+                    name="password"
+                    placeholder="Leave blank if unprotected"
+                />
+            </div>
+
+            <button type="submit" id="parseBtn" class="btn primary">
+                1. Parse & Preview
+            </button>
+        </form>
+
+        <div id="casAlertBox" class="cas-alert d-none" role="alert"></div>
+
+        <datalist id="fundIsinDatalist"></datalist>
+
+        <div id="casPreviewSection" class="cas-preview-section d-none">
+            <div class="cas-preview-header">
+                <div>
+                    <span id="casPreviewSummary" class="cas-preview-summary"></span>
+                    <span id="casMissingIsinBadge" class="cas-missing-badge d-none"></span>
+                </div>
+
+                <button id="casUploadBtn" class="btn primary">
+                    2. Upload New Records & Refresh ISIN Mapper
+                </button>
+            </div>
+
+            <div class="table-scroll cas-preview-scroll">
+                <table class="freeze-table cas-preview-table">
+                    <thead>
+                        <tr>
+                            <th>txn_id</th>
+                            <th>traddate</th>
+                            <th>folio_no</th>
+                            <th>isin</th>
+                            <th>prodcode</th>
+                            <th>fund_name</th>
+                            <th>txn_code</th>
+                            <th>trxnno</th>
+                            <th>trxnstat</th>
+                            <th class="text-end">purprice</th>
+                            <th class="text-end">units</th>
+                            <th class="text-end">amount</th>
+                        </tr>
+                    </thead>
+                    <tbody id="casPreviewBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="tab-panel active" id="tab-overview">
 <div class="kpis">
@@ -2169,6 +2248,7 @@ async function loadAdminDashboard(){
 
   document.getElementById("admin-overview").style.display = "block";
   document.getElementById("admin-clients").style.display = "none";
+  document.getElementById("admin-cas").style.display = "none";
 
   document.getElementById("admin-overview").innerHTML = `
     <div class="admin-loading-state">
@@ -2827,6 +2907,19 @@ async function openAdminClient(login) {
   document.getElementById("tab-overview").style.display = "block";
 
   window.scrollTo(0, 0);
+}
+
+function openAdminCas() {
+  document.querySelectorAll("#adminTabs .tab").forEach(tab => {
+    tab.classList.remove("active");
+  });
+
+  const casButton = document.querySelector('#adminTabs .tab[data-admin="cas"]');
+  if (casButton) casButton.classList.add("active");
+
+  document.getElementById("admin-overview").style.display = "none";
+  document.getElementById("admin-clients").style.display = "none";
+  document.getElementById("admin-cas").style.display = "block";
 }
 
 function logout(){
@@ -4761,6 +4854,269 @@ document.addEventListener("click", e => {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+<script>
+
+function openAdminOverview() {
+  document.querySelectorAll("#adminTabs .tab").forEach(tab => {
+    tab.classList.remove("active");
+  });
+
+  const overviewButton = document.querySelector(
+    '#adminTabs .tab[data-admin="overview"]'
+  );
+
+  if (overviewButton) overviewButton.classList.add("active");
+
+  document.getElementById("admin-clients").style.display = "none";
+  document.getElementById("admin-cas").style.display = "none";
+  document.getElementById("admin-overview").style.display = "block";
+}
+
+
+function openAdminClients() {
+  document.querySelectorAll("#adminTabs .tab").forEach(tab => {
+    tab.classList.remove("active");
+  });
+
+  const clientsButton = document.querySelector(
+    '#adminTabs .tab[data-admin="clients"]'
+  );
+
+  if (clientsButton) clientsButton.classList.add("active");
+
+  document.getElementById("admin-overview").style.display = "none";
+  document.getElementById("admin-cas").style.display = "none";
+  document.getElementById("admin-clients").style.display = "block";
+}
+
+
+function openAdminCas() {
+  document.querySelectorAll("#adminTabs .tab").forEach(tab => {
+    tab.classList.remove("active");
+  });
+
+  const casButton = document.querySelector(
+    '#adminTabs .tab[data-admin="cas"]'
+  );
+
+  if (casButton) casButton.classList.add("active");
+
+  document.getElementById("admin-overview").style.display = "none";
+  document.getElementById("admin-clients").style.display = "none";
+  document.getElementById("admin-cas").style.display = "block";
+}
+
+document.querySelector('#adminTabs .tab[data-admin="overview"]')
+  .addEventListener("click", openAdminOverview);
+
+document.querySelector('#adminTabs .tab[data-admin="clients"]')
+  .addEventListener("click", openAdminClients);
+
+document.querySelector('#adminTabs .tab[data-admin="cas"]')
+  .addEventListener("click", openAdminCas);
+
+let casParsedRecords = [];
+const CAS_ISIN_RE = /^INF[A-Z0-9]{9}$/;
+
+function showCasAlert(message, type = "info") {
+  const box = document.getElementById("casAlertBox");
+  box.className = `cas-alert cas-alert-${type}`;
+  box.textContent = message;
+  box.classList.remove("d-none");
+}
+
+function isValidCasIsin(value) {
+  return CAS_ISIN_RE.test((value || "").trim().toUpperCase());
+}
+
+function updateCasValidationState() {
+  const missingCount = casParsedRecords.filter(
+    record => !isValidCasIsin(record.isin)
+  ).length;
+
+  const badge = document.getElementById("casMissingIsinBadge");
+  const uploadButton = document.getElementById("casUploadBtn");
+
+  if (missingCount > 0) {
+    badge.textContent = `${missingCount} row(s) missing valid ISIN — fill highlighted boxes`;
+    badge.classList.remove("d-none");
+    uploadButton.disabled = true;
+  } else {
+    badge.classList.add("d-none");
+    uploadButton.disabled = false;
+  }
+}
+
+function handleCasIsinChange(rowIndex, inputElement) {
+  const newIsin = inputElement.value.trim().toUpperCase();
+  const target = casParsedRecords[rowIndex];
+  const groupKey = `${target.folio_no}|${target.prodcode}|${target.fund_name}`;
+
+  casParsedRecords.forEach((record, index) => {
+    const recordKey = `${record.folio_no}|${record.prodcode}|${record.fund_name}`;
+
+    if (recordKey === groupKey) {
+      record.isin = newIsin;
+
+      const input = document.getElementById(`casIsinInput-${index}`);
+      const row = document.getElementById(`casRow-${index}`);
+
+      if (input) {
+        input.value = newIsin;
+        input.classList.toggle("is-invalid", !isValidCasIsin(newIsin));
+        input.classList.toggle("is-valid", isValidCasIsin(newIsin));
+      }
+
+      if (row) {
+        row.classList.toggle("cas-row-warning", !isValidCasIsin(newIsin));
+      }
+    }
+  });
+
+  updateCasValidationState();
+}
+
+function renderCasPreviewTable() {
+  const tbody = document.getElementById("casPreviewBody");
+
+  tbody.innerHTML = casParsedRecords.map((record, index) => {
+    const isValid = isValidCasIsin(record.isin);
+
+    const isinCell = isValid
+      ? `<code>${record.isin}</code>`
+      : `<input
+            type="text"
+            id="casIsinInput-${index}"
+            list="fundIsinDatalist"
+            class="cas-isin-input is-invalid"
+            maxlength="12"
+            placeholder="Enter INF... ISIN"
+            value="${record.isin || ""}"
+            oninput="handleCasIsinChange(${index}, this)"
+        />`;
+
+    return `
+      <tr id="casRow-${index}" class="${isValid ? "" : "cas-row-warning"}">
+        <td><code>${record.txn_id}</code></td>
+        <td>${record.traddate}</td>
+        <td>${record.folio_no}</td>
+        <td>${isinCell}</td>
+        <td>${record.prodcode || ""}</td>
+        <td>${record.fund_name || ""}</td>
+        <td><span class="cas-txn-badge">${record.txn_code}</span></td>
+        <td>${record.trxnno}</td>
+        <td>${record.trxnstat}</td>
+        <td class="text-end">${record.purprice}</td>
+        <td class="text-end">${record.units}</td>
+        <td class="text-end">${record.amount}</td>
+      </tr>
+    `;
+  }).join("");
+
+  updateCasValidationState();
+}
+
+document.getElementById("casForm").addEventListener("submit", async event => {
+  event.preventDefault();
+
+  const parseButton = document.getElementById("parseBtn");
+  parseButton.disabled = true;
+  parseButton.textContent = "Parsing...";
+  document.getElementById("casAlertBox").classList.add("d-none");
+
+  const formData = new FormData();
+  formData.append("cas_file", document.getElementById("cas_file").files[0]);
+  formData.append("password", document.getElementById("casPassword").value);
+
+  try {
+    const response = await fetch("/cas-upload/preview", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      showCasAlert(data.error || "Error parsing file.", "danger");
+      document.getElementById("casPreviewSection").classList.add("d-none");
+      return;
+    }
+
+    casParsedRecords = data.records;
+
+    const datalist = document.getElementById("fundIsinDatalist");
+    datalist.innerHTML = (data.fund_catalog || []).map(fund => `
+      <option value="${fund.isin}">${fund.name}</option>
+    `).join("");
+
+    document.getElementById("casPreviewSummary").textContent =
+      `Parsed ${data.count} transactions`;
+
+    renderCasPreviewTable();
+    document.getElementById("casPreviewSection").classList.remove("d-none");
+
+    if (data.missing_isin_count > 0) {
+      showCasAlert(
+        `${data.missing_isin_count} transaction(s) could not auto-detect an ISIN. Enter the 12-character ISIN in the highlighted rows.`,
+        "warning"
+      );
+    }
+  } catch (error) {
+    showCasAlert("Network error while parsing CAS.", "danger");
+  } finally {
+    parseButton.disabled = false;
+    parseButton.textContent = "1. Parse & Preview";
+  }
+});
+
+document.getElementById("casUploadBtn").addEventListener("click", async () => {
+  const uploadButton = document.getElementById("casUploadBtn");
+  uploadButton.disabled = true;
+  uploadButton.textContent = "Uploading & Refreshing ISIN Mapper...";
+
+  try {
+    const response = await fetch("/cas-upload/commit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ records: casParsedRecords })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      showCasAlert(data.error || "Upload failed.", "danger");
+      return;
+    }
+
+    const stats = data.stats;
+    const mapperStats = data.isin_mapper_stats;
+
+    let message =
+      `Done! Parsed: ${stats.parsed} | Newly Inserted: ${stats.inserted} | ` +
+      `Duplicates Skipped: ${stats.duplicates_skipped} | ` +
+      `isin_mapper Updated: ${mapperStats.mapper_rows_updated} rows`;
+
+    if (
+      mapperStats.missing_in_fund_details &&
+      mapperStats.missing_in_fund_details.length > 0
+    ) {
+      message += ` (Note: ${mapperStats.missing_in_fund_details.length} ISINs not found in fund_details: ${mapperStats.missing_in_fund_details.join(", ")})`;
+    }
+
+    showCasAlert(message, "success");
+  } catch (error) {
+    showCasAlert("Network error during database upload.", "danger");
+  } finally {
+    uploadButton.disabled = false;
+    uploadButton.textContent = "2. Upload New Records & Refresh ISIN Mapper";
+  }
+});
+
+document.querySelector('#adminTabs .tab[data-admin="cas"]')
+  .addEventListener("click", openAdminCas);
+
+</script>
 
 </body>
 </html>
